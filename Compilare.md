@@ -1,21 +1,21 @@
-﻿#Istruzioni per la compilazione del codice di networking
+# Istruzioni per la compilazione del codice di networking
 
-##Windows32,64 bit:
+## Su Windows 32,64 bit:
 Scaricare da qui i binari direttamente, sia 32 che 64 bit, la versione è quella di VS2015, mettili dove vuoi
 https://sourceforge.net/projects/boost/files/boost-binaries/1.64.0/
 
 Su visual studio, proprietà del progetto, per tutte le modalità (Debug e Release, 64 e 32 bit in base a per cosa compili linki quella giusta) C/C++, Additional include directories $PATH$boost_1_64_0\
 Linker: Additional library directories $PATH$\boost_1_64_0\lib64-mscv... (o lib32)
 
-##Su Linux:
+## Su Linux 32, 64 bit:
 https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz
 Scarica, spacchetta, non cancellare lo zip.
 
 Vai nella cartella spacchettata, fai
 ``` ./bootstrap.sh
-   ./b2 install e 
+   ./b2 install 
 ```
-copia tutta la cartella boost in /usr/lib
+e copia tutta la cartella boost in /usr/lib
 spacchetta di nuovo(cancella quella vecchia che tanto hai già copiato), compila con 
 ```
 ./bootstrap.sh 
