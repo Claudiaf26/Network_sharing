@@ -19,6 +19,9 @@ TCPSocket_Windows::TCPSocket_Windows(string ip, uint16_t port) : TCPSocket_Inter
 	if(connect(s, (struct sockaddr*)&serverAddress, sizeof(struct sockaddr)) == SOCKET_ERROR)
 		throw std::invalid_argument("Error during connect: " + WSAGetLastError());
 
+	int32_t bufferSize= 65664;
+	setsockopt( s, SOL_SOCKET, SO_SNDBUF, (char*)&bufferSize, sizeof( bufferSize ) );
+
 		started = TRUE;
 
 }
@@ -97,7 +100,7 @@ bool TCPSocket_Windows::Send(vector<char> source) {
 		i = send(s, source.data() + sent, source.size() - sent, 0);
 		sent = sent + i;
 	}
-	if (sent < source.size())
+	if (sent < source.size()|| i == SOCKET_ERROR)
 		return false;
 	else
 		return true;

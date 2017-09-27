@@ -18,6 +18,9 @@ TCPSocket_Linux::TCPSocket_Linux(string ip, uint16_t port) : TCPSocket_Interface
 	if(connect(s, (struct sockaddr*)&serverAddress, sizeof(struct sockaddr)) < 0)
 		throw std::invalid_argument("Error during connect: " + errno);
 
+	int32_t bufferSize = 65664;
+	setsockopt( s, SOL_SOCKET, SO_SNDBUF, (char*)&bufferSize, sizeof( bufferSize ) );
+
 		started = true;
 
 }
