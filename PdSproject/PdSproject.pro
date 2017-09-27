@@ -1,0 +1,144 @@
+#-------------------------------------------------
+#
+# Project created by QtCreator 2017-05-06T14:55:40
+#
+#-------------------------------------------------
+
+QT       += core gui
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+TARGET = PdSproject
+TEMPLATE = app
+
+# The following define makes your compiler emit warnings if you use
+# any feature of Qt which as been marked as deprecated (the exact warnings
+# depend on your compiler). Please consult the documentation of the
+# deprecated API in order to know how to port your code away from it.
+DEFINES += QT_DEPRECATED_WARNINGS
+
+# You can also make your code fail to compile if you use deprecated APIs.
+# In order to do so, uncomment the following line.
+# You can also select to disable deprecated APIs only up to a certain version of Qt.
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+
+
+SOURCES += main.cpp\
+    mainprogram.cpp \
+    SharedMemory/sharedmem.cpp \
+    SharedMemory/sharedmem_linux.cpp \
+    SharedMemory/sharedmem_windows.cpp \
+    ContextMenu/contextmenu.cpp \
+    ContextMenu/contextmenu_linux.cpp \
+    ContextMenu/contextmenu_windows.cpp \
+    Managers/notificationmanager.cpp \
+    Managers/udp_manager.cpp \
+    UDP_Discover/udp_discover.cpp \
+    UDP_Discover/udp_discover_linux.cpp \
+    UDP_Discover/udp_discover_windows.cpp \
+    UserInterface/notification.cpp \
+    UserInterface/settings.cpp \
+    DataStruct/sharedsingleton.cpp \
+    DataStruct/usersingleton.cpp \
+    File/FileReceiver.cpp \
+    File/FileTransfer.cpp \
+    TCP_ServerSocket/TCPServerSocket.cpp \
+    TCP_ServerSocket/TCPServerSocket_Linux.cpp \
+    TCP_ServerSocket/TCPServerSocket_Windows.cpp \
+    TCP_Socket/TCPSocket.cpp \
+    TCP_Socket/TCPSocket_Linux.cpp \
+    TCP_Socket/TCPSocket_Windows.cpp \
+    UserInterface/filesending.cpp \
+    UserInterface/progressdialog.cpp \
+    sendingprogram.cpp \
+    Managers/sendermanager.cpp \
+    Managers/receivermanager.cpp
+
+HEADERS  += \
+    mainprogram.h \
+    define.h \
+    systemswrapper.h \
+    SharedMemory/sharedmem.h \
+    SharedMemory/sharedmem_interface.h \
+    SharedMemory/sharedmem_linux.h \
+    SharedMemory/sharedmem_windows.h \
+    ContextMenu/contextmenu.h \
+    ContextMenu/contextmenu_interface.h \
+    ContextMenu/contextmenu_linux.h \
+    ContextMenu/contextmenu_windows.h \
+    Managers/notificationmanager.h \
+    Managers/udp_manager.h \
+    UDP_Discover/udp_discover.h \
+    UDP_Discover/udp_discover_interface.h \
+    UDP_Discover/udp_discover_linux.h \
+    UDP_Discover/udp_discover_windows.h \
+    UserInterface/notification.h \
+    UserInterface/settings.h \
+    DataStruct/sharedsingleton.h \
+    DataStruct/usersingleton.h \
+    File/FileReceiver.h \
+    File/FileTransfer.h \
+    TCP_ServerSocket/TCPServerSocket.h \
+    TCP_ServerSocket/TCPServerSocket_Interface.h \
+    TCP_ServerSocket/TCPServerSocket_Linux.h \
+    TCP_ServerSocket/TCPServerSocket_Windows.h \
+    TCP_Socket/TCPSocket.h \
+    TCP_Socket/TCPSocket_Interface.h \
+    TCP_Socket/TCPSocket_Linux.h \
+    TCP_Socket/TCPSocket_Windows.h \
+    UserInterface/filesending.h \
+    UserInterface/progressdialog.h \
+    sendingprogram.h \
+    Managers/sendermanager.h \
+    Managers/receivermanager.h
+
+FORMS    += settings.ui \
+    settings_copy.ui \
+    UserInterface/filesending.ui \
+    UserInterface/progressdialog.ui
+
+RESOURCES += \
+    resources.qrc
+
+isEmpty(TARGET_EXT) {
+    win32 {
+        TARGET_CUSTOM_EXT = .exe
+    }
+    macx {
+        TARGET_CUSTOM_EXT = .app
+    }
+} else {
+    TARGET_CUSTOM_EXT = $${TARGET_EXT}
+}
+
+win32 {
+    DEPLOY_COMMAND = windeployqt
+}
+macx {
+    DEPLOY_COMMAND = macdeployqt
+}
+
+CONFIG( debug, debug|release ) {
+    # debug
+    DEPLOY_TARGET = $$shell_quote($$shell_path($${OUT_PWD}/debug/$${TARGET}$${TARGET_CUSTOM_EXT}))
+} else {
+    # release
+    DEPLOY_TARGET = $$shell_quote($$shell_path($${OUT_PWD}/release/$${TARGET}$${TARGET_CUSTOM_EXT}))
+}
+
+#  # Uncomment the following line to help debug the deploy command when running qmake
+#  warning($${DEPLOY_COMMAND} $${DEPLOY_TARGET})
+
+# Use += instead of = if you use multiple QMAKE_POST_LINKs
+QMAKE_POST_LINK = $${DEPLOY_COMMAND} $${DEPLOY_TARGET}
+
+win32:QMAKE_LFLAGS += /MANIFESTUAC:$$quote(\"level=\'requireAdministrator\' uiAccess=\'false\'\")
+
+unix:QMAKE_CXXFLAGS += -std=c++0x -lpthread
+unix:LIBS += -lpthread
+
+win32{
+    INCLUDEPATH += E:/boost_1_64_0
+    DEPENDPATH += E:/boost_1_64_0/stage/lib
+    LIBS += -LE:/boost_1_64_0/stage/lib -llibboost_filesystem-vc140-mt-gd-1_64
+}
