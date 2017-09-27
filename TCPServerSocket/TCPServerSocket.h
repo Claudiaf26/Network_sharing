@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "TCPServerSocket_Interface.h"
-#include "TCP_Socket/TCPSocket.h"
+#include "../TCPSocket/TCPSocket.h"
 
 #ifdef _WIN32
 #include "TCPServerSocket_Windows.h"

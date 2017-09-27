@@ -1,4 +1,4 @@
-#include "UDP_Discover.h"
+#include "udp_discover.h"
 using namespace std;
 
 int main() {

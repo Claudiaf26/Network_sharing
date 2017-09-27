@@ -12,7 +12,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "TCPSocket.h"
+#include "../TCPSocket/TCPSocket.h"
 #include "TCPServerSocket_Interface.h"
 #pragma comment(lib, "Ws2_32.lib")
 

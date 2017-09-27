@@ -1,4 +1,4 @@
-#include "TCPSocket.h"
+#include "../TCPSocket/TCPSocket.h"
 
 TCPSocket::TCPSocket(string ip, uint16_t port) {
 #ifdef _WIN32
