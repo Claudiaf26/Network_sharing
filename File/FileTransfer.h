@@ -1,6 +1,6 @@
 #ifndef FILETRANSFER
 #define FILETRANSFER
-//#define BOOST_TEST_MODULE sender
+
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/endian/arithmetic.hpp>
@@ -10,7 +10,7 @@
 #include <future>
 #include <mutex>
 #include <string.h>
-#include "TCP_Socket/TCPSocket.h"
+#include "../TCPSocket/TCPSocket.h"
 
 
 using namespace std;

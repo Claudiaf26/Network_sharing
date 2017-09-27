@@ -1,6 +1,6 @@
 #ifndef FILERECEIVER
 #define FILERECEIVER
-//#define BOOST_TEST_MODULE receiver
+
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/endian/arithmetic.hpp>
@@ -11,8 +11,8 @@
 #include <thread>
 #include <future>
 #include <mutex>
-#include "TCP_Socket/TCPSocket.h"
-#include "TCP_ServerSocket/TCPServerSocket.h"
+#include "../TCPSocket/TCPSocket.h"
+#include "../TCPServerSocket/TCPServerSocket.h"
 
 using namespace std;
 using namespace boost::filesystem;
