@@ -42,17 +42,18 @@ SOURCES += main.cpp\
     DataStruct/usersingleton.cpp \
     File/FileReceiver.cpp \
     File/FileTransfer.cpp \
-    TCP_ServerSocket/TCPServerSocket.cpp \
-    TCP_ServerSocket/TCPServerSocket_Linux.cpp \
-    TCP_ServerSocket/TCPServerSocket_Windows.cpp \
-    TCP_Socket/TCPSocket.cpp \
-    TCP_Socket/TCPSocket_Linux.cpp \
-    TCP_Socket/TCPSocket_Windows.cpp \
     UserInterface/filesending.cpp \
     UserInterface/progressdialog.cpp \
     sendingprogram.cpp \
     Managers/sendermanager.cpp \
-    Managers/receivermanager.cpp
+    Managers/receivermanager.cpp \
+    TCPServerSocket/TCPServerSocket.cpp \
+    TCPServerSocket/TCPServerSocket_Linux.cpp \
+    TCPServerSocket/TCPServerSocket_Windows.cpp \
+    TCPSocket/Main.cpp \
+    TCPSocket/TCPSocket.cpp \
+    TCPSocket/TCPSocket_Linux.cpp \
+    TCPSocket/TCPSocket_Windows.cpp
 
 HEADERS  += \
     mainprogram.h \
@@ -78,19 +79,19 @@ HEADERS  += \
     DataStruct/usersingleton.h \
     File/FileReceiver.h \
     File/FileTransfer.h \
-    TCP_ServerSocket/TCPServerSocket.h \
-    TCP_ServerSocket/TCPServerSocket_Interface.h \
-    TCP_ServerSocket/TCPServerSocket_Linux.h \
-    TCP_ServerSocket/TCPServerSocket_Windows.h \
-    TCP_Socket/TCPSocket.h \
-    TCP_Socket/TCPSocket_Interface.h \
-    TCP_Socket/TCPSocket_Linux.h \
-    TCP_Socket/TCPSocket_Windows.h \
     UserInterface/filesending.h \
     UserInterface/progressdialog.h \
     sendingprogram.h \
     Managers/sendermanager.h \
-    Managers/receivermanager.h
+    Managers/receivermanager.h \
+    TCPServerSocket/TCPServerSocket.h \
+    TCPServerSocket/TCPServerSocket_Interface.h \
+    TCPServerSocket/TCPServerSocket_Linux.h \
+    TCPServerSocket/TCPServerSocket_Windows.h \
+    TCPSocket/TCPSocket.h \
+    TCPSocket/TCPSocket_Interface.h \
+    TCPSocket/TCPSocket_Linux.h \
+    TCPSocket/TCPSocket_Windows.h
 
 FORMS    += settings.ui \
     settings_copy.ui \
