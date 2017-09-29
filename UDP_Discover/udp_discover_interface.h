@@ -5,14 +5,7 @@
 #include <iostream>
 #include <string>
 #include "../DataStruct/sharedsingleton.h"
-
-enum UDP_Discover_Status {
-    UDS_STOP = 0,
-    UDS_HIDDEN = 1,
-    UDS_ACTIVE = 2,
-};
-
-typedef enum UDP_Discover_Status UDP_Discover_Status;
+#include "../define.h"
 
 class UDP_Discover_Interface {
 protected:
