@@ -1,5 +1,5 @@
-#ifndef SHAREDSINGLETON
-#define SHAREDSINGLETON
+#ifndef USERLISTSINGLETON
+#define USERLISTSINGLETON
 #include "define.h"
 #include <queue>
 #include <mutex>

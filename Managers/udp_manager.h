@@ -2,7 +2,7 @@
 #define UDP_MANAGER_H
 
 #include "UDPDiscover/UDPDiscover.h"
-#include "DataStruct/sharedsingleton.h"
+#include "DataStruct/userlistsingleton.h"
 #include <QObject>
 #include <QThread>
 #include <QTimer>

@@ -13,7 +13,7 @@
 #include <atomic>
 
 #include "../UDPSocket/UDPSocketMulticast.h"
-#include "../DataStruct/sharedsingleton.h"
+#include "../DataStruct/userlistsingleton.h"
 #include "../define.h"
 
 using namespace std;

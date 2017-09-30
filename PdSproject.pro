@@ -35,7 +35,6 @@ SOURCES += main.cpp\
     Managers/udp_manager.cpp \
     UserInterface/notification.cpp \
     UserInterface/settings.cpp \
-    DataStruct/sharedsingleton.cpp \
     DataStruct/usersingleton.cpp \
     File/FileReceiver.cpp \
     File/FileTransfer.cpp \
@@ -54,7 +53,8 @@ SOURCES += main.cpp\
     UDPDiscover/UDPDiscover.cpp \
     UDPSocket/UDPSocketMulticast.cpp \
     UDPSocket/UDPSocketMulticast_Linux.cpp \
-    UDPSocket/UDPSocketMulticast_Windows.cpp
+    UDPSocket/UDPSocketMulticast_Windows.cpp \
+    DataStruct/userlistsingleton.cpp
 
 HEADERS  += \
     mainprogram.h \
@@ -72,7 +72,6 @@ HEADERS  += \
     Managers/udp_manager.h \
     UserInterface/notification.h \
     UserInterface/settings.h \
-    DataStruct/sharedsingleton.h \
     DataStruct/usersingleton.h \
     File/FileReceiver.h \
     File/FileTransfer.h \
@@ -93,7 +92,8 @@ HEADERS  += \
     UDPSocket/UDPSocketMulticast.h \
     UDPSocket/UDPSocketMulticast_Interface.h \
     UDPSocket/UDPSocketMulticast_Linux.h \
-    UDPSocket/UDPSocketMulticast_Windows.h
+    UDPSocket/UDPSocketMulticast_Windows.h \
+    DataStruct/userlistsingleton.h
 
 FORMS    += settings.ui \
     settings_copy.ui \
