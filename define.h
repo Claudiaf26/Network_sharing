@@ -23,4 +23,13 @@ struct User {
     }
 };
 
+enum UDP_Discover_Status {
+    UDS_STOP = 0,
+    UDS_HIDDEN = 1,
+    UDS_ACTIVE = 2,
+};
+
+typedef enum UDP_Discover_Status UDP_Discover_Status;
+
+
 #endif // DEFINE_H
