@@ -1,7 +1,7 @@
 #ifndef UDP_MANAGER_H
 #define UDP_MANAGER_H
 
-#include "UDP_Discover/udp_discover.h"
+#include "UDPDiscover/UDPDiscover.h"
 #include "DataStruct/sharedsingleton.h"
 #include <QObject>
 #include <QThread>
@@ -13,7 +13,7 @@ class UDP_Manager : public QObject
 {
     Q_OBJECT
 private:
-    UDP_Discover* udp;
+    UDPDiscover* udp;
 
     std::queue<struct User> newQueue;
     std::queue<struct User> deletedQueue;

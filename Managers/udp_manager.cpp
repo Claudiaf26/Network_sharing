@@ -1,4 +1,5 @@
 #include "udp_manager.h"
+#include "define.h"
 #include <iostream>
 
 UDP_Manager::UDP_Manager(QObject *parent) :
@@ -46,7 +47,7 @@ void UDP_Manager::start(string user, bool mod){
     mode = mod;
     UDP_Discover_Status status = (mode != true) ? UDS_ACTIVE : UDS_HIDDEN; //ricordati di modificare in UDS_STOP
     if (!running){
-        udp = new UDP_Discover(user, "1");
+        udp = new UDPDiscover(user, "1");
 
         udp->run(status);
         running = !running;

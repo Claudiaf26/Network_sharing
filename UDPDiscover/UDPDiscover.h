@@ -1,5 +1,6 @@
-#ifdef _WIN32	
+#ifdef _WIN32
 #ifndef UDP_DISCOVER_WINDOWS
+#define UDP_DISCOVER_WINDOWS
 #include <vector>
 #include <string>
 #include <stdexcept>

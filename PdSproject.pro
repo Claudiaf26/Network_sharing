@@ -33,9 +33,6 @@ SOURCES += main.cpp\
     ContextMenu/contextmenu_windows.cpp \
     Managers/notificationmanager.cpp \
     Managers/udp_manager.cpp \
-    UDP_Discover/udp_discover.cpp \
-    UDP_Discover/udp_discover_linux.cpp \
-    UDP_Discover/udp_discover_windows.cpp \
     UserInterface/notification.cpp \
     UserInterface/settings.cpp \
     DataStruct/sharedsingleton.cpp \
@@ -53,7 +50,11 @@ SOURCES += main.cpp\
     TCPSocket/Main.cpp \
     TCPSocket/TCPSocket.cpp \
     TCPSocket/TCPSocket_Linux.cpp \
-    TCPSocket/TCPSocket_Windows.cpp
+    TCPSocket/TCPSocket_Windows.cpp \
+    UDPDiscover/UDPDiscover.cpp \
+    UDPSocket/UDPSocketMulticast.cpp \
+    UDPSocket/UDPSocketMulticast_Linux.cpp \
+    UDPSocket/UDPSocketMulticast_Windows.cpp
 
 HEADERS  += \
     mainprogram.h \
@@ -69,10 +70,6 @@ HEADERS  += \
     ContextMenu/contextmenu_windows.h \
     Managers/notificationmanager.h \
     Managers/udp_manager.h \
-    UDP_Discover/udp_discover.h \
-    UDP_Discover/udp_discover_interface.h \
-    UDP_Discover/udp_discover_linux.h \
-    UDP_Discover/udp_discover_windows.h \
     UserInterface/notification.h \
     UserInterface/settings.h \
     DataStruct/sharedsingleton.h \
@@ -91,7 +88,12 @@ HEADERS  += \
     TCPSocket/TCPSocket.h \
     TCPSocket/TCPSocket_Interface.h \
     TCPSocket/TCPSocket_Linux.h \
-    TCPSocket/TCPSocket_Windows.h
+    TCPSocket/TCPSocket_Windows.h \
+    UDPDiscover/UDPDiscover.h \
+    UDPSocket/UDPSocketMulticast.h \
+    UDPSocket/UDPSocketMulticast_Interface.h \
+    UDPSocket/UDPSocketMulticast_Linux.h \
+    UDPSocket/UDPSocketMulticast_Windows.h
 
 FORMS    += settings.ui \
     settings_copy.ui \
@@ -119,14 +121,15 @@ macx {
     DEPLOY_COMMAND = macdeployqt
 }
 
-CONFIG( debug, debug|release ) {
-    # debug
-    DEPLOY_TARGET = $$shell_quote($$shell_path($${OUT_PWD}/debug/$${TARGET}$${TARGET_CUSTOM_EXT}))
-} else {
-    # release
-    DEPLOY_TARGET = $$shell_quote($$shell_path($${OUT_PWD}/release/$${TARGET}$${TARGET_CUSTOM_EXT}))
+win32{
+    CONFIG( debug, debug|release ) {
+        # debug
+        DEPLOY_TARGET = $$shell_quote($$shell_path($${OUT_PWD}/debug/$${TARGET}$${TARGET_CUSTOM_EXT}))
+    } else {
+        # release
+        DEPLOY_TARGET = $$shell_quote($$shell_path($${OUT_PWD}/release/$${TARGET}$${TARGET_CUSTOM_EXT}))
+    }
 }
-
 #  # Uncomment the following line to help debug the deploy command when running qmake
 #  warning($${DEPLOY_COMMAND} $${DEPLOY_TARGET})
 
@@ -142,4 +145,13 @@ win32{
     INCLUDEPATH += E:/boost_1_64_0
     DEPENDPATH += E:/boost_1_64_0/stage/lib
     LIBS += -LE:/boost_1_64_0/stage/lib -llibboost_filesystem-vc140-mt-gd-1_64
+}
+unix{
+    LIBS += -L$$PWD/libraries_linux/lib/ -lboost_filesystem
+    LIBS += -L$$PWD/libraries_linux/lib/ -lboost_system
+
+    INCLUDEPATH += $$PWD/libraries_linux/include
+    DEPENDPATH += $$PWD/libraries_linux/include
+    PRE_TARGETDEPS += $$PWD/libraries_linux/lib/libboost_filesystem.a
+    PRE_TARGETDEPS += $$PWD/libraries_linux/lib/libboost_system.a
 }

@@ -4,7 +4,7 @@
 #include "define.h"
 #include "UserInterface/settings.h"
 #include "Managers/notificationmanager.h"
-#include "UDP_Discover/udp_discover.h"
+#include "UDPDiscover/UDPDiscover.h"
 #include "Managers/udp_manager.h"
 #include "ContextMenu/contextmenu.h"
 #include "SharedMemory/sharedmem.h"
