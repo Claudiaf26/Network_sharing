@@ -5,7 +5,7 @@
 #include <mutex>
 #include <condition_variable>
 
-class ConnectionSingleton {
+class UserListSingleton {
 private:
     //la coda dei nuovi utenti connessi
     std::queue<User> newConnection;
@@ -18,18 +18,18 @@ private:
     static std::mutex istantiation_mutex;
 
     //costruttore dichiarato privato in modo che non si possano costruire esternamente oggetti di questa classe
-    ConnectionSingleton() { };
+    UserListSingleton() { };
     //il costruttore di copia dichiarato privato in modo che non si possa acquisire un oggetto di questa classe altrove
-    ConnectionSingleton(const ConnectionSingleton&);
+    UserListSingleton(const UserListSingleton&);
     //overload dell'operatore di assegnazione dichiarato privato in modo che non si possa passare come argomento l'oggetto
-    void operator=(const ConnectionSingleton&);
+    void operator=(const UserListSingleton&);
 public:
     //il metodo statico che genera l'istanza la prima volta che viene richiamato e la restituisce ogni volta
-    static ConnectionSingleton& get_instance() {
+    static UserListSingleton& get_instance() {
         //rendiamo atomica l'istanziazione dell'oggetto singleton
         std::lock_guard<std::mutex> l( istantiation_mutex );
         //questo è l'unico oggetto statico della classe, creato la prima volta che viene chiamata la funzione
-        static ConnectionSingleton istance;
+        static UserListSingleton istance;
 
         return istance;
       }

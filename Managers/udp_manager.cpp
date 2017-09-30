@@ -69,13 +69,13 @@ void UDP_Manager::run(bool newOrDeleted){
     while(true){
         if(newOrDeleted){
             struct User newUser;
-            if(ConnectionSingleton::get_instance().popNew(newUser)){
+            if(UserListSingleton::get_instance().popNew(newUser)){
                 newQueue.push(newUser);
             }
         }
         else{
             struct User deletedUser;
-            if(ConnectionSingleton::get_instance().popDeleted(deletedUser) )
+            if(UserListSingleton::get_instance().popDeleted(deletedUser) )
                 deletedQueue.push(deletedUser);
         }
     }

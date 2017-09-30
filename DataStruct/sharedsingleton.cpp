@@ -2,21 +2,21 @@
 
 using namespace std;
 
-mutex ConnectionSingleton::istantiation_mutex;
+mutex UserListSingleton::istantiation_mutex;
 
-void ConnectionSingleton::pushNew(User user){
+void UserListSingleton::pushNew(User user){
     lock_guard<mutex> lg(m);
     newConnection.push(user);
     cv.notify_one();
 }
 
-void ConnectionSingleton::pushDeleted(User user){
+void UserListSingleton::pushDeleted(User user){
     lock_guard<mutex> lg(m);
     deletedConnection.push(user);
     cv.notify_one();
 }
 
-bool ConnectionSingleton::popNew(User& user){
+bool UserListSingleton::popNew(User& user){
     unique_lock<mutex> ul(m);
     cv.wait(ul);
     if (newConnection.empty())
@@ -26,7 +26,7 @@ bool ConnectionSingleton::popNew(User& user){
     return true;
 }
 
-bool ConnectionSingleton::popDeleted(User& user){
+bool UserListSingleton::popDeleted(User& user){
     unique_lock<mutex> ul(m);
     cv.wait(ul);
     if (deletedConnection.empty())

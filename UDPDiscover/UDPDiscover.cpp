@@ -100,7 +100,7 @@ void UDPDiscover::discover() {
 			2. Reply with a discovery packet to reduce the delay for cache aligning.
 				ACHTUNG! Only if the host is visible!*/
 			activeUsers.push_back( newUsr );
-			ConnectionSingleton::get_instance().pushNew( newUsr );
+			UserListSingleton::get_instance().pushNew( newUsr );
 			if ( temp_mode == UDS_ACTIVE )
 				socket->sendPacket( defaultMessage );
 			cout << "Found: " << newUsr.name << " " << newUsr.ip << " " << newUsr.age << endl;
@@ -127,7 +127,7 @@ void UDPDiscover::aging() {
 				cout << "Aging: " << it->name << " " << it->ip << " " << it->age << endl;
 				++it;
 			} else {
-				ConnectionSingleton::get_instance().pushDeleted( *it );
+				UserListSingleton::get_instance().pushDeleted( *it );
 				it = activeUsers.erase( it );
 			}
 		}
