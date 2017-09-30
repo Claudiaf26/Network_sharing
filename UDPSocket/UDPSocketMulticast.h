@@ -5,10 +5,10 @@
 #include <string>
 
 #ifdef _WIN32
-#include "udpSocketMulticast_Windows.h"
+#include "UDPSocketMulticast_Windows.h"
 #endif
 #ifdef __linux__
-#include "udpSocketMulticast_Linux.h"
+#include "UDPSocketMulticast_Linux.h"
 #endif
 
 class UDPSocketMulticast {

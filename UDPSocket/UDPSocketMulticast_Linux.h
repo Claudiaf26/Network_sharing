@@ -28,14 +28,15 @@ private:
 	string multicastIp;
 	uint16_t multicastPort;
 
-	void joinMulticast();
+	bool closed;
 
 public:
 	UDPSocketMulticast_Linux( string ip, uint16_t multicastPort );
 	~UDPSocketMulticast_Linux();
 
 	void sendPacket( string message );
-	int8_t receivePacket( string message, string senderIp );
+	int8_t receivePacket( std::string& message, std::string& senderIp );
+	void closeSocket();
 };
 
 #endif

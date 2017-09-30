@@ -17,7 +17,7 @@
 using namespace std;
 
 
-class UDPSocketMulticast_Windows : public UDPSocketMulticast_Interface{
+class UDPSocketMulticast_Windows : public UDPSocketMulticast_Interface {
 private:
 	WSADATA wsaDataSend;
 	int16_t sendSocket;
@@ -29,14 +29,14 @@ private:
 	uint16_t multicastPort;
 	boolean closed;
 
-	void joinMulticast();	
+	void joinMulticast();
 
 public:
-	UDPSocketMulticast_Windows(string ip, uint16_t multicastPort);
+	UDPSocketMulticast_Windows( string ip, uint16_t multicastPort );
 	~UDPSocketMulticast_Windows();
-	
-	void sendPacket(string message);
-	int8_t receivePacket( string& message, string& senderIp);
+
+	void sendPacket( string message );
+	int8_t receivePacket( string& message, string& senderIp );
 
 	void closeSocket();
 };

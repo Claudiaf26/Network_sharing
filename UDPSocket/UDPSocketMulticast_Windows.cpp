@@ -98,7 +98,7 @@ void UDPSocketMulticast_Windows::joinMulticast() {
 }
 
 void UDPSocketMulticast_Windows::closeSocket() {
-	shutdown( receiveSocket, SD_BOTH);
+	shutdown( receiveSocket, SD_BOTH );
 	closesocket( sendSocket );
 	closesocket( receiveSocket );
 	WSACleanup();
@@ -118,7 +118,7 @@ int8_t UDPSocketMulticast_Windows::receivePacket( string& message, string& sende
 	vector<char> messageBuffer( 371 );
 
 	struct sockaddr_in senderAddr;
-	socklen_t addrlen = sizeof( senderAddr );	
+	socklen_t addrlen = sizeof( senderAddr );
 
 	int8_t recvfromCode = recvfrom( receiveSocket, messageBuffer.data(), messageBuffer.size(), 0, (struct sockaddr *) &senderAddr, &addrlen );
 	if ( recvfromCode < 0 )
