@@ -8,7 +8,7 @@
 #include "udpSocketMulticast_Windows.h"
 #endif
 #ifdef __linux__
-#include "udp_discover_linux.h"
+#include "udpSocketMulticast_Linux.h"
 #endif
 
 class UDPSocketMulticast {
@@ -23,7 +23,7 @@ public:
 	UDPSocketMulticast( string ip, uint16_t multicastPort );
 	~UDPSocketMulticast();
 	virtual void sendPacket( std::string message );
-	virtual int8_t receivePacket( std::string message, std::string senderIp );
+	virtual int8_t receivePacket( std::string& message, std::string& senderIp );
 
 };
 

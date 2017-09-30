@@ -6,49 +6,16 @@ UDP_Discover_Windows::UDP_Discover_Windows(string userN, string pic) : UDP_Disco
 	mode = UDS_STOP;
 	userName = userN;
 	picture = pic;
-	char loopch = 0;
+
 	//Initialize synch attributes
-	InitializeCriticalSection(&vectorActiveUsersSynch);
-	InitializeCriticalSection(&modeSynch);
+	InitializeCriticalSection( &vectorActiveUsersSynch );
+	InitializeCriticalSection( &modeSynch );
 	mode = UDS_STOP;
 
-	defaultMessage.append("UDPDISCOVERY" + userName + "\r\n" + picture + "\r\n");
+	defaultMessage.append( "UDPDISCOVERY" + userName + "\r\n" + picture + "\r\n" );
 	cout << "Default message: " << defaultMessage;
-	
-	//Initialize socket on which packets will be sent
-	WSAStartup(0x0202, &wsaDataSend);
-	sendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sendSocket == INVALID_SOCKET)
-		throw std::runtime_error("Sending Socket Error. Can't start. ");
-	if (setsockopt(sendSocket, IPPROTO_IP, IP_MULTICAST_LOOP, (char *)&loopch, sizeof(loopch)) == SOCKET_ERROR)
-		throw std::runtime_error("Socket option error. Can't start. ");
 
-	//Initialize socket on which packets will be received
-	WSAStartup(0x0202, &wsaDataReceive);
-	receiveSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (receiveSocket == INVALID_SOCKET)
-		throw std::runtime_error("Receive Socket Error. Can't start. ");
-	u_int reuse = 1;
-	if (setsockopt(receiveSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) == SOCKET_ERROR)
-		throw std::runtime_error("Socket option error. Can't start. ");
-	if (setsockopt(receiveSocket, IPPROTO_IP, IP_MULTICAST_LOOP, (char *)&loopch, sizeof(loopch)) == SOCKET_ERROR)
-		throw std::runtime_error("Socket option error. Can't start. ");
-	sockaddr_in addr;
-	memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htonl(INADDR_ANY); 
-	addr.sin_port = htons(DISCOVERY_PORT); 
-
-	if (::bind(receiveSocket, (struct sockaddr *) &addr, sizeof(addr)) == SOCKET_ERROR)
-		throw std::runtime_error("Socket bind error. Can't start. ");
-
-	joinMulticast();
-
-	//Prepare multicast address structure
-	memset(&MulticasSockaddr, 0, sizeof(MulticasSockaddr));
-	MulticasSockaddr.sin_family = AF_INET;
-	inet_pton(AF_INET, "239.0.0.100", &(MulticasSockaddr.sin_addr));
-	MulticasSockaddr.sin_port = htons(DISCOVERY_PORT);
+	socket = unique_ptr<UDPSocketMulticast>( new UDPSocketMulticast( "239.0.0.100", DISCOVERY_PORT ) );
 
 }
 
@@ -60,61 +27,12 @@ UDP_Discover_Windows::~UDP_Discover_Windows() {
 	CloseHandle(threadsHandle[1]);
 	CloseHandle(threadsHandle[2]);
 
-	closesocket(sendSocket);
-	closesocket(receiveSocket);
-	WSACleanup();
-
 	DeleteCriticalSection(&vectorActiveUsersSynch);
 	DeleteCriticalSection(&modeSynch);
 	
 }
 
-void UDP_Discover_Windows::joinMulticast() {
-	/*
-	*This method is needed in Windows due to the kernel
-	*choosing the wrong local interface in some cases.
-	*Here each interface is checked but only the one connected
-	*to a gateway is accepted.
-	*THIS METHOD IS NOT PORTABLE!
-	*/
-	struct ip_mreq mreq;
-	inet_pton(AF_INET, "239.0.0.100", &(mreq.imr_multiaddr.s_addr));
-
-	PIP_ADAPTER_ADDRESSES adapter_addresses, aa;
-	PIP_ADAPTER_UNICAST_ADDRESS selectedInterface = NULL;
-	ULONG  size;
-	if (GetAdaptersAddresses(AF_INET, GAA_FLAG_INCLUDE_GATEWAYS, NULL, NULL, &size) != ERROR_BUFFER_OVERFLOW)
-		throw std::runtime_error("Socket bind error. Can't start. ");
-
-	adapter_addresses = (PIP_ADAPTER_ADDRESSES)malloc(size);
-	if (GetAdaptersAddresses(AF_INET, GAA_FLAG_INCLUDE_GATEWAYS, NULL, adapter_addresses, &size) != ERROR_SUCCESS)
-		throw std::runtime_error("Socket bind error. Can't start. ");
-
-	for (aa = adapter_addresses; aa != NULL; aa = aa->Next) {
-		if (aa->FirstGatewayAddress != NULL) {
-			selectedInterface = aa->FirstUnicastAddress;
-			break;
-		}
-	}
-	if (selectedInterface == NULL)
-		throw std::runtime_error("Socket bind error. Can't start. ");
-	else {
-		mreq.imr_interface = ((struct sockaddr_in*)selectedInterface->Address.lpSockaddr)->sin_addr;
-	}
-	char contenitore[22];
-	inet_ntop(AF_INET, &mreq.imr_interface, contenitore, 22);
-	cout << "Local interface chosen: " << contenitore << endl;
-
-	if (setsockopt(receiveSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) == SOCKET_ERROR) {
-		throw std::runtime_error("Socket bind error. Can't start. ");
-	}
-	free(adapter_addresses);
-
-}
-
-
 void UDP_Discover_Windows::advertise() {
-	string message;
 	int8_t temp_mode;
 
 
@@ -134,7 +52,7 @@ void UDP_Discover_Windows::advertise() {
 		if (temp_mode == UDS_STOP || temp_mode == UDS_HIDDEN) {
 			return;
 		}
-		sendto(sendSocket, defaultMessage.c_str(), defaultMessage.length(), 0, (struct sockaddr *) &MulticasSockaddr, sizeof(MulticasSockaddr));
+		socket->sendPacket( defaultMessage );
 		Sleep(ADVERTISE_SLEEP_TIME);
 	}
 
@@ -142,17 +60,9 @@ void UDP_Discover_Windows::advertise() {
 }
 
 void UDP_Discover_Windows::discover() {
-	wchar_t waddr_t[INET_ADDRSTRLEN];
-	char addr[INET_ADDRSTRLEN];
-	size_t wcstombs_sReturnValue;
-	DWORD addrBufferLen = INET_ADDRSTRLEN;
-
-	struct sockaddr_in senderAddr;
-	socklen_t addrlen = sizeof(senderAddr); //PLATFORM DEPENDENT!!!
-
 	struct User  newUsr;
-	vector<char> messageBuffer(371);
 	string message;
+	string senderIp;
 	uint8_t pos1, pos2;
 
 	int8_t temp_mode;
@@ -174,15 +84,8 @@ void UDP_Discover_Windows::discover() {
 			return;
 		}
 
-		if(recvfrom(receiveSocket, messageBuffer.data(), messageBuffer.size(), 0, (struct sockaddr *) &senderAddr, &addrlen)<0)
+		if(socket->receivePacket( message, senderIp ) <0)
 			continue;
-		message.assign(messageBuffer.cbegin(), messageBuffer.cend());
-		WSAAddressToStringW((struct sockaddr*) &senderAddr, addrlen, NULL, waddr_t, &addrBufferLen);
-		/*wchar_t is needed by WSAAddressToStringW but it is not needed to store the IP and it has
-		compatibility issues with Linux.*/
-		if (wcstombs_s(&wcstombs_sReturnValue, addr, INET_ADDRSTRLEN, waddr_t, INET_ADDRSTRLEN - 1) != 0)
-			continue;
-		
 
 		/*Packet translation. If the protocol is not respected, just ignore.*/
 		pos1 = message.find("UDPDISCOVERY")+strlen("UDPDISCOVERY");
@@ -195,11 +98,12 @@ void UDP_Discover_Windows::discover() {
 		if ( pos1 == string::npos || pos2 == string::npos )
 			continue;
 		newUsr.picture.assign( message.substr( pos1, pos2 - pos1 ) );
-		newUsr.ip.assign(addr);
+		newUsr.ip.assign(senderIp);
 		pos2 = newUsr.ip.find(":");
 		newUsr.ip.assign(newUsr.ip.substr(0, pos2));
 		newUsr.age = 3;
 
+		
 
 		EnterCriticalSection(&vectorActiveUsersSynch);
 		auto ele = find(activeUsers.begin(), activeUsers.end(), newUsr);
@@ -214,8 +118,8 @@ void UDP_Discover_Windows::discover() {
 			activeUsers.push_back(newUsr);
 			ConnectionSingleton::get_instance().pushNew( newUsr );
 			if (temp_mode == UDS_ACTIVE) 
-				sendto(sendSocket, defaultMessage.c_str(), defaultMessage.length(), 0, (struct sockaddr *) &MulticasSockaddr, sizeof(MulticasSockaddr));
-			
+				socket->sendPacket( defaultMessage );
+			cout << "Found: " << newUsr.name << " " << newUsr.ip << " " << newUsr.age << endl;
 		}
 		LeaveCriticalSection(&vectorActiveUsersSynch);
 
@@ -237,6 +141,7 @@ void UDP_Discover_Windows::aging() {
 		for (auto it = activeUsers.begin(); it != activeUsers.end();) {
 			if ((*it).age>=0) {
 				(*it).age--;
+				cout << "Aging: " << it->name << " " << it->ip << " " << it->age << endl;
 				++it;
 			}else{
 				ConnectionSingleton::get_instance().pushDeleted( *it );

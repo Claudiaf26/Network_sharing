@@ -17,6 +17,6 @@ void UDPSocketMulticast::sendPacket( std::string message ) {
 	base->sendPacket( message );
 }
 
-int8_t UDPSocketMulticast::receivePacket( std::string message, std::string senderIp ) {
+int8_t UDPSocketMulticast::receivePacket( std::string& message, std::string& senderIp ) {
 	return base->receivePacket( message, senderIp );
 }

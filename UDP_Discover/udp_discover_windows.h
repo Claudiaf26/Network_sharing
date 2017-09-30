@@ -4,19 +4,14 @@
 #define _WINSOCKAPI_   /* Prevent inclusion of winsock.h in windows.h */
 #include <vector>
 #include <string>
-#include <winsock2.h>
-#include <Windows.h>
 #include <ws2tcpip.h>
-#include <stdio.h>
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
 #include <process.h>
-#include <Iphlpapi.h>
 #include <memory>
 #include "udp_discover_interface.h"
-
-#pragma comment(lib, "Ws2_32.lib")
+#include "../UDPSocket/UDPSocketMulticast.h"
 
 using namespace std;
 
@@ -34,17 +29,11 @@ private:
 	CRITICAL_SECTION modeSynch;
 	int8_t mode;
 
-	WSADATA wsaDataSend;
-	int16_t sendSocket;
-	WSADATA wsaDataReceive;
-	int16_t receiveSocket;
-	sockaddr_in MulticasSockaddr;
+	unique_ptr<UDPSocketMulticast> socket;
 
 	string userName;
 	string picture;
 	string defaultMessage;
-
-
 
 	void advertise();
 	void discover();
@@ -67,7 +56,6 @@ private:
 		return 0;
 	}
 
-	void joinMulticast();
 
 	//Can't be copied, can't be assigned
 	UDP_Discover_Windows(const UDP_Discover_Windows& s);

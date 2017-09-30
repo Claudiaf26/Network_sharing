@@ -1,6 +1,7 @@
 #ifdef _WIN32
 #ifndef UDPSOCKETMULTICAST_WINDOWS
 #define UDPSOCKETMULTICAST_WINDOWS
+#define _WINSOCKAPI_   /* Prevent inclusion of winsock.h in windows.h */
 
 #include <winsock2.h>
 #include <Windows.h>
@@ -34,7 +35,7 @@ public:
 	~UDPSocketMulticast_Windows();
 	
 	void sendPacket(string message);
-	int8_t receivePacket( string message, string senderIp);
+	int8_t receivePacket( string& message, string& senderIp);
 };
 
 #endif
