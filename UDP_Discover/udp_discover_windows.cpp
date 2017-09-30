@@ -14,6 +14,7 @@ UDP_Discover_Windows::UDP_Discover_Windows(string userN, string pic) : UDP_Disco
 
 	defaultMessage.append("UDPDISCOVERY" + userName + "\r\n" + picture + "\r\n");
 	cout << "Default message: " << defaultMessage;
+	
 	//Initialize socket on which packets will be sent
 	WSAStartup(0x0202, &wsaDataSend);
 	sendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);

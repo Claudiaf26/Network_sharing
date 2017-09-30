@@ -1,5 +1,6 @@
 #ifdef __linux__
 #ifndef UDP_DISCOVER_LINUX
+#define UDP_DISCOVER_LINUX
 #include <vector>
 #include <string>
 #include <string.h> //memset
