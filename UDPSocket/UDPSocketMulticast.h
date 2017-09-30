@@ -24,6 +24,7 @@ public:
 	~UDPSocketMulticast();
 	virtual void sendPacket( std::string message );
 	virtual int8_t receivePacket( std::string& message, std::string& senderIp );
+	virtual void closeSocket();
 
 };
 

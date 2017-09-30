@@ -27,8 +27,9 @@ private:
 	sockaddr_in multicastSockaddr;
 	string multicastIp;
 	uint16_t multicastPort;
+	boolean closed;
 
-	void joinMulticast();
+	void joinMulticast();	
 
 public:
 	UDPSocketMulticast_Windows(string ip, uint16_t multicastPort);
@@ -36,6 +37,8 @@ public:
 	
 	void sendPacket(string message);
 	int8_t receivePacket( string& message, string& senderIp);
+
+	void closeSocket();
 };
 
 #endif

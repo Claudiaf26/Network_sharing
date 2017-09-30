@@ -8,10 +8,6 @@ UDP_Discover_Windows::UDP_Discover_Windows(string userN, string pic) : UDP_Disco
 	picture = pic;
 
 	//Initialize synch attributes
-	InitializeCriticalSection( &vectorActiveUsersSynch );
-	InitializeCriticalSection( &modeSynch );
-	mode = UDS_STOP;
-
 	defaultMessage.append( "UDPDISCOVERY" + userName + "\r\n" + picture + "\r\n" );
 	cout << "Default message: " << defaultMessage;
 
@@ -21,20 +17,15 @@ UDP_Discover_Windows::UDP_Discover_Windows(string userN, string pic) : UDP_Disco
 
 UDP_Discover_Windows::~UDP_Discover_Windows() {
 	stop();
-	WaitForMultipleObjects(3, threadsHandle, TRUE, INFINITE); //Threads will naturally terminate.
-	
-	CloseHandle(threadsHandle[0]);
-	CloseHandle(threadsHandle[1]);
-	CloseHandle(threadsHandle[2]);
 
-	DeleteCriticalSection(&vectorActiveUsersSynch);
-	DeleteCriticalSection(&modeSynch);
-	
+	//Threads will naturally terminate.
+	for ( int i = 0; i < 3; ++i )
+		if ( threads[i].joinable() )
+			threads[i].join();	
 }
 
 void UDP_Discover_Windows::advertise() {
 	int8_t temp_mode;
-
 
 	/*PROTOCOL:
 	1. char[12] = "UDPDISCOVERY";
@@ -45,9 +36,7 @@ void UDP_Discover_Windows::advertise() {
 	*/
 
 	while (true) {
-		EnterCriticalSection(&modeSynch);
-		temp_mode = mode;
-		LeaveCriticalSection(&modeSynch);
+		temp_mode = mode.load();
 
 		if (temp_mode == UDS_STOP || temp_mode == UDS_HIDDEN) {
 			return;
@@ -76,9 +65,7 @@ void UDP_Discover_Windows::discover() {
 	*/
 
 	while (true) {	
-		EnterCriticalSection(&modeSynch);
-		temp_mode = mode;
-		LeaveCriticalSection(&modeSynch);
+		temp_mode = mode.load();
 
 		if (temp_mode == UDS_STOP) {
 			return;
@@ -103,9 +90,7 @@ void UDP_Discover_Windows::discover() {
 		newUsr.ip.assign(newUsr.ip.substr(0, pos2));
 		newUsr.age = 3;
 
-		
-
-		EnterCriticalSection(&vectorActiveUsersSynch);
+		vectorActiveUsersSynch.lock();
 		auto ele = find(activeUsers.begin(), activeUsers.end(), newUsr);
 		if (ele != activeUsers.end()) {
 			//The host is still active, refresh it
@@ -121,7 +106,7 @@ void UDP_Discover_Windows::discover() {
 				socket->sendPacket( defaultMessage );
 			cout << "Found: " << newUsr.name << " " << newUsr.ip << " " << newUsr.age << endl;
 		}
-		LeaveCriticalSection(&vectorActiveUsersSynch);
+		vectorActiveUsersSynch.unlock();
 
 	}
 
@@ -130,14 +115,13 @@ void UDP_Discover_Windows::discover() {
 void UDP_Discover_Windows::aging() {
 	int8_t temp_mode;
 	while (true) {
-		EnterCriticalSection(&modeSynch);
-		temp_mode = mode;
-		LeaveCriticalSection(&modeSynch);
+		temp_mode = mode.load();
 
 		if (temp_mode == UDS_STOP) {
 			return;
 		}
-		EnterCriticalSection(&vectorActiveUsersSynch);
+
+		vectorActiveUsersSynch.lock();
 		for (auto it = activeUsers.begin(); it != activeUsers.end();) {
 			if ((*it).age>=0) {
 				(*it).age--;
@@ -148,7 +132,7 @@ void UDP_Discover_Windows::aging() {
 				it = activeUsers.erase(it);
 			}
 		}
-		LeaveCriticalSection(&vectorActiveUsersSynch);
+		vectorActiveUsersSynch.unlock();
 		Sleep(AGING_SLEEP_TIME);
 	}
 }
@@ -161,13 +145,13 @@ void UDP_Discover_Windows::run(int8_t  initialMode) {
 	mode = initialMode;
 
 	if(initialMode == UDS_ACTIVE){
-		threadsHandle[0] =	(HANDLE) _beginthreadex(NULL, 0, &UDP_Discover_Windows::Discover, this, 0, NULL);
-		threadsHandle[1] =	(HANDLE) _beginthreadex(NULL, 0, &UDP_Discover_Windows::Advertise, this, 0, NULL);
-		threadsHandle[2] =	(HANDLE) _beginthreadex(NULL, 0, &UDP_Discover_Windows::Aging, this, 0, NULL);
-	} else if (initialMode == UDS_HIDDEN) {
-		threadsHandle[0] = (HANDLE)_beginthreadex(NULL, 0, &UDP_Discover_Windows::Discover, this, 0, NULL);
-		threadsHandle[2] = (HANDLE)_beginthreadex(NULL, 0, &UDP_Discover_Windows::Aging, this, 0, NULL);
+		threads[0] = thread( &UDP_Discover_Windows::discover, this );
+		threads[1] = thread( &UDP_Discover_Windows::advertise, this );
+		threads[2] = thread( &UDP_Discover_Windows::aging, this );
 
+	} else if (initialMode == UDS_HIDDEN) {
+		threads[0] = thread( &UDP_Discover_Windows::discover, this );
+		threads[2] = thread( &UDP_Discover_Windows::aging, this );
 	}
 
 }
@@ -181,12 +165,12 @@ void UDP_Discover_Windows::run(int8_t  initialMode, string newUserName, string p
 	picture.assign( picture );
 
 	if (initialMode == UDS_ACTIVE) {
-		threadsHandle[0] = (HANDLE)_beginthreadex(NULL, 0, &UDP_Discover_Windows::Discover, this, 0, NULL);
-		threadsHandle[1] = (HANDLE)_beginthreadex(NULL, 0, &UDP_Discover_Windows::Advertise, this, 0, NULL);
-		threadsHandle[2] = (HANDLE)_beginthreadex(NULL, 0, &UDP_Discover_Windows::Aging, this, 0, NULL);
+		threads[0] = thread( &UDP_Discover_Windows::discover, this );
+		threads[1] = thread( &UDP_Discover_Windows::advertise, this );
+		threads[2] = thread( &UDP_Discover_Windows::aging, this );
 	} else if (initialMode == UDS_HIDDEN) {
-		threadsHandle[0] = (HANDLE)_beginthreadex(NULL, 0, &UDP_Discover_Windows::Discover, this, 0, NULL);
-		threadsHandle[2] = (HANDLE)_beginthreadex(NULL, 0, &UDP_Discover_Windows::Aging, this, 0, NULL);
+		threads[0] = thread( &UDP_Discover_Windows::discover, this );
+		threads[2] = thread( &UDP_Discover_Windows::aging, this );
 
 	}
 }
@@ -194,13 +178,18 @@ void UDP_Discover_Windows::run(int8_t  initialMode, string newUserName, string p
 
 
 void UDP_Discover_Windows::stop() {
-	EnterCriticalSection(&modeSynch);
-	mode = UDS_STOP;
-	LeaveCriticalSection(&modeSynch);
+	mode.store(UDS_STOP);
 
-	EnterCriticalSection(&vectorActiveUsersSynch);
+	vectorActiveUsersSynch.lock();
 	activeUsers.clear();
-	LeaveCriticalSection(&vectorActiveUsersSynch);
+	vectorActiveUsersSynch.unlock();
+
+	socket->closeSocket();
+
+	for ( int i = 0; i < 3; ++i ) {
+		//Each thread will naturally die, don't care of the result.
+		threads[i].join();
+	}
 
 }
 bool UDP_Discover_Windows::changeMode(int8_t newMode) {
@@ -208,31 +197,29 @@ bool UDP_Discover_Windows::changeMode(int8_t newMode) {
 		return false;
 
 	int8_t temp_mode;
-	EnterCriticalSection(&modeSynch);
-	temp_mode = mode;
-	LeaveCriticalSection(&modeSynch);
+	temp_mode = mode.load();
+
 	if (temp_mode == UDS_STOP)
 		return false;
 
-	EnterCriticalSection(&modeSynch);
-	mode = newMode;
-	LeaveCriticalSection(&modeSynch);
+	mode.store(newMode);
 	
 	if (temp_mode == newMode)
 		return false;
 
 
 	if (temp_mode == UDS_ACTIVE && newMode == UDS_HIDDEN) {
-		//Do nothing. The advertise() will automatically close.
+		//The advertise() will automatically close.
+		if ( threads[1].joinable() )
+			threads[1].join();
 		return true;
 	} else if (temp_mode == UDS_HIDDEN && newMode == UDS_ACTIVE) {
 		//start advertising
-		threadsHandle[2] = (HANDLE)_beginthreadex(NULL, 0, &UDP_Discover_Windows::Advertise, this, 0, NULL);
+		threads[1] = thread( &UDP_Discover_Windows::advertise, this );
 		return true;
 	} else {
 		return false;
 	}
-
 
 	return true;
 }
@@ -240,9 +227,9 @@ bool UDP_Discover_Windows::changeMode(int8_t newMode) {
 
 
 vector<struct User> UDP_Discover_Windows::getActive() {
-	EnterCriticalSection(&vectorActiveUsersSynch);
+	vectorActiveUsersSynch.lock();
 	vector<struct User> temp(activeUsers);
-	LeaveCriticalSection(&vectorActiveUsersSynch);
+	vectorActiveUsersSynch.unlock();
 	return temp;
 }
 

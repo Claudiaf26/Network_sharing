@@ -5,7 +5,8 @@
 UDPSocketMulticast_Windows::UDPSocketMulticast_Windows( string multicastIp, uint16_t multicastPort ) {
 	this->multicastIp = multicastIp;
 	this->multicastPort = multicastPort;
-	
+	closed = false;
+
 	char loopch = 0;
 	//Send socket initialization
 	WSAStartup( 0x0202, &wsaDataSend );
@@ -48,13 +49,12 @@ UDPSocketMulticast_Windows::UDPSocketMulticast_Windows( string multicastIp, uint
 	inet_pton( AF_INET, multicastIp.c_str(), &(multicastSockaddr.sin_addr) );
 	multicastSockaddr.sin_port = htons( multicastPort );
 
-
 }
 
 UDPSocketMulticast_Windows::~UDPSocketMulticast_Windows() {
-	closesocket( sendSocket );
-	closesocket( receiveSocket );
-	WSACleanup();
+	if ( !closed ) {
+		closeSocket();
+	}
 }
 
 void UDPSocketMulticast_Windows::joinMulticast() {
@@ -95,6 +95,14 @@ void UDPSocketMulticast_Windows::joinMulticast() {
 	}
 	free( adapter_addresses );
 
+}
+
+void UDPSocketMulticast_Windows::closeSocket() {
+	shutdown( receiveSocket, SD_BOTH);
+	closesocket( sendSocket );
+	closesocket( receiveSocket );
+	WSACleanup();
+	closed = true;
 }
 
 void UDPSocketMulticast_Windows::sendPacket( string message ) {

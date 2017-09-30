@@ -4,12 +4,14 @@
 #define _WINSOCKAPI_   /* Prevent inclusion of winsock.h in windows.h */
 #include <vector>
 #include <string>
-#include <ws2tcpip.h>
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
 #include <process.h>
 #include <memory>
+#include <thread>
+#include <mutex>
+#include <atomic>
 #include "udp_discover_interface.h"
 #include "../UDPSocket/UDPSocketMulticast.h"
 
@@ -21,13 +23,12 @@ private:
 	static const uint16_t ADVERTISE_SLEEP_TIME = 4000;
 	static const uint16_t DISCOVERY_PORT = 5000;
 
-	HANDLE threadsHandle[3]; //Discover, Advertise, Aging
+	thread threads[3]; //Discover, Advertise, Aging
 
-	CRITICAL_SECTION vectorActiveUsersSynch;
+	mutex vectorActiveUsersSynch;
 	vector<struct User> activeUsers;
 
-	CRITICAL_SECTION modeSynch;
-	int8_t mode;
+	atomic<int8_t> mode;
 
 	unique_ptr<UDPSocketMulticast> socket;
 
@@ -38,24 +39,6 @@ private:
 	void advertise();
 	void discover();
 	void aging();
-
-	//Wrapper for _beginthreadex.
-	static unsigned int __stdcall Advertise(void* p) {
-		UDP_Discover_Windows* udw = static_cast<UDP_Discover_Windows*>(p);
-		udw->advertise();
-		return 0;
-	}
-	static unsigned int __stdcall Discover(void* p) {
-		UDP_Discover_Windows* udw = static_cast<UDP_Discover_Windows*>(p);
-		udw->discover();
-		return 0;
-	}
-	static unsigned int __stdcall Aging(void* p) {
-		UDP_Discover_Windows* udw = static_cast<UDP_Discover_Windows*>(p);
-		udw->aging();
-		return 0;
-	}
-
 
 	//Can't be copied, can't be assigned
 	UDP_Discover_Windows(const UDP_Discover_Windows& s);

@@ -13,7 +13,7 @@ public:
 
 	virtual void sendPacket( std::string message ) = 0;
 	virtual int8_t receivePacket( std::string& message, std::string& senderIp ) = 0;
-
+	virtual void closeSocket() = 0;
 };
 
 

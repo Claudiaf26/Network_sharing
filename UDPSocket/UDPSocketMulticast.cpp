@@ -20,3 +20,7 @@ void UDPSocketMulticast::sendPacket( std::string message ) {
 int8_t UDPSocketMulticast::receivePacket( std::string& message, std::string& senderIp ) {
 	return base->receivePacket( message, senderIp );
 }
+
+void UDPSocketMulticast::closeSocket() {
+	base->closeSocket();
+}
