@@ -1,7 +1,5 @@
 #ifdef _WIN32	
 #ifndef UDP_DISCOVER_WINDOWS
-
-#define _WINSOCKAPI_   /* Prevent inclusion of winsock.h in windows.h */
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -12,12 +10,14 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
-#include "udp_discover_interface.h"
+
 #include "../UDPSocket/UDPSocketMulticast.h"
+#include "../DataStruct/sharedsingleton.h"
+#include "../define.h"
 
 using namespace std;
 
-class UDP_Discover_Windows : public UDP_Discover_Interface {
+class UDPDiscover{
 private:
 	static const uint16_t AGING_SLEEP_TIME = 6000;
 	static const uint16_t ADVERTISE_SLEEP_TIME = 4000;
@@ -41,8 +41,8 @@ private:
 	void aging();
 
 	//Can't be copied, can't be assigned
-	UDP_Discover_Windows(const UDP_Discover_Windows& s);
-	UDP_Discover_Windows& operator=(const UDP_Discover_Windows& s);
+	UDPDiscover(const UDPDiscover& s);
+	UDPDiscover& operator=(const UDPDiscover& s);
 
 public:
 	void run(int8_t mode);
@@ -53,8 +53,8 @@ public:
 
 	vector<struct User> getActive();
 
-	UDP_Discover_Windows(string userName, string picture);
-	~UDP_Discover_Windows();
+	UDPDiscover(string userName, string picture);
+	~UDPDiscover();
 
 };
 #endif // !UDP_DISCOVER_WINDOWS
