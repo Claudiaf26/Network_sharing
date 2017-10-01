@@ -6,7 +6,7 @@ UDP_Manager::UDP_Manager(QObject *parent) :
     QObject(parent)
 {
     //creazione oggetti di prova
-    User user1, user2, user3, user4;
+    /*User user1, user2, user3, user4;
     user1.name = "Lamberti";
     user1.ip = "192.178.3.3";
     user2.name = "Pagiogi";
@@ -18,7 +18,7 @@ UDP_Manager::UDP_Manager(QObject *parent) :
     newQueue.push(user1);
     newQueue.push(user2);
     newQueue.push(user3);
-    newQueue.push(user4);
+    newQueue.push(user4);*/
     //fine prova
 
 
