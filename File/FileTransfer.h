@@ -10,7 +10,6 @@
 #include <future>
 #include <mutex>
 #include <string.h>
-//#include "../TCPSocket/TCPSocket.h"
 #include "TCPSocket.h"
 
 
@@ -28,7 +27,7 @@ private:
 
 	atomic<uint64_t> overallSize; 
 	atomic<uint64_t> overallSent;
-	vector<TCPSocket> fileSockets;
+	vector<unique_ptr<TCPSocket>> fileSockets;
 
 	mutex rdi_protection;
 	recursive_directory_iterator rdi;

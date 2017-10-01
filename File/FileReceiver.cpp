@@ -105,7 +105,7 @@ void FileReceiver::threadReceive(uint16_t i){
 			return;
 		}
 		msgS.assign( msgV.begin(), msgV.end() );
-
+		cout << "message " <<msgS << endl;
 
 		if ( msgS.compare( "FILE" ) == 0 ) {
 			try {
@@ -140,6 +140,7 @@ void FileReceiver::threadReceive(uint16_t i){
 					success.store( false );
 					return;
 				}
+
 				uint64_t fileSize;
 				memcpy( &fileSize, msgV.data(),  sizeof( fileSize ) );
 				fileSize = boost::endian::big_to_native( fileSize );
@@ -157,7 +158,7 @@ void FileReceiver::threadReceive(uint16_t i){
 				vector<char> fileChunk( chunkSize );
 				while ( progress > padding && success.load() ) {
 					if ( !fileSockets[i]->Receive(fileChunk, chunkSize, timeout2) )
-						throw std::domain_error( "Can't receive. " );
+						throw std::domain_error( "Can't receive fileChunk. " );
 					file.write( fileChunk.data(), chunkSize );					
 					progress = progress - chunkSize;
 					overallSent.fetch_add( chunkSize );
@@ -166,15 +167,16 @@ void FileReceiver::threadReceive(uint16_t i){
 				if ( padding != 0 && success.load() ) {
 					fileChunk.resize( padding );
 					if ( !fileSockets[i]->Receive( fileChunk, padding, timeout2 ) )
-						throw std::domain_error( "Not working. " );
+						throw std::domain_error( "Can't receive last chunk. " );
 					file.write( fileChunk.data(), padding );
 					
 				}
 				overallSent.fetch_add( padding );
-			} catch ( ... ) {
+			} catch ( std::domain_error de ) {
 				success.store( false );
 				if ( file.is_open() )
 					file.close();
+				cout << this_thread::get_id <<de.what() << endl;
 				return;
 			}
 			file.close();
@@ -192,6 +194,12 @@ void FileReceiver::threadReceive(uint16_t i){
 			uint64_t tempSize;
 			memcpy( &tempSize, msgV.data(), sizeof( tempSize ) );
 			overallSize.store( boost::endian::big_to_native( tempSize) );
+
+			vector<char> ackMessage;
+			ackMessage.push_back( 'A' ); ackMessage.push_back( 'C' ); ackMessage.push_back( 'K' );
+			if ( !fileSockets[0]->Send( ackMessage ) )
+				throw std::domain_error( "Connection closed before the SIZE ACK. " );
+
 		} else if ( msgS.compare( "DIRT" ) == 0 ) {
 			uint32_t paySize;
 			if ( !fileSockets[i]->Receive( msgV, 4, timeout2 ) ) {
@@ -229,7 +237,12 @@ void FileReceiver::threadReceive(uint16_t i){
 				tempPath = wmsgS.substr( pos1, pos2 - pos1 );
 				create_directories( dest / tempPath );
 				pos1 = pos2 + 1;
-			}		
+			}
+
+			vector<char> ackMessage;
+			ackMessage.push_back( 'A' ); ackMessage.push_back( 'C' ); ackMessage.push_back( 'K' );
+			if ( !fileSockets[0]->Send( ackMessage ) )
+				throw std::domain_error( "Connection closed before the SIZE ACK. " );
 			
 		} else {
 			success.store( false );
