@@ -106,7 +106,8 @@ void UDPSocketMulticast_Windows::closeSocket() {
 }
 
 void UDPSocketMulticast_Windows::sendPacket( string message ) {
-	sendto( sendSocket, message.c_str(), message.length(), 0, (struct sockaddr *) &multicastSockaddr, sizeof( multicastSockaddr ) );
+    if (SOCKET_ERROR == sendto( sendSocket, message.c_str(), message.length(), 0, (struct sockaddr *) &multicastSockaddr, sizeof( multicastSockaddr ) ))
+        throw std::runtime_error("");
 }
 
 int8_t UDPSocketMulticast_Windows::receivePacket( string& message, string& senderIp ) {
