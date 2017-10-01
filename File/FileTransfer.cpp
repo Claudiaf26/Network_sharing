@@ -28,7 +28,7 @@ bool FileTransfer::transfer() {
 		if (is_directory(source)) {
 			if(!sendDir())
 				throw std::domain_error("Not working. ");
-
+			
 			/*Create threads*/
 			transferThreads.resize( ports.size() );
 			for ( uint16_t i = 0; i < ports.size(); i++ )
@@ -37,7 +37,7 @@ bool FileTransfer::transfer() {
 			transferThreads.resize(1);
 			transferThreads[0].reset( new thread( &FileTransfer::sendFile, this, 0) );
 		}
-
+		
 	}catch(...){
 		success.store(false);
 	}
@@ -46,8 +46,10 @@ bool FileTransfer::transfer() {
 			(*it)->join();
 		}
 	}
-	for ( auto it = fileSockets.begin(); it != fileSockets.end(); it++ )
-		(*it)->Close();
+	for ( auto it = fileSockets.begin(); it != fileSockets.end(); it++ ) {
+		it->Close();
+	}
+	fileSockets.clear();
 
 	return success.load();
 
@@ -103,21 +105,17 @@ void FileTransfer::tradePort(){
 }
 
 void FileTransfer::prepareSockets() {
-		fileSockets.resize(ports.size());
-		cout << ports.size() << endl;
-		int16_t i = 0;
 		int8_t tries = 0;
-		for (auto it = fileSockets.begin(); it != fileSockets.end(); ) {
+		for ( int16_t i = 0; i < ports.size();) {
 			try {
-				it->reset(new TCPSocket(ip, ports[i]));
-				++it;
+				fileSockets.push_back( TCPSocket( ip, ports[i] ) );
 				++i;
-			} catch (...) {
-				if (tries <= 1)
+			} catch ( ... ) {
+				if ( tries <= 1 )
 					++tries;
-				else 
-					throw std::domain_error("Can't establish connection. ");
-				this_thread::sleep_for( std::chrono::milliseconds( 200));
+				else
+					throw std::runtime_error( "Can't establish connection. " );
+				this_thread::sleep_for( std::chrono::milliseconds( 200 ) );
 			}
 		}
 }
@@ -136,14 +134,14 @@ bool FileTransfer::sendDir() {
 	overallSize.store(future_dirSize.get());
 	uint64_t tempSize = boost::endian::native_to_big( overallSize.load() );
 	memcpy(message.data()+message.size()-8 , &tempSize, sizeof(tempSize));
-	if (!fileSockets[0]->Send(message))
+	if (!fileSockets[0].Send(message))
 		throw std::domain_error("Connection closed. ");
 
 	/*Sending the directory tree to the other host.*/
 	message.clear();
 	tree = future_tree.get();
 	message = createDirectoryPacket( tree );
-	if ( !fileSockets[0]->Send( message ) )
+	if ( !fileSockets[0].Send( message ) )
 		throw std::domain_error( "Connection closed. " );
 
 
@@ -199,16 +197,13 @@ void FileTransfer::sendFile(uint16_t i) {
 				memcpy(message.data() + message.size() - 8, &fileSize, sizeof(fileSize));
 
 				fileSize = boost::endian::big_to_native(fileSize);
-
-				if (!fileSockets[i]->Send(message))
-					throw std::domain_error("Not working. ");
+				if (!fileSockets[i].Send(message))
+					throw std::domain_error("Can't send the initial message. ");
 
 			}//Clear the stack from some variable
-
 			file.open(p, ios::in | ios::binary);
 			if (!file.is_open())
-				throw std::domain_error("Not working. ");
-
+				throw std::domain_error("Can't open the file. ");
 			uint32_t chunkSize;
 			uint32_t padding;
 			if (fileSize >= 32768) {
@@ -223,18 +218,17 @@ void FileTransfer::sendFile(uint16_t i) {
 			vector<char> fileChunk(chunkSize);
 			while (progress > padding && success.load()) {
 				file.read( fileChunk.data(), chunkSize );
-				if (!fileSockets[i]->Send(fileChunk))
-					throw std::domain_error("Not working. ");
+				if (!fileSockets[i].Send(fileChunk))
+					throw std::domain_error("Can't send fileChunk. ");
 				progress = progress - chunkSize;
 				overallSent.fetch_add(chunkSize);
 			}
 
-
 			if (padding != 0) {
 				fileChunk.resize(padding);
 				file.read(fileChunk.data(), padding);
-				if (!fileSockets[i]->Send(fileChunk))
-					throw std::domain_error("Not working. ");
+				if (!fileSockets[i].Send(fileChunk))
+					throw std::domain_error("Can't send last chunk. ");
 				overallSent.fetch_add( padding );
 			}
 			
@@ -244,10 +238,10 @@ void FileTransfer::sendFile(uint16_t i) {
 		}
 		if (success.load()) {
 			vector<char> quit; quit.push_back('Q'); quit.push_back('U'); quit.push_back('I'); quit.push_back('T');
-			fileSockets[i]->Send(quit);
+			fileSockets[i].Send(quit);
 		}
 		
-	} catch (...) {
+	} catch (std::domain_error e) {
 		if (file.is_open())
 			file.close();
 		success.store(false);
