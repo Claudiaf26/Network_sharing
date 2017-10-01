@@ -46,7 +46,7 @@ UDPSocketMulticast_Windows::UDPSocketMulticast_Windows( string multicastIp, uint
 	//Prepare multicast address structure
 	memset( &multicastSockaddr, 0, sizeof( multicastSockaddr ) );
 	multicastSockaddr.sin_family = AF_INET;
-	inet_pton( AF_INET, multicastIp.c_str(), &(multicastSockaddr.sin_addr) );
+	inet_pton( AF_INET, "239.0.0.100", &(multicastSockaddr.sin_addr) );
 	multicastSockaddr.sin_port = htons( multicastPort );
 
 }
@@ -66,7 +66,7 @@ void UDPSocketMulticast_Windows::joinMulticast() {
 	*THIS METHOD IS NOT PORTABLE!
 	*/
 	struct ip_mreq mreq;
-	inet_pton( AF_INET, multicastIp.c_str(), &(mreq.imr_multiaddr.s_addr) );
+	inet_pton( AF_INET, "239.0.0.100", &(mreq.imr_multiaddr.s_addr) );
 
 	PIP_ADAPTER_ADDRESSES adapter_addresses, aa;
 	PIP_ADAPTER_UNICAST_ADDRESS selectedInterface = NULL;
