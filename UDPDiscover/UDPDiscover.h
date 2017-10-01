@@ -31,7 +31,7 @@ private:
 
 	atomic<int8_t> mode;
 
-	unique_ptr<UDPSocketMulticast> socket;
+	UDPSocketMulticast socket;
 
 	string userName;
 	string picture;
