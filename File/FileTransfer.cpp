@@ -47,7 +47,8 @@ bool FileTransfer::transfer() {
 		}
 	}
 	for ( auto it = fileSockets.begin(); it != fileSockets.end(); it++ )
-		(*it)->Close();
+		it->Close();
+	fileSockets.clear();
 
 	return success.load();
 
@@ -103,20 +104,17 @@ void FileTransfer::tradePort() {
 }
 
 void FileTransfer::prepareSockets() {
-	fileSockets.resize( ports.size() );
-	cout << ports.size() << endl;
-	int16_t i = 0;
 	int8_t tries = 0;
-	for ( auto it = fileSockets.begin(); it != fileSockets.end(); ) {
+	for ( int16_t i = 0; i < ports.size();) {
 		try {
-			it->reset( new TCPSocket( ip, ports[i] ) );
-			++it;
+			fileSockets.push_back( TCPSocket( ip, ports[i] ) );
 			++i;
 		} catch ( ... ) {
 			if ( tries <= 1 )
 				++tries;
 			else
 				throw std::domain_error( "Can't establish connection. " );
+			success.store( "false" );
 			this_thread::sleep_for( std::chrono::milliseconds( 200 ) );
 		}
 	}
@@ -136,27 +134,27 @@ bool FileTransfer::sendDir() {
 	overallSize.store( future_dirSize.get() );
 	uint64_t tempSize = boost::endian::native_to_big( overallSize.load() );
 	memcpy( message.data() + message.size() - 8, &tempSize, sizeof( tempSize ) );
-	if ( !fileSockets[0]->Send( message ) )
+	if ( !fileSockets[0].Send( message ) )
 		throw std::domain_error( "Connection closed. " );
 
 	vector<char> msgV( 3 );
 	string msgS;
 	struct timeval timeout; timeout.tv_sec = 100; timeout.tv_usec = 0;
-	if ( !fileSockets[0]->Receive( msgV, 3, timeout ) ) {
+	if ( !fileSockets[0].Receive( msgV, 3, timeout ) ) {
 		throw std::domain_error( "Connection closed before SIZE ACK. " );
 	}
 	msgS.assign( msgV.begin(), msgV.end() );
-	if(msgS.compare("ACK") != 0)
+	if ( msgS.compare( "ACK" ) != 0 )
 		throw std::domain_error( "Expected ACK for SIZE. " );
 
 	/*Sending the directory tree to the other host and waiting for the ack.*/
 	message.clear();
 	tree = future_tree.get();
 	message = createDirectoryPacket( tree );
-	if ( !fileSockets[0]->Send( message ) )
+	if ( !fileSockets[0].Send( message ) )
 		throw std::domain_error( "Connection closed. " );
 
-	if ( !fileSockets[0]->Receive( msgV, 3, timeout ) ) {
+	if ( !fileSockets[0].Receive( msgV, 3, timeout ) ) {
 		throw std::domain_error( "Connection closed before DIRT ACK. " );
 	}
 	msgS.assign( msgV.begin(), msgV.end() );
@@ -217,7 +215,7 @@ void FileTransfer::sendFile( uint16_t i ) {
 
 				fileSize = boost::endian::big_to_native( fileSize );
 
-				if ( !fileSockets[i]->Send( message ) )
+				if ( !fileSockets[i].Send( message ) )
 					throw std::domain_error( "Not working. " );
 
 			}//Clear the stack from some variable
@@ -239,7 +237,7 @@ void FileTransfer::sendFile( uint16_t i ) {
 			vector<char> fileChunk( chunkSize );
 			while ( progress > padding && success.load() ) {
 				file.read( fileChunk.data(), chunkSize );
-				if ( !fileSockets[i]->Send( fileChunk ) )
+				if ( !fileSockets[i].Send( fileChunk ) )
 					throw std::domain_error( "Not working. " );
 				progress = progress - chunkSize;
 				overallSent.fetch_add( chunkSize );
@@ -249,7 +247,7 @@ void FileTransfer::sendFile( uint16_t i ) {
 			if ( padding != 0 ) {
 				fileChunk.resize( padding );
 				file.read( fileChunk.data(), padding );
-				if ( !fileSockets[i]->Send( fileChunk ) )
+				if ( !fileSockets[i].Send( fileChunk ) )
 					throw std::domain_error( "Not working. " );
 				overallSent.fetch_add( padding );
 			}
@@ -260,7 +258,7 @@ void FileTransfer::sendFile( uint16_t i ) {
 		}
 		if ( success.load() ) {
 			vector<char> quit; quit.push_back( 'Q' ); quit.push_back( 'U' ); quit.push_back( 'I' ); quit.push_back( 'T' );
-			fileSockets[i]->Send( quit );
+			fileSockets[i].Send( quit );
 		}
 
 	} catch ( ... ) {

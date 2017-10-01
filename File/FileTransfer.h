@@ -27,7 +27,7 @@ private:
 
 	atomic<uint64_t> overallSize; 
 	atomic<uint64_t> overallSent;
-	vector<unique_ptr<TCPSocket>> fileSockets;
+	vector<TCPSocket> fileSockets;
 
 	mutex rdi_protection;
 	recursive_directory_iterator rdi;
