@@ -29,9 +29,9 @@ private:
 	atomic<uint64_t> overallSize;
 	atomic<uint64_t> overallSent;
 
-	vector<unique_ptr<TCPServerSocket>> fileServerSockets;
-	vector<unique_ptr<TCPSocket>> fileSockets;
-	vector<unique_ptr<thread>> transferThreads;
+	vector<TCPServerSocket> fileServerSockets;
+	vector<TCPSocket> fileSockets;
+	vector<thread> transferThreads;
 
 	/*Based on the hardware concurrency, trades the number of ports to be used.
 	*It receives a proposal with a certain number, 

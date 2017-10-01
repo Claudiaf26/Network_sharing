@@ -8,11 +8,18 @@ FileReceiver::FileReceiver(TCPSocket s, path p) : controlS(std::move(s)) {
 }
 
 FileReceiver::~FileReceiver() {
-	for ( uint16_t i = 0; i < transferThreads.size(); i++ )
-		if ( transferThreads[i]->joinable() )
-			transferThreads[i]->join();
-	for ( auto it = fileSockets.begin(); it != fileSockets.end(); it++ )
-		(*it)->Close();
+	for ( uint16_t i = 0; i < transferThreads.size(); ++i )
+		if ( transferThreads[i].joinable() )
+			transferThreads[i].join();
+	transferThreads.clear();
+
+	for ( auto it = fileSockets.begin(); it != fileSockets.end(); ++it )
+		it->Close();
+	fileSockets.clear();
+
+	for ( auto it = fileServerSockets.begin(); it != fileServerSockets.end(); ++it )
+		it->Close();
+	fileServerSockets.clear();
 }
 
 bool FileReceiver::receive() {
@@ -20,20 +27,25 @@ bool FileReceiver::receive() {
 		tradeport();
 		prepareSockets();
 
-		transferThreads.resize( fileSockets.size() );
-		for ( uint16_t  i = 0; i < fileSockets.size(); i++ ) {
-			transferThreads[i].reset( new thread( &FileReceiver::threadReceive, this, i ) );
+		for ( uint16_t  i = 0; i < fileSockets.size(); ++i ) {
+			transferThreads.push_back( thread( &FileReceiver::threadReceive, this, i ) );
 		}
-		for ( uint16_t  i = 0; i < transferThreads.size(); i++ )
-			if ( transferThreads[i]->joinable() )
-				transferThreads[i]->join();
+		for ( uint16_t  i = 0; i < transferThreads.size(); ++i )
+			if ( transferThreads[i].joinable() )
+				transferThreads[i].join();
+		transferThreads.clear();
 
 	}catch(...){
 		success.store( false );
 	}
 
-	for ( auto it = fileSockets.begin(); it != fileSockets.end(); it++ )
-		(*it)->Close();
+	for ( auto it = fileSockets.begin(); it != fileSockets.end(); ++it )
+		it->Close();
+	fileSockets.clear();
+
+	for ( auto it = fileServerSockets.begin(); it != fileServerSockets.end(); it++ )
+		it->Close();
+	fileServerSockets.clear();
 
 	return success.load();
 }
@@ -66,19 +78,17 @@ void FileReceiver::tradeport() {
 		throw std::domain_error("Wrong protocol. ");
 	nThreads = ntohs( nThreads );
 
-	fileServerSockets.resize(nThreads);
-
 	msg.resize(2*nThreads);
 	srand((int16_t)time(0));
 	uint16_t testPort;
 	for (uint16_t i = 0; i < nThreads;) {
 		testPort = (rand() % 16383) + 49152;
 		try {
-			fileServerSockets[i].reset(new TCPServerSocket(testPort));
+			fileServerSockets.push_back(TCPServerSocket(testPort));
 			cout << "Port: " << testPort << endl;
 			testPort = htons(testPort);
 			memcpy(msg.data() + i*2, &testPort, sizeof(testPort));
-			i++;
+			++i;
 		}catch (...) {}
 	}
 	controlS.Send(msg);
@@ -87,9 +97,8 @@ void FileReceiver::tradeport() {
 }
 
 void FileReceiver::prepareSockets() {
-	fileSockets.resize(fileServerSockets.size());
 	for (uint16_t i = 0; i < fileServerSockets.size(); i++)
-		fileSockets[i].reset(new TCPSocket(fileServerSockets[i]->Accept()));
+		fileSockets.push_back(TCPSocket(fileServerSockets[i].Accept()));
 
 }
 
@@ -100,7 +109,7 @@ void FileReceiver::threadReceive(uint16_t i){
 	struct timeval timeout2; timeout2.tv_sec = 100; timeout2.tv_usec = 0;
 	boost::filesystem::fstream file;
 	while ( success.load() ) {
-		if ( !fileSockets[i]->Receive( msgV, 4, timeout1 ) ) {
+		if ( !fileSockets[i].Receive( msgV, 4, timeout1 ) ) {
 			success.store( false );
 			return;
 		}
@@ -109,7 +118,7 @@ void FileReceiver::threadReceive(uint16_t i){
 
 		if ( msgS.compare( "FILE" ) == 0 ) {
 			try {
-				if ( !fileSockets[i]->Receive( msgV, 4, timeout2 ) ) {
+				if ( !fileSockets[i].Receive( msgV, 4, timeout2 ) ) {
 					success.store( false );
 					return;
 				}
@@ -117,7 +126,7 @@ void FileReceiver::threadReceive(uint16_t i){
 				memcpy( &filePathSize, msgV.data(), sizeof( filePathSize ) );
 				filePathSize = ntohl( filePathSize );
 				msgV.clear();
-				if ( !fileSockets[i]->Receive( msgV, filePathSize, timeout2 ) ) {
+				if ( !fileSockets[i].Receive( msgV, filePathSize, timeout2 ) ) {
 					success.store( false );
 					return;
 				}
@@ -136,7 +145,7 @@ void FileReceiver::threadReceive(uint16_t i){
 					return;
 				}
 				msgV.clear();
-				if ( !fileSockets[i]->Receive( msgV, 8, timeout2 ) ) {
+				if ( !fileSockets[i].Receive( msgV, 8, timeout2 ) ) {
 					success.store( false );
 					return;
 				}
@@ -157,7 +166,7 @@ void FileReceiver::threadReceive(uint16_t i){
 				uint64_t progress = fileSize;
 				vector<char> fileChunk( chunkSize );
 				while ( progress > padding && success.load() ) {
-					if ( !fileSockets[i]->Receive(fileChunk, chunkSize, timeout2) )
+					if ( !fileSockets[i].Receive(fileChunk, chunkSize, timeout2) )
 						throw std::domain_error( "Can't receive fileChunk. " );
 					file.write( fileChunk.data(), chunkSize );					
 					progress = progress - chunkSize;
@@ -166,7 +175,7 @@ void FileReceiver::threadReceive(uint16_t i){
 
 				if ( padding != 0 && success.load() ) {
 					fileChunk.resize( padding );
-					if ( !fileSockets[i]->Receive( fileChunk, padding, timeout2 ) )
+					if ( !fileSockets[i].Receive( fileChunk, padding, timeout2 ) )
 						throw std::domain_error( "Can't receive last chunk. " );
 					file.write( fileChunk.data(), padding );
 					
@@ -182,11 +191,11 @@ void FileReceiver::threadReceive(uint16_t i){
 			file.close();
 	
 		} else if ( msgS.compare( "QUIT" ) == 0 ) {
-			fileSockets[i]->Close();
+			fileSockets[i].Close();
 			return;
 
 		} else if ( msgS.compare( "SIZE" ) == 0 ) {
-			if ( !fileSockets[i]->Receive( msgV, 8, timeout2 ) ) {
+			if ( !fileSockets[i].Receive( msgV, 8, timeout2 ) ) {
 				success.store( false );
 				return;
 			} 
@@ -197,19 +206,19 @@ void FileReceiver::threadReceive(uint16_t i){
 
 			vector<char> ackMessage;
 			ackMessage.push_back( 'A' ); ackMessage.push_back( 'C' ); ackMessage.push_back( 'K' );
-			if ( !fileSockets[0]->Send( ackMessage ) )
+			if ( !fileSockets[0].Send( ackMessage ) )
 				throw std::domain_error( "Connection closed before the SIZE ACK. " );
 
 		} else if ( msgS.compare( "DIRT" ) == 0 ) {
 			uint32_t paySize;
-			if ( !fileSockets[i]->Receive( msgV, 4, timeout2 ) ) {
+			if ( !fileSockets[i].Receive( msgV, 4, timeout2 ) ) {
 				success.store( false );
 				return;
 			}
 			memcpy( &paySize, msgV.data(), sizeof( paySize ) );
 			paySize = ntohl( paySize );
 
-			if ( !fileSockets[i]->Receive( msgV, paySize, timeout2 ) ) {
+			if ( !fileSockets[i].Receive( msgV, paySize, timeout2 ) ) {
 				success.store( false );
 				return;
 			}
@@ -241,7 +250,7 @@ void FileReceiver::threadReceive(uint16_t i){
 
 			vector<char> ackMessage;
 			ackMessage.push_back( 'A' ); ackMessage.push_back( 'C' ); ackMessage.push_back( 'K' );
-			if ( !fileSockets[0]->Send( ackMessage ) )
+			if ( !fileSockets[0].Send( ackMessage ) )
 				throw std::domain_error( "Connection closed before the SIZE ACK. " );
 			
 		} else {

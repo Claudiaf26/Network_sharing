@@ -158,7 +158,7 @@ bool FileTransfer::sendDir() {
 	}
 	msgS.assign( msgV.begin(), msgV.end() );
 	if ( msgS.compare( "ACK" ) != 0 )
-		throw std::domain_error( "Expected DIRT for SIZE. " );
+		throw std::domain_error( "Expected ACK for DIRT. " );
 
 
 	return true;
