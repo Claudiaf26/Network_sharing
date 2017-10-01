@@ -10,7 +10,7 @@
 #include <future>
 #include <mutex>
 #include <string.h>
-#include "TCPSocket.h"
+#include "../TCPSocket/TCPSocket.h"
 
 
 using namespace std;
@@ -33,7 +33,7 @@ private:
 	recursive_directory_iterator rdi;
 	recursive_directory_iterator end_rdi;
 
-	vector<unique_ptr<thread>> transferThreads;
+	vector<thread> transferThreads;
 
 	/*Based on results from dirSize and exploreDir, calls the createDirectoryPacket to send the dir tree. */
 	bool sendDir();

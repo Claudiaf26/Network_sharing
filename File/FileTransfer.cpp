@@ -14,8 +14,8 @@ FileTransfer::FileTransfer( string ipAddress, path Source ) : ip( ipAddress ), s
 
 FileTransfer::~FileTransfer() {
 	for ( auto it = transferThreads.begin(); it != transferThreads.end(); it++ ) {
-		if ( (*it)->joinable() ) {
-			(*it)->join();
+		if ( it->joinable() ) {
+			it->join();
 		}
 	}
 }
@@ -30,22 +30,21 @@ bool FileTransfer::transfer() {
 				throw std::domain_error( "Not working. " );
 
 			/*Create threads*/
-			transferThreads.resize( ports.size() );
-			for ( uint16_t i = 0; i < ports.size(); i++ )
-				transferThreads[i].reset( new thread( &FileTransfer::sendFile, this, i ) );
+			for ( uint16_t i = 0; i < ports.size(); ++i )
+				transferThreads.push_back( thread( &FileTransfer::sendFile, this, i ) );
 		} else {
-			transferThreads.resize( 1 );
-			transferThreads[0].reset( new thread( &FileTransfer::sendFile, this, 0 ) );
+			transferThreads.push_back( thread( &FileTransfer::sendFile, this, 0 ) );
 		}
 
 	} catch ( ... ) {
 		success.store( false );
 	}
 	for ( auto it = transferThreads.begin(); it != transferThreads.end(); it++ ) {
-		if ( (*it)->joinable() ) {
-			(*it)->join();
+		if ( it->joinable() ) {
+			it->join();
 		}
 	}
+	transferThreads.clear();
 	for ( auto it = fileSockets.begin(); it != fileSockets.end(); it++ )
 		it->Close();
 	fileSockets.clear();
