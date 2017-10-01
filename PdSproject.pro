@@ -120,6 +120,9 @@ win32 {
 macx {
     DEPLOY_COMMAND = macdeployqt
 }
+linux {
+    DEPLOY_COMMAND = linuxdeployqt
+}
 
 win32{
     CONFIG( debug, debug|release ) {

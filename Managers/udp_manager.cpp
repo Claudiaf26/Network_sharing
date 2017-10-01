@@ -45,7 +45,7 @@ UDP_Manager::~UDP_Manager(){
 
 void UDP_Manager::start(string user, bool mod){
     mode = mod;
-    UDP_Discover_Status status = (mode != true) ? UDS_ACTIVE : UDS_HIDDEN; //ricordati di modificare in UDS_STOP
+    UDP_Discover_Status status = (mode != true) ? UDS_ACTIVE : UDS_STOP; //ricordati di modificare in UDS_STOP
     if (!running){
         udp = new UDPDiscover(user, "1");
 
@@ -58,8 +58,11 @@ void UDP_Manager::start(string user, bool mod){
         deletedThread->detach();
     }
     else{
-        if (user != username)
+        //udp->stop(); aggiungilo dopo che max corregge l'errore
+
+        if (user != username){
             udp->run(status, user, "1");
+        }
     }
 
     username = user;
