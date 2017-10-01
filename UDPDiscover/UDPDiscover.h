@@ -1,19 +1,17 @@
-#ifdef _WIN32
-#ifndef UDP_DISCOVER_WINDOWS
-#define UDP_DISCOVER_WINDOWS
+#ifndef UDPDISCOVER
+#define UDPDISCOVER
 #include <vector>
 #include <string>
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
-#include <process.h>
 #include <memory>
 #include <thread>
 #include <mutex>
 #include <atomic>
 
 #include "../UDPSocket/UDPSocketMulticast.h"
-#include "../DataStruct/userlistsingleton.h"
+#include "../DataStruct/sharedsingleton.h"
 #include "../define.h"
 
 using namespace std;
@@ -31,7 +29,7 @@ private:
 
 	atomic<int8_t> mode;
 
-	UDPSocketMulticast socket;
+	unique_ptr<UDPSocketMulticast> socket;
 
 	string userName;
 	string picture;
@@ -58,6 +56,4 @@ public:
 	~UDPDiscover();
 
 };
-#endif // !UDP_DISCOVER_WINDOWS
-
-#endif
+#endif // !UDP_DISCOVER
