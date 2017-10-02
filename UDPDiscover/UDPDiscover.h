@@ -11,12 +11,12 @@
 #include <atomic>
 
 #include "../UDPSocket/UDPSocketMulticast.h"
-#include "DataStruct/userlistsingleton.h"
+#include "../DataStruct/userlistsingleton.h"
 #include "../define.h"
 
 using namespace std;
 
-class UDPDiscover{
+class UDPDiscover {
 private:
 	static const uint16_t AGING_SLEEP_TIME = 6000;
 	static const uint16_t ADVERTISE_SLEEP_TIME = 4000;
@@ -29,7 +29,7 @@ private:
 
 	atomic<int8_t> mode;
 
-	unique_ptr<UDPSocketMulticast> socket;
+	UDPSocketMulticast socket;
 
 	string userName;
 	string picture;
@@ -40,19 +40,20 @@ private:
 	void aging();
 
 	//Can't be copied, can't be assigned
-	UDPDiscover(const UDPDiscover& s);
-	UDPDiscover& operator=(const UDPDiscover& s);
+	UDPDiscover( const UDPDiscover& s );
+	UDPDiscover& operator=( const UDPDiscover& s );
 
 public:
-	void run(int8_t mode);
-	void run(int8_t mode, string newUserName, string picture);
+	void run( int8_t mode );
 
 	void stop();
-	bool changeMode(int8_t newMode);
+	bool changeMode( int8_t newMode );
+	void changeUserName( string newUserName );
+	void changePicture( string newPicture );
 
 	vector<struct User> getActive();
 
-	UDPDiscover(string userName, string picture);
+	UDPDiscover( string userName, string picture );
 	~UDPDiscover();
 
 };

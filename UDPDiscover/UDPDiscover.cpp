@@ -4,16 +4,11 @@ const uint16_t UDPDiscover::AGING_SLEEP_TIME;
 const uint16_t UDPDiscover::ADVERTISE_SLEEP_TIME;
 const uint16_t UDPDiscover::DISCOVERY_PORT;
 
-UDPDiscover::UDPDiscover( string userN, string pic ){
-	mode = UDS_STOP;
-	userName = userN;
-	picture = pic;
+UDPDiscover::UDPDiscover( string userN, string pic ) : mode(UDS_STOP), userName(userN), picture(pic), socket( "239.0.0.100", DISCOVERY_PORT ) {
 
 	//Initialize synch attributes
 	defaultMessage.append( "UDPDISCOVERY" + userName + "\r\n" + picture + "\r\n" );
 	cout << "Default message: " << defaultMessage;
-
-	socket = unique_ptr<UDPSocketMulticast>( new UDPSocketMulticast( "239.0.0.100", DISCOVERY_PORT ) );
 
 }
 
@@ -43,7 +38,7 @@ void UDPDiscover::advertise() {
 		if ( temp_mode == UDS_STOP || temp_mode == UDS_HIDDEN ) {
 			return;
 		}
-		socket->sendPacket( defaultMessage );
+		socket.sendPacket( defaultMessage );
 		this_thread::sleep_for (std::chrono::milliseconds(ADVERTISE_SLEEP_TIME));
 	}
 
@@ -72,7 +67,7 @@ void UDPDiscover::discover() {
 			return;
 		}
 
-		if ( socket->receivePacket( message, senderIp ) < 0 )
+		if ( socket.receivePacket( message, senderIp ) < 0 )
 			continue;
 
 		/*Packet translation. If the protocol is not respected, just ignore.*/
@@ -104,7 +99,7 @@ void UDPDiscover::discover() {
 			activeUsers.push_back( newUsr );
             UserListSingleton::get_instance().pushNew( newUsr );
 			if ( temp_mode == UDS_ACTIVE )
-				socket->sendPacket( defaultMessage );
+				socket.sendPacket( defaultMessage );
 			cout << "Found: " << newUsr.name << " " << newUsr.ip << " " << newUsr.age << endl;
 		}
 		vectorActiveUsersSynch.unlock();
@@ -157,25 +152,6 @@ void UDPDiscover::run( int8_t  initialMode ) {
 
 }
 
-void UDPDiscover::run( int8_t  initialMode, string newUserName, string picture ) {
-	if ( initialMode == UDS_STOP || mode != UDS_STOP )
-		return;
-
-	mode = initialMode;
-	userName.assign( newUserName );
-	picture.assign( picture );
-
-	if ( initialMode == UDS_ACTIVE ) {
-		threads[0] = thread( &UDPDiscover::discover, this );
-		threads[1] = thread( &UDPDiscover::advertise, this );
-		threads[2] = thread( &UDPDiscover::aging, this );
-	} else if ( initialMode == UDS_HIDDEN ) {
-		threads[0] = thread( &UDPDiscover::discover, this );
-		threads[2] = thread( &UDPDiscover::aging, this );
-
-	}
-}
-
 
 
 void UDPDiscover::stop() {
@@ -185,7 +161,7 @@ void UDPDiscover::stop() {
 	activeUsers.clear();
 	vectorActiveUsersSynch.unlock();
 
-	socket->closeSocket();
+	socket.closeSocket();
 
 	for ( int i = 0; i < 3; ++i ) {
 		//Each thread will naturally die, don't care of the result.
@@ -223,6 +199,16 @@ bool UDPDiscover::changeMode( int8_t newMode ) {
 	}
 
 	return true;
+}
+
+void UDPDiscover::changeUserName( string newUserName ) {
+	userName = newUserName;
+	defaultMessage.assign( "UDPDISCOVERY" + userName + "\r\n" + picture + "\r\n" );
+}
+
+void UDPDiscover::changePicture( string newPicture ) {
+	picture = newPicture;
+	defaultMessage.assign( "UDPDISCOVERY" + userName + "\r\n" + picture + "\r\n" );
 }
 
 
