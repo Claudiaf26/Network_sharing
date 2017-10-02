@@ -30,8 +30,8 @@ private:
     ~UserSingleton();
 
     //funzioni ausiliarie per eseguire certe operazioni in un thread separato
-    std::vector<User> getThread();
-    void setThread(const std::vector<User>&);
+    std::vector<User> threadGetter();
+    void threadSetter(const std::vector<User>&);
 
 
 public:

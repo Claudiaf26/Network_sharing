@@ -63,7 +63,7 @@ bool UserSingleton::open(){
     return shared;
 }
 
-vector<User> UserSingleton::getThread(){
+vector<User> UserSingleton::threadGetter(){
     vector<User> newList;
 
     wstringstream stringRead(memory->getContent());
@@ -85,7 +85,7 @@ vector<User> UserSingleton::getThread(){
     return newList;
 }
 
-void UserSingleton::setThread(const vector<User>& newList){
+void UserSingleton::threadSetter(const vector<User>& newList){
     wstring serializedUser;
 
     for (auto it = newList.begin(); it != newList.end(); it++){
@@ -104,12 +104,12 @@ void UserSingleton::setThread(const vector<User>& newList){
 }
 
 vector<User> UserSingleton::getList(){
-    auto result = async(std::launch::async, &UserSingleton::getThread, this);
+    auto result = async(std::launch::async, &UserSingleton::threadGetter, this);
     result.wait();
     return result.get();
 }
 
 void UserSingleton::setList(const vector<User>& newList){
-    t = new thread(&UserSingleton::setThread, this, newList);
+    t = new thread(&UserSingleton::threadSetter, this, newList);
     t->detach();
 }
