@@ -10,6 +10,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
 #include "UDPSocketMulticast_Interface.h"
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -19,6 +23,8 @@ using namespace std;
 
 class UDPSocketMulticast_Windows : public UDPSocketMulticast_Interface {
 private:
+	static const uint8_t REFRESH_MULTICAST_SECONDS=120;
+
 	WSADATA wsaDataSend;
 	int16_t sendSocket;
 	WSADATA wsaDataReceive;
@@ -27,9 +33,16 @@ private:
 	sockaddr_in multicastSockaddr;
 	string multicastIp;
 	uint16_t multicastPort;
-	boolean closed;
+	struct ip_mreq mreq;
 
 	void joinMulticast();
+
+	mutex mutex_wait_for_refresh;
+	condition_variable cv_wait_for_refresh;
+	void refreshMulticast();
+	thread multicastRefresher;
+
+	boolean closed;
 
 public:
 	UDPSocketMulticast_Windows( string ip, uint16_t multicastPort );

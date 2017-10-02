@@ -2,6 +2,8 @@
 #include "UDPSocketMulticast_Windows.h"
 #pragma comment(lib, "Iphlpapi.lib")
 
+const uint8_t UDPSocketMulticast_Windows::REFRESH_MULTICAST_SECONDS;
+
 UDPSocketMulticast_Windows::UDPSocketMulticast_Windows( string multicastIp, uint16_t multicastPort ) {
 	this->multicastIp = multicastIp;
 	this->multicastPort = multicastPort;
@@ -49,9 +51,12 @@ UDPSocketMulticast_Windows::UDPSocketMulticast_Windows( string multicastIp, uint
 	inet_pton( AF_INET, "239.0.0.100", &(multicastSockaddr.sin_addr) );
 	multicastSockaddr.sin_port = htons( multicastPort );
 
+	//Launch the thread that will keep the multicast active by sending IGMP join periodically
+	multicastRefresher = thread( &UDPSocketMulticast_Windows::refreshMulticast, this );
+
 }
 
-UDPSocketMulticast_Windows::~UDPSocketMulticast_Windows() {
+	UDPSocketMulticast_Windows::~UDPSocketMulticast_Windows() {
 	if ( !closed ) {
 		closeSocket();
 	}
@@ -65,17 +70,18 @@ void UDPSocketMulticast_Windows::joinMulticast() {
 	*to a gateway is accepted.
 	*THIS METHOD IS NOT PORTABLE!
 	*/
-	struct ip_mreq mreq;
+	
 	inet_pton( AF_INET, "239.0.0.100", &(mreq.imr_multiaddr.s_addr) );
 
 	PIP_ADAPTER_ADDRESSES adapter_addresses, aa;
 	PIP_ADAPTER_UNICAST_ADDRESS selectedInterface = NULL;
-	ULONG  size;
-	if ( GetAdaptersAddresses( AF_INET, GAA_FLAG_INCLUDE_GATEWAYS, NULL, NULL, &size ) != ERROR_BUFFER_OVERFLOW )
-		throw std::runtime_error( "Socket multicast binding error. Can't start. " );
+	ULONG size = 15000;
+	//if ( GetAdaptersAddresses( AF_INET, GAA_FLAG_INCLUDE_GATEWAYS, NULL, NULL, &size ) != ERROR_BUFFER_OVERFLOW )
+		//throw std::runtime_error( "Socket multicast binding error. Can't start. " );
 
 	adapter_addresses = (PIP_ADAPTER_ADDRESSES)malloc( size );
-	if ( GetAdaptersAddresses( AF_INET, GAA_FLAG_INCLUDE_GATEWAYS, NULL, adapter_addresses, &size ) != ERROR_SUCCESS )
+	ULONG test = GetAdaptersAddresses( AF_INET, GAA_FLAG_INCLUDE_GATEWAYS, NULL, adapter_addresses, &size );
+	if ( test != ERROR_SUCCESS )
 		throw std::runtime_error( "Socket multicast binding error. Can't start. " );
 
 	for ( aa = adapter_addresses; aa != NULL; aa = aa->Next ) {
@@ -91,23 +97,40 @@ void UDPSocketMulticast_Windows::joinMulticast() {
 	}
 
 	if ( setsockopt( receiveSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof( mreq ) ) == SOCKET_ERROR ) {
-		throw std::runtime_error( "Socket multicast binding error. Can't start. " );
+		throw std::runtime_error( "IGMP membership request error. Can't start. " );
 	}
+
 	free( adapter_addresses );
 
 }
 
+void UDPSocketMulticast_Windows::refreshMulticast() {
+	while ( !closed ) {
+		cout << "Ehi i am pippo" << endl;
+		if ( setsockopt( receiveSocket, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&mreq, sizeof( mreq ) ) == SOCKET_ERROR ) {
+			return;
+		}
+		if ( setsockopt( receiveSocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof( mreq ) ) == SOCKET_ERROR ) {
+			return;
+		}
+		unique_lock<mutex> ul( mutex_wait_for_refresh );
+		cv_wait_for_refresh.wait_for( ul, std::chrono::seconds( REFRESH_MULTICAST_SECONDS ));
+	}
+}
+
 void UDPSocketMulticast_Windows::closeSocket() {
+	closed = true;
+	cv_wait_for_refresh.notify_one();
+	multicastRefresher.join();
+
 	shutdown( receiveSocket, SD_BOTH );
 	closesocket( sendSocket );
 	closesocket( receiveSocket );
 	WSACleanup();
-	closed = true;
 }
 
 void UDPSocketMulticast_Windows::sendPacket( string message ) {
-    sendto( sendSocket, message.c_str(), message.length(), 0, (struct sockaddr *) &multicastSockaddr, sizeof( multicastSockaddr ) );
-    int err = WSAGetLastError();
+	sendto( sendSocket, message.c_str(), message.length(), 0, (struct sockaddr *) &multicastSockaddr, sizeof( multicastSockaddr ) );
 }
 
 int8_t UDPSocketMulticast_Windows::receivePacket( string& message, string& senderIp ) {

@@ -5,7 +5,6 @@ const uint16_t UDPDiscover::ADVERTISE_SLEEP_TIME;
 const uint16_t UDPDiscover::DISCOVERY_PORT;
 
 UDPDiscover::UDPDiscover( string userN, string pic ) : mode(UDS_STOP), userName(userN), picture(pic), socket( "239.0.0.100", DISCOVERY_PORT ) {
-
 	//Initialize synch attributes
 	defaultMessage.append( "UDPDISCOVERY" + userName + "\r\n" + picture + "\r\n" );
 	cout << "Default message: " << defaultMessage;
@@ -34,7 +33,6 @@ void UDPDiscover::advertise() {
 
 	while ( true ) {
 		temp_mode = mode.load();
-
 		if ( temp_mode == UDS_STOP || temp_mode == UDS_HIDDEN ) {
 			return;
 		}
