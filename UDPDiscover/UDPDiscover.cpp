@@ -4,7 +4,7 @@ const uint16_t UDPDiscover::AGING_SLEEP_TIME;
 const uint16_t UDPDiscover::ADVERTISE_SLEEP_TIME;
 const uint16_t UDPDiscover::DISCOVERY_PORT;
 
-UDPDiscover::UDPDiscover( string userN, string pic ) : mode(UDS_STOP), userName(userN), picture(pic), socket( "239.0.0.100", DISCOVERY_PORT ) {
+UDPDiscover::UDPDiscover( string userN, string pic ) : mode( UDS_STOP ), userName( userN ), picture( pic ), socket( "239.0.0.100", DISCOVERY_PORT ) {
 	//Initialize synch attributes
 	defaultMessage.append( "UDPDISCOVERY" + userName + "\r\n" + picture + "\r\n" );
 	cout << "Default message: " << defaultMessage;
@@ -14,10 +14,7 @@ UDPDiscover::UDPDiscover( string userN, string pic ) : mode(UDS_STOP), userName(
 UDPDiscover::~UDPDiscover() {
 	stop();
 
-	//Threads will naturally terminate.
-	for ( int i = 0; i < 3; ++i )
-		if ( threads[i].joinable() )
-			threads[i].join();
+	socket.closeSocket();
 }
 
 void UDPDiscover::advertise() {
@@ -37,7 +34,7 @@ void UDPDiscover::advertise() {
 			return;
 		}
 		socket.sendPacket( defaultMessage );
-		this_thread::sleep_for (std::chrono::milliseconds(ADVERTISE_SLEEP_TIME));
+		this_thread::sleep_for( std::chrono::milliseconds( ADVERTISE_SLEEP_TIME ) );
 	}
 
 }
@@ -95,7 +92,7 @@ void UDPDiscover::discover() {
 			2. Reply with a discovery packet to reduce the delay for cache aligning.
 				ACHTUNG! Only if the host is visible!*/
 			activeUsers.push_back( newUsr );
-            UserListSingleton::get_instance().pushNew( newUsr );
+			UserListSingleton::get_instance().pushNew( newUsr );
 			if ( temp_mode == UDS_ACTIVE )
 				socket.sendPacket( defaultMessage );
 			cout << "Found: " << newUsr.name << " " << newUsr.ip << " " << newUsr.age << endl;
@@ -122,12 +119,12 @@ void UDPDiscover::aging() {
 				cout << "Aging: " << it->name << " " << it->ip << " " << it->age << endl;
 				++it;
 			} else {
-                UserListSingleton::get_instance().pushDeleted( *it );
+				UserListSingleton::get_instance().pushDeleted( *it );
 				it = activeUsers.erase( it );
 			}
 		}
 		vectorActiveUsersSynch.unlock();
-		this_thread::sleep_for (std::chrono::milliseconds(AGING_SLEEP_TIME));
+		this_thread::sleep_for( std::chrono::milliseconds( AGING_SLEEP_TIME ) );
 	}
 }
 
@@ -159,11 +156,10 @@ void UDPDiscover::stop() {
 	activeUsers.clear();
 	vectorActiveUsersSynch.unlock();
 
-	socket.closeSocket();
-
 	for ( int i = 0; i < 3; ++i ) {
 		//Each thread will naturally die, don't care of the result.
-		threads[i].join();
+		if ( threads[i].joinable() )
+			threads[i].join();
 	}
 
 }

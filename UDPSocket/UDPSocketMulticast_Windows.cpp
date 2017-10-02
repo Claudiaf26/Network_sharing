@@ -56,7 +56,7 @@ UDPSocketMulticast_Windows::UDPSocketMulticast_Windows( string multicastIp, uint
 
 }
 
-	UDPSocketMulticast_Windows::~UDPSocketMulticast_Windows() {
+UDPSocketMulticast_Windows::~UDPSocketMulticast_Windows() {
 	if ( !closed ) {
 		closeSocket();
 	}
@@ -70,7 +70,7 @@ void UDPSocketMulticast_Windows::joinMulticast() {
 	*to a gateway is accepted.
 	*THIS METHOD IS NOT PORTABLE!
 	*/
-	
+
 	inet_pton( AF_INET, "239.0.0.100", &(mreq.imr_multiaddr.s_addr) );
 
 	PIP_ADAPTER_ADDRESSES adapter_addresses, aa;
@@ -106,7 +106,6 @@ void UDPSocketMulticast_Windows::joinMulticast() {
 
 void UDPSocketMulticast_Windows::refreshMulticast() {
 	while ( !closed ) {
-		cout << "Ehi i am pippo" << endl;
 		if ( setsockopt( receiveSocket, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&mreq, sizeof( mreq ) ) == SOCKET_ERROR ) {
 			return;
 		}
@@ -114,14 +113,15 @@ void UDPSocketMulticast_Windows::refreshMulticast() {
 			return;
 		}
 		unique_lock<mutex> ul( mutex_wait_for_refresh );
-		cv_wait_for_refresh.wait_for( ul, std::chrono::seconds( REFRESH_MULTICAST_SECONDS ));
+		cv_wait_for_refresh.wait_for( ul, std::chrono::seconds( REFRESH_MULTICAST_SECONDS ) );
 	}
 }
 
 void UDPSocketMulticast_Windows::closeSocket() {
 	closed = true;
 	cv_wait_for_refresh.notify_one();
-	multicastRefresher.join();
+	if ( multicastRefresher.joinable() )
+		multicastRefresher.join();
 
 	shutdown( receiveSocket, SD_BOTH );
 	closesocket( sendSocket );
