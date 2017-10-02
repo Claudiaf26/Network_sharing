@@ -16,7 +16,6 @@ TEMPLATE = app
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
-
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
@@ -146,8 +145,8 @@ unix:LIBS += -lpthread
 
 win32{
     INCLUDEPATH += E:/boost_1_64_0
-    DEPENDPATH += E:/boost_1_64_0/stage/lib
-    LIBS += -LE:/boost_1_64_0/stage/lib -llibboost_filesystem-vc140-mt-gd-1_64
+    DEPENDPATH += E:/boost_1_64_0/stage/lib-release/lib
+    LIBS += -LE:/boost_1_64_0/stage/lib-release/lib -lboost_filesystem-vc140-mt-1_64
 }
 unix{
     LIBS += -L$$PWD/libraries_linux/lib/ -lboost_filesystem
@@ -158,3 +157,6 @@ unix{
     PRE_TARGETDEPS += $$PWD/libraries_linux/lib/libboost_filesystem.a
     PRE_TARGETDEPS += $$PWD/libraries_linux/lib/libboost_system.a
 }
+
+DISTFILES += \
+    PdSproject.config

@@ -23,8 +23,8 @@ public:
         std::string curUser;
 
 #ifdef _WIN32
-        DWORD len = UNLEN+1;
-        WCHAR winUser[UNLEN+1];
+        DWORD len = ULEN+1;
+        WCHAR winUser[ULEN+1];
         if(GetUserNameW(winUser, &len)){
             int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, winUser, -1, NULL, 0, NULL, NULL);
             char* encodedStr = new char[sizeNeeded];
@@ -37,8 +37,8 @@ public:
 #endif
 
 #ifdef __linux__
-        char username[UNLEN+1];
-        size_t username_len = UNLEN+1;
+        char username[ULEN+1];
+        size_t username_len = ULEN+1;
         getlogin_r(username, username_len);
         curUser = username;
 #endif
@@ -49,7 +49,7 @@ public:
         std::string directory;
 
 #ifdef _WIN32
-        WCHAR direct[UNLEN+1];
+        WCHAR direct[ULEN+1];
         PWSTR winDirect = direct;
         if(!SHGetKnownFolderPath(FOLDERID_Downloads, KF_FLAG_DONT_UNEXPAND, NULL, &winDirect)){
             int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, winDirect, -1, NULL, 0, NULL, NULL);

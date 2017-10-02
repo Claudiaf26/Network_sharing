@@ -61,7 +61,7 @@ void UDP_Manager::start(string user, bool mod){
         //udp->stop(); aggiungilo dopo che max corregge l'errore
 
         if (user != username){
-            udp->run(status, user, "1");
+            //udp->run(status, user, "1");
         }
     }
 
