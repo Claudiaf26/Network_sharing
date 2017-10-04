@@ -10,7 +10,7 @@
 #include <future>
 #include <mutex>
 #include <string.h>
-#include "TCPSocket/TCPSocket.h"
+#include "TCPSocket.h"
 
 
 using namespace std;
@@ -27,6 +27,8 @@ private:
 
 	atomic<uint64_t> overallSize; 
 	atomic<uint64_t> overallSent;
+	atomic<std::chrono::time_point<std::chrono::system_clock>> transferStart;
+
 	vector<TCPSocket> fileSockets;
 
 	mutex rdi_protection;
@@ -66,6 +68,11 @@ public:
 
 	/*Returns the percentage sent.*/
 	uint8_t getProgress();
+	/*Returns the estimated time in s*/
+	double getTimeLeft();
+	/*Returns the current speed in KBps*/
+	double getCurrentSpeed();
+	
 	/*Start the transfer. Returns 0 if any error happens or the stop() method is invoked.*/
 	bool transfer();
 	/*Clear and thread-safe way to stop the transfer.*/
