@@ -62,7 +62,7 @@ public:
     SenderManager(std::string);
     ~SenderManager();
 public slots:
-    void sendToUsers(const vector<User>&);
+    void sendToUsers(const std::vector<User>&);;
     void checkProgress();
 };
 

@@ -6,7 +6,7 @@ using namespace std;
 ReceiverManager::ReceiverManager(): active(true) {
     serverSock = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
     timerThread = new QThread(this);
-    timer = new QTimer(this);
+    timer = new QTimer();
     timer->setInterval(1000);
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
     QObject::connect(timerThread, SIGNAL(started()), timer, SLOT(start()));

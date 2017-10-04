@@ -61,6 +61,7 @@ private:
     QThread* timerThread;
     QTimer* timer;
     bool active;
+    bool automaticMode; //da implementare
 public:
     ReceiverManager();
     ~ReceiverManager();
