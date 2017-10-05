@@ -5,6 +5,7 @@
 #include "File/FileReceiver.h"
 #include "define.h"
 #include <QObject>
+#include <QMetaObject>
 #include <QTimer>
 #include <QThread>
 #include <thread>
@@ -13,15 +14,14 @@
 #include <vector>
 #include <atomic>
 
-struct ReceivingObject{
+struct ReceivingObject : public QObject{
     ProgressDialog* progressUI;
     FileReceiver* receiver;
     std::unique_ptr<std::thread> receivingThread;
 
-    ReceivingObject(std::string filePath, TCPSocket socket){
-        progressUI = new ProgressDialog(QString::fromStdString(filePath), true);
-        boost::filesystem::path boostPath(filePath);
-        receiver = new FileReceiver(std::move(socket), boostPath);
+    ReceivingObject(std::wstring filePath/*, TCPSocket socket*/){
+        progressUI = nullptr;
+        //receiver = new FileReceiver(std::move(socket), filePath);
     }
 
     ~ReceivingObject(){
@@ -50,12 +50,16 @@ struct ReceivingObject{
         return *this;
     }
 
+    void createProgressUI(std::wstring filePath){
+        progressUI = new ProgressDialog(QString::fromStdWString(filePath), true);
+    }
 };
 
 class ReceiverManager : public QObject {
     Q_OBJECT
 private:
-    std::string path;
+    std::wstring path;
+    ReceivingObject* temp;
     std::vector<ReceivingObject> receivingList;
     std::unique_ptr<TCPServerSocket> serverSock;
     QThread* timerThread;
@@ -65,11 +69,13 @@ private:
 public:
     ReceiverManager();
     ~ReceiverManager();
-    void setPath(std::string newPath){this->path = newPath;}
+    void setPath(std::wstring newPath){this->path = newPath;}
     bool isActive(){return active;}
 
 public slots:
     void loop();
     void checkProgress();
+    void setUI(){temp->createProgressUI(path);}
+
 };
 #endif // RECEIVERMANAGER_H

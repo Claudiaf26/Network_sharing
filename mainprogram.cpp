@@ -10,6 +10,11 @@ using namespace std;
 inline string toEnd(bool value){
     return value ? "1\n" : "0\n";
 }
+inline wstring StringToWString(const string& s){
+ wstring temp(s.length(),' ');
+ copy(s.begin(), s.end(), temp.begin());
+ return temp;
+ }
 
 MainProgram::MainProgram(){
     context = nullptr;
@@ -125,7 +130,7 @@ void MainProgram::startProgram(uint8_t flg, string user, string direct){
     context->addToContextMenu();
     notification->setMode(curr.notificationNoShowMode);
     udpDiscover->start(curr.username, curr.privateMode);
-    receiver->setPath(direct);
+    receiver->setPath(StringToWString(direct));
     if(!receiverThread->isRunning())
         receiverThread->start();
 }

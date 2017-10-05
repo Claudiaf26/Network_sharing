@@ -17,10 +17,9 @@ struct SendingObject{
     FileTransfer* transfer;
     std::unique_ptr<std::thread> sendingThread;
 
-    SendingObject(std::string filePath, std::string destinationIP){
-        progressUI = new ProgressDialog(QString::fromStdString(filePath), true);
-        boost::filesystem::path boostPath(filePath);
-        transfer = new FileTransfer(destinationIP, boostPath);
+    SendingObject(std::wstring filePath, std::string destinationIP){
+        progressUI = new ProgressDialog(QString::fromStdWString(filePath), true);
+        transfer = new FileTransfer(destinationIP, filePath);
     }
 
     ~SendingObject(){
@@ -54,15 +53,15 @@ struct SendingObject{
 class SenderManager : public QObject {
     Q_OBJECT
 private:
-    std::string path;
+    std::wstring path;
     std::vector<SendingObject> transferList;
     QThread* timerThread;
     QTimer* timer;
 public:
-    SenderManager(std::string);
+    SenderManager(std::wstring);
     ~SenderManager();
 public slots:
-    void sendToUsers(const std::vector<User>&);;
+    void sendToUsers(const std::vector<User>&);
     void checkProgress();
 };
 

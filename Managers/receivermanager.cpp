@@ -4,6 +4,7 @@
 using namespace std;
 
 ReceiverManager::ReceiverManager(): active(true) {
+    temp = nullptr;
     serverSock = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
     timerThread = new QThread(this);
     timer = new QTimer();
@@ -25,8 +26,10 @@ ReceiverManager::~ReceiverManager(){
 void ReceiverManager::loop(){
     timerThread->start();
     while(active){
-        TCPSocket socket = serverSock->Accept();
-        ReceivingObject newReceiver(path, move(socket));
+        //TCPSocket socket = serverSock->Accept();
+        temp = new ReceivingObject(path/*, move(socket)*/);
+        bool invoke = QMetaObject::invokeMethod(this, "setUI", Qt::BlockingQueuedConnection);
+        ReceivingObject newReceiver(path); //da rimuovere è per non avere errori
         newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
         newReceiver.progressUI->show();
         receivingList.push_back(move(newReceiver));
