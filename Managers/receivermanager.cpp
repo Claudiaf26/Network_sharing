@@ -3,38 +3,43 @@
 
 using namespace std;
 
-ReceiverManager::ReceiverManager(): active(true) {
-    temp = nullptr;
-    serverSock = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
+ReceiverManager::ReceiverManager() {
+    socketThread = new QThread(this);
     timerThread = new QThread(this);
     timer = new QTimer();
+    socketLoop = new SocketThread();
     timer->setInterval(1000);
+    QObject::connect(socketLoop, SIGNAL(createUI()), this, SLOT(createUI()), Qt::BlockingQueuedConnection);
+    QObject::connect(socketThread, SIGNAL(started()), socketLoop, SLOT(loop()));
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
     QObject::connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
     timer->moveToThread(timerThread);
+    socketLoop->moveToThread(socketThread);
 }
 
 ReceiverManager::~ReceiverManager(){
-    active = false;
+    socketLoop->disable();
     serverSock->Close();
+    socketThread->quit();
+    socketThread->wait();
     timerThread->quit();
     timerThread->wait();
     delete timerThread;
     delete timer;
+    delete socketThread;
+    delete socketLoop;
+}
+void ReceiverManager::start(){
+    socketThread->start();
+    timerThread->start();
 }
 
-void ReceiverManager::loop(){
-    timerThread->start();
-    while(active){
-        //TCPSocket socket = serverSock->Accept();
-        temp = new ReceivingObject(path/*, move(socket)*/);
-        bool invoke = QMetaObject::invokeMethod(this, "setUI", Qt::BlockingQueuedConnection);
-        ReceivingObject newReceiver(path); //da rimuovere è per non avere errori
-        newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
-        newReceiver.progressUI->show();
-        receivingList.push_back(move(newReceiver));
+void ReceiverManager::createUI(){
+    ReceivingObject newReceiver(path, move(*(socketLoop->getSocket())));
+    newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
+    newReceiver.progressUI->show();
+    receivingList.push_back(move(newReceiver));
     }
-}
 
 void ReceiverManager::checkProgress(){
     for (auto it = receivingList.begin(); it != receivingList.end(); it++){

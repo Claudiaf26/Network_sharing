@@ -42,7 +42,6 @@ private:
     UDP_Manager* udpDiscover;
     ReceiverManager* receiver;
 
-    QThread* receiverThread;
 
 public:
     MainProgram();

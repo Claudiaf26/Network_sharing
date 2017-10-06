@@ -22,7 +22,6 @@ MainProgram::MainProgram(){
     notification = nullptr;
     udpDiscover = nullptr;
     receiver = nullptr;
-    receiverThread = new QThread(this);
 
     if(!UserSingleton::get_instance().initialize())
         exit(EXIT_FAILURE);
@@ -40,7 +39,6 @@ MainProgram::MainProgram(){
     notification = new NotificationManager(this);
     udpDiscover = new UDP_Manager();
     receiver = new ReceiverManager();
-    receiver->moveToThread(receiverThread);
 
     QObject::connect(settingsUI, SIGNAL(startProgram(uint8_t,string,string)), this, SLOT(startProgram(uint8_t,string,string)) );
     QObject::connect(udpDiscover, SIGNAL(showSignal(QString)), notification, SLOT(showNotification(QString)) );
@@ -49,14 +47,10 @@ MainProgram::MainProgram(){
     QObject::connect(udpDiscover, SIGNAL(addUser(User)), settingsUI, SLOT(addUser(User)) );
     QObject::connect(udpDiscover, SIGNAL(deleteUser(User)), settingsUI, SLOT(deleteUser(User)) );
     QObject::connect(this, SIGNAL(changeSettings(uint8_t, string, string)), settingsUI, SLOT(changeSettings(uint8_t, string, string)) );
-    QObject::connect(receiverThread, SIGNAL(started()), receiver, SLOT(loop()));
 }
 
 MainProgram::~MainProgram(){
     context->removeFromContextMenu();
-    receiverThread->quit();
-    receiverThread->wait();
-    delete receiverThread;
     if (context != nullptr)
         delete context;
     if (settingsUI != nullptr)
@@ -131,8 +125,8 @@ void MainProgram::startProgram(uint8_t flg, string user, string direct){
     notification->setMode(curr.notificationNoShowMode);
     udpDiscover->start(curr.username, curr.privateMode);
     receiver->setPath(StringToWString(direct));
-    if(!receiverThread->isRunning())
-        receiverThread->start();
+    if(receiver->isActive())
+        receiver->start();
 }
 
 void MainProgram::addUser(User newUser){

@@ -14,14 +14,14 @@
 #include <vector>
 #include <atomic>
 
-struct ReceivingObject : public QObject{
+struct ReceivingObject {
     ProgressDialog* progressUI;
     FileReceiver* receiver;
     std::unique_ptr<std::thread> receivingThread;
 
-    ReceivingObject(std::wstring filePath/*, TCPSocket socket*/){
-        progressUI = nullptr;
-        //receiver = new FileReceiver(std::move(socket), filePath);
+    ReceivingObject(std::wstring filePath, TCPSocket socket){
+        progressUI = new ProgressDialog(QString::fromStdWString(filePath), true);
+        receiver = new FileReceiver(std::move(socket), filePath);
     }
 
     ~ReceivingObject(){
@@ -50,32 +50,59 @@ struct ReceivingObject : public QObject{
         return *this;
     }
 
-    void createProgressUI(std::wstring filePath){
-        progressUI = new ProgressDialog(QString::fromStdWString(filePath), true);
+};
+
+class SocketThread : public QObject {
+    Q_OBJECT
+private:
+    unique_ptr<TCPServerSocket> serverSock;
+    TCPSocket* newSocket;
+    bool active;
+public:
+    SocketThread(): active(true){
+        newSocket = nullptr;
+        serverSock = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
     }
+    ~SocketThread(){delete newSocket;}
+    TCPSocket* getSocket() {
+        TCPSocket* tempSocket = newSocket;
+        newSocket = nullptr;
+        return tempSocket;
+    }
+    bool getState(){return active;}
+    void disable(){active = false;}
+public slots:
+    void loop(){
+        while(active){
+            newSocket = &serverSock->Accept();
+            emit createUI();
+        }
+    }
+signals:
+    void createUI();
 };
 
 class ReceiverManager : public QObject {
     Q_OBJECT
 private:
     std::wstring path;
-    ReceivingObject* temp;
     std::vector<ReceivingObject> receivingList;
     std::unique_ptr<TCPServerSocket> serverSock;
     QThread* timerThread;
+    QThread* socketThread;
     QTimer* timer;
-    bool active;
+    SocketThread* socketLoop;
     bool automaticMode; //da implementare
 public:
     ReceiverManager();
     ~ReceiverManager();
     void setPath(std::wstring newPath){this->path = newPath;}
-    bool isActive(){return active;}
+    void start();
+    bool isActive(){return socketLoop->getState();}
 
 public slots:
-    void loop();
+    void createUI();
     void checkProgress();
-    void setUI(){temp->createProgressUI(path);}
 
 };
 #endif // RECEIVERMANAGER_H
