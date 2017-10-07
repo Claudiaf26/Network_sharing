@@ -11,8 +11,8 @@
 #include <thread>
 #include <future>
 #include <mutex>
-#include "TCPSocket/TCPSocket.h"
-#include "TCPServerSocket/TCPServerSocket.h"
+#include "TCPSocket.h"
+#include "TCPServerSocket.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -32,6 +32,9 @@ private:
 	vector<TCPServerSocket> fileServerSockets;
 	vector<TCPSocket> fileSockets;
 	vector<thread> transferThreads;
+
+	mutex fileNameMutex;
+	string fileName;
 
 	/*Based on the hardware concurrency, trades the number of ports to be used.
 	*It receives a proposal with a certain number, 
@@ -62,6 +65,8 @@ public:
 	/*To be called to effectively start the transfer. It is important that after this call
 	 *the object does not go out of scope.*/
 	bool receive();
+
+	string getFileName();
 	
 
 };

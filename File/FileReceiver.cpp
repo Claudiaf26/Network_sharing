@@ -50,6 +50,11 @@ bool FileReceiver::receive() {
 	return success.load();
 }
 
+string FileReceiver::getFileName() {
+	lock_guard<mutex> l( fileNameMutex );
+	return fileName;
+}
+
 void FileReceiver::tradeport() {
 	vector<char> msg(6);
 	struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
@@ -114,7 +119,6 @@ void FileReceiver::threadReceive(uint16_t i){
 			return;
 		}
 		msgS.assign( msgV.begin(), msgV.end() );
-		cout << "message " <<msgS << endl;
 
 		if ( msgS.compare( "FILE" ) == 0 ) {
 			try {
@@ -132,6 +136,12 @@ void FileReceiver::threadReceive(uint16_t i){
 				}
 
 				path filePath( msgV.begin(), msgV.end() );
+
+				fileNameMutex.lock();
+				if(fileName.empty() )
+					fileName = filePath.string();
+				fileNameMutex.unlock();
+
 				uint8_t duplicate=1;
 				if ( exists( dest.generic() / filePath ) ) {
 					while ( exists( dest.generic() / (filePath.stem().wstring() + L"(" + to_wstring( duplicate ) + L")" + filePath.extension().wstring()) ) ) {
@@ -231,6 +241,11 @@ void FileReceiver::threadReceive(uint16_t i){
 			 * inside it.*/
 			pos2 = wmsgS.find( '^', pos1 );
 			tempPath = wmsgS.substr( pos1, pos2 - pos1 );
+			
+			fileNameMutex.lock();
+			fileName = tempPath.string();
+			fileNameMutex.unlock();
+
 			uint8_t duplicate = 1;
 			if ( exists( dest / tempPath.generic() ) ) {
 				while ( exists( dest / (tempPath.wstring() + L"(" + to_wstring( duplicate ) + L")") ) ) {
