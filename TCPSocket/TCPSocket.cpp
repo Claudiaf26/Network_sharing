@@ -1,4 +1,4 @@
-#include "../TCPSocket/TCPSocket.h"
+#include "TCPSocket.h"
 
 TCPSocket::TCPSocket(string ip, uint16_t port) {
 #ifdef _WIN32
@@ -34,5 +34,9 @@ bool TCPSocket::Send(vector<char> source) {
 
 bool TCPSocket::Receive(vector<char> &dest, uint32_t size, struct timeval timeout) {
 	return base->Receive(dest, size, timeout);
+}
+
+string TCPSocket::getPeerIp() {
+	return base->getPeerIp();
 }
 

@@ -26,7 +26,7 @@ public:
 	void Close();
 	bool Send(vector<char> source);
 	bool Receive(vector<char> &dest, uint32_t size, struct timeval timeout);
-
+	string getPeerIp();
 	TCPSocket(TCPSocket&& source) {
 		//Movement constructor. Use with move(TCPSocket)
 		this->base = unique_ptr<TCPSocket_Interface>(source.base.release());

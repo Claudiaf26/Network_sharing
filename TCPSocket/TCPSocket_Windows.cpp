@@ -18,11 +18,11 @@ TCPSocket_Windows::TCPSocket_Windows(string ip, uint16_t port) : TCPSocket_Inter
 
 	if(connect(s, (struct sockaddr*)&serverAddress, sizeof(struct sockaddr)) == SOCKET_ERROR)
 		throw std::invalid_argument("Error during connect: " + WSAGetLastError());
-
-	int32_t bufferSize= 65664;
+	
+	int32_t bufferSize = 65664;
 	setsockopt( s, SOL_SOCKET, SO_SNDBUF, (char*)&bufferSize, sizeof( bufferSize ) );
 
-		started = TRUE;
+	started = TRUE;
 
 }
 
@@ -89,6 +89,12 @@ bool TCPSocket_Windows::Receive(vector<char> &dest, uint32_t size, struct timeva
 
 }
 
+string TCPSocket_Windows::getPeerIp() {
+	char ipAddress[INET_ADDRSTRLEN];
+	inet_ntop( AF_INET, &(serverAddress.sin_addr), ipAddress, INET_ADDRSTRLEN );
+	return string(ipAddress);
+}
+
 bool TCPSocket_Windows::Send(vector<char> source) {
 	/*Sends the entire source array.*/
 	if (started == false || source.size() > INT32_MAX)
@@ -100,7 +106,7 @@ bool TCPSocket_Windows::Send(vector<char> source) {
 		i = send(s, source.data() + sent, source.size() - sent, 0);
 		sent = sent + i;
 	}
-	if (sent < source.size()|| i == SOCKET_ERROR)
+	if (sent < source.size() || i== SOCKET_ERROR)
 		return false;
 	else
 		return true;

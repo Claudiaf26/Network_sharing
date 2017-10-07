@@ -30,7 +30,7 @@ public:
 	void Close();
 	bool Send(vector<char> source);
 	bool Receive(vector<char> &dest, uint32_t size, struct timeval timeout );
-
+	string getPeerIp();
 };
 
 

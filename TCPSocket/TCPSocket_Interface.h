@@ -13,6 +13,7 @@ public:
 	virtual void Close() = 0;
 	virtual bool Send(vector<char> source) = 0;
 	virtual bool Receive(vector<char> &dest, uint32_t size, struct timeval timeout) = 0;
+	virtual string getPeerIp()=0;
 	//TCPSocket_Interface(TCPSocket_Interface&& rval) { }
 
 };
