@@ -12,9 +12,10 @@ UDPDiscover::UDPDiscover( string userN, string pic ) : mode( UDS_STOP ), userNam
 }
 
 UDPDiscover::~UDPDiscover() {
+	socket.closeSocket();
 	stop();
 
-	socket.closeSocket();
+	
 }
 
 void UDPDiscover::advertise() {
