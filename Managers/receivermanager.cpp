@@ -19,15 +19,15 @@ ReceiverManager::ReceiverManager() {
 
 ReceiverManager::~ReceiverManager(){
     socketLoop->disable();
-    serverSock->Close();
+    delete socketLoop;
+    delete timer;
     socketThread->quit();
     socketThread->wait();
     timerThread->quit();
     timerThread->wait();
     delete timerThread;
-    delete timer;
     delete socketThread;
-    delete socketLoop;
+
 }
 void ReceiverManager::start(){
     socketThread->start();

@@ -27,6 +27,7 @@ struct ReceivingObject {
     ~ReceivingObject(){
         delete progressUI;
         delete receiver;
+        receivingThread.release();
     }
 
     ReceivingObject(ReceivingObject&& original) {
@@ -63,7 +64,11 @@ public:
         newSocket = nullptr;
         serverSock = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
     }
-    ~SocketThread(){delete newSocket;}
+    ~SocketThread(){
+        serverSock->Close();
+        delete newSocket;
+        serverSock.release();
+    }
     TCPSocket* getSocket() {
         TCPSocket* tempSocket = newSocket;
         newSocket = nullptr;
@@ -87,7 +92,6 @@ class ReceiverManager : public QObject {
 private:
     std::wstring path;
     std::vector<ReceivingObject> receivingList;
-    std::unique_ptr<TCPServerSocket> serverSock;
     QThread* timerThread;
     QThread* socketThread;
     QTimer* timer;
