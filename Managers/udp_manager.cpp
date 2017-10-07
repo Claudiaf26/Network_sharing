@@ -36,10 +36,8 @@ UDP_Manager::UDP_Manager(QObject *parent) :
 
 //gestisci bene thread!
 UDP_Manager::~UDP_Manager(){
-    if (udp != nullptr){
-        udp->stop(); //boh
+    if (udp != nullptr)
         delete udp;
-    }
     if (newThread != nullptr)
         delete newThread;
     if (deletedThread != nullptr)

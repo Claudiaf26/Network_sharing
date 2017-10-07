@@ -11,6 +11,7 @@ ReceiverManager::ReceiverManager() {
     timer->setInterval(1000);
     QObject::connect(socketLoop, SIGNAL(createUI()), this, SLOT(createUI()), Qt::BlockingQueuedConnection);
     QObject::connect(socketThread, SIGNAL(started()), socketLoop, SLOT(loop()));
+    QObject::connect(socketThread, SIGNAL(finshed()), socketLoop, SLOT(deleteLater()));
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
     QObject::connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
     timer->moveToThread(timerThread);
@@ -19,10 +20,10 @@ ReceiverManager::ReceiverManager() {
 
 ReceiverManager::~ReceiverManager(){
     socketLoop->disable();
-    delete socketLoop;
-    delete timer;
     socketThread->quit();
+    QThread::sleep(2);
     socketThread->wait();
+    delete socketLoop;
     timerThread->quit();
     timerThread->wait();
     delete timerThread;

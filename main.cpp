@@ -13,9 +13,11 @@ int main(int argc, char *argv[]){
     if (argc < 2){
         MainProgram m;
         m.start();
+        return a.exec();
     }
-    else
-      SendingProgram s(argv[1]);
+    else{
+        SendingProgram s(argv[1]);
+        return a.exec();
+    }
 
-    return a.exec();
 }

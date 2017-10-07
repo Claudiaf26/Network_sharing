@@ -65,8 +65,8 @@ public:
         serverSock = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
     }
     ~SocketThread(){
-        serverSock->Close();
-        delete newSocket;
+        if (newSocket != nullptr)
+            delete newSocket;
         serverSock.release();
     }
     TCPSocket* getSocket() {
@@ -75,12 +75,19 @@ public:
         return tempSocket;
     }
     bool getState(){return active;}
-    void disable(){active = false;}
+    void disable(){
+        active = false;
+        serverSock->Close();}
 public slots:
     void loop(){
         while(active){
-            newSocket = &serverSock->Accept();
-            emit createUI();
+                try{
+                    TCPSocket socket = serverSock->Accept();
+                    newSocket = &socket;
+                }catch(...){}
+
+                if (active)
+                    emit createUI();
         }
     }
 signals:
