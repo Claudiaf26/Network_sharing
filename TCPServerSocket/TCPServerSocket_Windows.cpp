@@ -17,7 +17,7 @@ TCPServerSocket_Windows::TCPServerSocket_Windows(uint16_t port) : TCPServerSocke
 	address.sin_addr.s_addr=htonl(INADDR_ANY);
 	address.sin_port = htons(port);
 
-	if (bind(s, (struct sockaddr*) &address, sizeof(address)) == SOCKET_ERROR)
+	if (::bind(s, (struct sockaddr*) &address, sizeof(address)) == SOCKET_ERROR)
 		throw std::invalid_argument("Error during binding: " + WSAGetLastError());
 
 	if(listen(s, SOMAXCONN) == SOCKET_ERROR)
@@ -46,8 +46,12 @@ TCPSocket TCPServerSocket_Windows::Accept() {
 	sockaddr_in clientAddress;
 	socklen_t clen= sizeof(clientAddress);
 	connectedSocket = accept(s, (struct sockaddr*) &clientAddress, &clen);
-	if (connectedSocket == INVALID_SOCKET)
-		throw std::invalid_argument("The client has problems: " + WSAGetLastError());
+	if ( connectedSocket == INVALID_SOCKET) {
+		if ( WSAGetLastError() == 10004 )
+			throw std::domain_error( "SOCKETCLOSED" );
+		else
+			throw std::invalid_argument( to_string(WSAGetLastError()) );
+	}
 
 	int32_t bufferSize = 65664;
 	setsockopt( connectedSocket, SOL_SOCKET, SO_RCVBUF, (char*)&bufferSize, sizeof( bufferSize ) );
