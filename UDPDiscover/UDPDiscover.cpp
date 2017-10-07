@@ -12,6 +12,8 @@ UDPDiscover::UDPDiscover( string userN, string pic ) : mode( UDS_STOP ), userNam
 }
 
 UDPDiscover::~UDPDiscover() {
+	mode.store( UDS_STOP );
+
 	socket.closeSocket();
 	stop();
 
