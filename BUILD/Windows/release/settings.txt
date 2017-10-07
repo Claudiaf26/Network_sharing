@@ -1,0 +1,5 @@
+username=Massimo
+directory=F:/Download/NetworkSharingDestination
+automaticreception=0
+notshownotification=0
+privatemode=0

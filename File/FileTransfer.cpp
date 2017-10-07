@@ -1,7 +1,7 @@
 #include "FileTransfer.h"
 
 
-FileTransfer::FileTransfer( string ipAddress, path Source ) : ip( ipAddress ), source( Source ) {
+FileTransfer::FileTransfer( string ipAddress, path Source ) : ip( ipAddress ), source( Source ), overallSize( 0 ), transferStart( std::chrono::system_clock::now() ) {
 	if ( is_directory( source ) ) {
 		recursive_directory_iterator rdi( source.generic_path() );
 		this->rdi = rdi;
@@ -323,8 +323,18 @@ vector<char> FileTransfer::createDirectoryPacket( vector<wstring> tree ) {
 
 uint8_t FileTransfer::getProgress() {
 	uint8_t progress;
+	if ( overallSize.load() == 0 )
+		return 0;
 	progress = (overallSent.load() * 100) / overallSize.load();
 	return progress;
+}
+
+double FileTransfer::getTimeLeft() {
+	return static_cast<double>(overallSize.load() - overallSent.load()) / getCurrentSpeed();
+}
+
+double FileTransfer::getCurrentSpeed() {
+	return static_cast<double>((overallSize.load() - overallSent.load())) /1024* std::chrono::duration<double>( std::chrono::system_clock::now() - transferStart.load() ).count();
 }
 
 void FileTransfer::stop() {
