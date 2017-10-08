@@ -12,6 +12,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <queue>
 #include <atomic>
 
 struct ReceivingObject {
@@ -57,22 +58,19 @@ class SocketThread : public QObject {
     Q_OBJECT
 private:
     unique_ptr<TCPServerSocket> serverSock;
-    TCPSocket* newSocket;
+    std::queue<TCPSocket> newSockets;
     bool active;
 public:
     SocketThread(): active(true){
-        newSocket = nullptr;
         serverSock = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
     }
     ~SocketThread(){
-        if (newSocket != nullptr)
-            delete newSocket;
         serverSock.release();
     }
-    TCPSocket* getSocket() {
-        TCPSocket* tempSocket = newSocket;
-        newSocket = nullptr;
-        return tempSocket;
+    TCPSocket getSocket() {
+        TCPSocket tempSocket = std::move(newSockets.front());
+        newSockets.pop();
+        return std::move(tempSocket);
     }
     bool getState(){return active;}
     void disable(){
@@ -83,12 +81,12 @@ public slots:
         while(active){
                 try{
                     TCPSocket socket = serverSock->Accept();
-                    newSocket = &socket;
-                }catch(...){}
-
-                if (active)
+                if (active){
+                    newSockets.push(std::move(socket));
                     emit createUI();
-        }
+                }
+                }catch(...){}
+            }
     }
 signals:
     void createUI();

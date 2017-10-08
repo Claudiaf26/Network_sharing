@@ -36,7 +36,7 @@ void ReceiverManager::start(){
 }
 
 void ReceiverManager::createUI(){
-    ReceivingObject newReceiver(path, move(*(socketLoop->getSocket())));
+    ReceivingObject newReceiver(path, move(socketLoop->getSocket()));
     newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
     newReceiver.progressUI->show();
     receivingList.push_back(move(newReceiver));
