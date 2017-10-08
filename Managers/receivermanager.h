@@ -28,7 +28,6 @@ struct ReceivingObject {
     ~ReceivingObject(){
         delete progressUI;
         delete receiver;
-        receivingThread.release();
     }
 
     ReceivingObject(ReceivingObject&& original) {
@@ -64,9 +63,7 @@ public:
     SocketThread(): active(true){
         serverSock = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
     }
-    ~SocketThread(){
-        serverSock.release();
-    }
+    ~SocketThread(){}
     TCPSocket getSocket() {
         TCPSocket tempSocket = std::move(newSockets.front());
         newSockets.pop();

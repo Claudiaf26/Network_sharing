@@ -9,9 +9,7 @@ UDPSocketMulticast::UDPSocketMulticast( string ip, uint16_t multicastPort ) {
 #endif
 }
 
-UDPSocketMulticast::~UDPSocketMulticast() {
-	base.release();
-}
+UDPSocketMulticast::~UDPSocketMulticast() {}
 
 void UDPSocketMulticast::sendPacket( std::string message ) {
 	base->sendPacket( message );

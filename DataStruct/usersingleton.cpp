@@ -44,7 +44,6 @@ UserSingleton::~UserSingleton(){
         delete t;
     if(shared)
         memory->releaseMem();
-    memory.release();
 }
 
 bool UserSingleton::initialize(){
