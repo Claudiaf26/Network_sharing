@@ -10,7 +10,7 @@ TCPServerSocket::TCPServerSocket(uint16_t port) {
 }
 
 TCPServerSocket::~TCPServerSocket() {
-	base.release();
+	base.reset( nullptr );
 }
 
 TCPSocket TCPServerSocket::Accept() {

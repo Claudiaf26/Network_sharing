@@ -21,7 +21,7 @@ TCPSocket::TCPSocket(int16_t connectedSocket) {
 
 
 TCPSocket::~TCPSocket() {
-	base.release();
+	base.reset( nullptr );
 }
 
 void TCPSocket::Close() {
