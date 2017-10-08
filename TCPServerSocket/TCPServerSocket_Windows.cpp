@@ -31,6 +31,7 @@ TCPServerSocket_Windows::TCPServerSocket_Windows(uint16_t port) : TCPServerSocke
 TCPServerSocket_Windows::~TCPServerSocket_Windows() {
 	if (started != FALSE) {
 		started = FALSE;
+		cout <<"Entra? ";
 		Close();
 	}
 }

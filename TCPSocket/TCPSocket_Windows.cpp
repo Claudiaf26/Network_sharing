@@ -2,7 +2,7 @@
 
 #include "TCPSocket_Windows.h"
 
-TCPSocket_Windows::TCPSocket_Windows(string ip, uint16_t port) : TCPSocket_Interface(){
+TCPSocket_Windows::TCPSocket_Windows(string ip, uint16_t port) : TCPSocket_Interface(), constructor_type(1){
 	WSAStartup(0x0202, &wsaSocket);
 	s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (s == INVALID_SOCKET) {
@@ -26,7 +26,7 @@ TCPSocket_Windows::TCPSocket_Windows(string ip, uint16_t port) : TCPSocket_Inter
 
 }
 
-TCPSocket_Windows::TCPSocket_Windows(int16_t connectedS) {
+TCPSocket_Windows::TCPSocket_Windows(int16_t connectedS): constructor_type( 2 ) {
 	WSAStartup(0x0202, &wsaSocket);
 	s = connectedS;
 	socklen_t len = sizeof(serverAddress);
@@ -50,7 +50,8 @@ TCPSocket_Windows::~TCPSocket_Windows() {
 void TCPSocket_Windows::Close() {
 	started = FALSE;
 	closesocket(s);
-	WSACleanup();
+	if(constructor_type != 2 )
+		WSACleanup();
 }
 
 
@@ -71,6 +72,7 @@ bool TCPSocket_Windows::Receive(vector<char> &dest, uint32_t size, struct timeva
 	while (received < size && select(FD_SETSIZE, &readset, NULL, NULL, &this_timeout) > 0 ) {
 		i = recv(s, dest.data()+received, size-received, 0);
 		if (i == 0 || i == SOCKET_ERROR) {
+			cout << "Prova " <<WSAGetLastError() << endl;
 			return false;
 		} else {
 			received = received + i;
@@ -80,9 +82,10 @@ bool TCPSocket_Windows::Receive(vector<char> &dest, uint32_t size, struct timeva
 		}
 	}
 
-	if (received != size)
+	if ( received != size ) {
+		cout << "received != size" << endl;
 		return false;
-	else {
+	} else {
 		return true;
 	}
 

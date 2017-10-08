@@ -23,6 +23,7 @@ private:
 	WSADATA wsaSocket;
 	int16_t  s;
 	struct sockaddr_in serverAddress;
+	int8_t constructor_type;
 
 public:
 	TCPSocket_Windows(string ip, uint16_t port);
@@ -32,7 +33,6 @@ public:
 	bool Send(vector<char> source);
 	bool Receive(vector<char> &dest, uint32_t size, struct timeval timeout );
 	string getPeerIp();
-
 
 };
 
