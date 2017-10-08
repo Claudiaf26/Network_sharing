@@ -7,6 +7,7 @@ ProgressDialog::ProgressDialog(QString path, bool sending,  QWidget *parent) :
     closed(false)
 {
     ui->setupUi(this);
+    ui->progressBar->setValue(0);
     QObject::connect(ui->endButton, SIGNAL(pressed()), this, SLOT(close()));
     if(sending)
         ui->textLabel->setText("Stai inviando il file" + path);

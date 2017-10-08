@@ -11,7 +11,6 @@ class ProgressDialog;
 class ProgressDialog : public QDialog
 {
     Q_OBJECT
-
 public:
     explicit ProgressDialog(QString path, bool sending, QWidget *parent = 0);
     ~ProgressDialog();

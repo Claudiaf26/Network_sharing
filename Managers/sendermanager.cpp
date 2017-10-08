@@ -3,9 +3,9 @@
 
 using namespace std;
 
-SenderManager::SenderManager(string thisPath):path(thisPath){
+SenderManager::SenderManager(wstring thisPath):path(thisPath){
     timerThread = new QThread(this);
-    timer = new QTimer(this);
+    timer = new QTimer();
     timer->setInterval(1000);
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
     QObject::connect(timerThread, SIGNAL(started()), timer, SLOT(start()));

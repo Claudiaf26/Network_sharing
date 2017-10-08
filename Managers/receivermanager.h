@@ -5,28 +5,30 @@
 #include "File/FileReceiver.h"
 #include "define.h"
 #include <QObject>
+#include <QMetaObject>
 #include <QTimer>
 #include <QThread>
 #include <thread>
 #include <string>
 #include <memory>
 #include <vector>
+#include <queue>
 #include <atomic>
 
-struct ReceivingObject{
+struct ReceivingObject {
     ProgressDialog* progressUI;
     FileReceiver* receiver;
     std::unique_ptr<std::thread> receivingThread;
 
-    ReceivingObject(std::string filePath, TCPSocket socket){
-        progressUI = new ProgressDialog(QString::fromStdString(filePath), true);
-        boost::filesystem::path boostPath(filePath);
-        receiver = new FileReceiver(std::move(socket), boostPath);
+    ReceivingObject(std::wstring filePath, TCPSocket socket){
+        progressUI = new ProgressDialog(QString::fromStdWString(filePath), true);
+        receiver = new FileReceiver(std::move(socket), filePath);
     }
 
     ~ReceivingObject(){
         delete progressUI;
         delete receiver;
+        receivingThread.release();
     }
 
     ReceivingObject(ReceivingObject&& original) {
@@ -52,23 +54,64 @@ struct ReceivingObject{
 
 };
 
+class SocketThread : public QObject {
+    Q_OBJECT
+private:
+    unique_ptr<TCPServerSocket> serverSock;
+    std::queue<TCPSocket> newSockets;
+    bool active;
+public:
+    SocketThread(): active(true){
+        serverSock = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
+    }
+    ~SocketThread(){
+        serverSock.release();
+    }
+    TCPSocket getSocket() {
+        TCPSocket tempSocket = std::move(newSockets.front());
+        newSockets.pop();
+        return std::move(tempSocket);
+    }
+    bool getState(){return active;}
+    void disable(){
+        active = false;
+        serverSock->Close();}
+public slots:
+    void loop(){
+        while(active){
+                try{
+                    TCPSocket socket = serverSock->Accept();
+                if (active){
+                    newSockets.push(std::move(socket));
+                    emit createUI();
+                }
+                }catch(...){}
+            }
+    }
+signals:
+    void createUI();
+};
+
 class ReceiverManager : public QObject {
     Q_OBJECT
 private:
-    std::string path;
+    std::wstring path;
     std::vector<ReceivingObject> receivingList;
-    std::unique_ptr<TCPServerSocket> serverSock;
     QThread* timerThread;
+    QThread* socketThread;
     QTimer* timer;
-    bool active;
+    SocketThread* socketLoop;
+    bool automaticMode; //da implementare
 public:
     ReceiverManager();
     ~ReceiverManager();
-    void setPath(std::string newPath){this->path = newPath;}
-    bool isActive(){return active;}
+    void setPath(std::wstring newPath){this->path = newPath;}
+    void start();
+    bool isActive(){return socketLoop->getState();}
 
 public slots:
-    void loop();
+    void createUI();
     void checkProgress();
+
 };
 #endif // RECEIVERMANAGER_H

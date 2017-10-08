@@ -36,11 +36,15 @@ UDP_Manager::UDP_Manager(QObject *parent) :
 
 //gestisci bene thread!
 UDP_Manager::~UDP_Manager(){
-    delete udp;
-    delete newThread;
-    delete deletedThread;
+    if (udp != nullptr)
+        delete udp;
+    if (newThread != nullptr)
+        delete newThread;
+    if (deletedThread != nullptr)
+        delete deletedThread;
     timerThread->quit();
     timerThread->wait();
+    delete timerThread;
 }
 
 void UDP_Manager::start(string user, bool mod){
