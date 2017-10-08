@@ -53,7 +53,7 @@ public:
 	 *connection. Destination is a local folder in which files will be received. 
 	 *It accepts a string or a wstring. Pass it a wstring. If the path does not
 	 *exists, it will be created.*/
-	FileReceiver(TCPSocket s, path destination);
+	FileReceiver(TCPSocket s, wstring destination);
 	~FileReceiver();
 
 	/*Stop the transfer from both the client and the server in a thread-safe fashion.*/

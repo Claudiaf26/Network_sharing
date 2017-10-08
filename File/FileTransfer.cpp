@@ -1,7 +1,9 @@
 #include "FileTransfer.h"
 
 
-FileTransfer::FileTransfer( string ipAddress, path Source ) : ip( ipAddress ), source( Source ), overallSize( 0 ), transferStart( std::chrono::system_clock::now() ) {
+FileTransfer::FileTransfer( string ipAddress, wstring sourceString ) : ip( ipAddress ), overallSize( 0 ), transferStart( std::chrono::system_clock::now() ) {
+	std::replace( sourceString.begin(), sourceString.end(), '\\', '/' );
+	source = sourceString;
 	if ( is_directory( source ) ) {
 		recursive_directory_iterator rdi( source.generic_path() );
 		this->rdi = rdi;
@@ -36,7 +38,8 @@ bool FileTransfer::transfer() {
 			transferThreads.push_back( thread( &FileTransfer::sendFile, this, 0 ) );
 		}
 
-	} catch ( ... ) {
+	} catch ( std::exception e ) {
+		cout << "Exception: " << e.what() << endl;
 		success.store( false );
 	}
 	for ( auto it = transferThreads.begin(); it != transferThreads.end(); it++ ) {
@@ -72,11 +75,11 @@ void FileTransfer::tradePort() {
 	memcpy( message.data() + message.size() - 2, &nrThreads, sizeof( nrThreads ) );
 
 	if ( s.Send( message ) == false )
-		throw std::domain_error( "Can't establish connection. " );
+		throw std::domain_error( "Err send 1 " );
 
-	struct timeval t; t.tv_sec = 120; t.tv_usec = 500;
+	struct timeval t; t.tv_sec = 1; t.tv_usec = 0;
 	if ( s.Receive( message, 6, t ) == false )
-		throw std::domain_error( "Can't establish connection. " );
+		throw std::domain_error( "Err rcv 1 " );
 
 	//The response is PORT NrPortsAvailable Port1 Port2 ...
 	//The host will reply with how many threads it wants to use.
@@ -89,7 +92,7 @@ void FileTransfer::tradePort() {
 	message.clear();
 	//Here all ports are received.
 	if ( s.Receive( message, 2 * nrThreads, t ) == false )
-		throw std::domain_error( "Can't establish connection. " );
+		throw std::domain_error( "Err recv2 (ports) " );
 
 	ports.resize( nrThreads );
 	for ( int16_t i = 0; i < nrThreads; i++ ) {
@@ -138,7 +141,7 @@ bool FileTransfer::sendDir() {
 
 	vector<char> msgV( 3 );
 	string msgS;
-	struct timeval timeout; timeout.tv_sec = 100; timeout.tv_usec = 0;
+	struct timeval timeout; timeout.tv_sec = 1; timeout.tv_usec = 0;
 	if ( !fileSockets[0].Receive( msgV, 3, timeout ) ) {
 		throw std::domain_error( "Connection closed before SIZE ACK. " );
 	}

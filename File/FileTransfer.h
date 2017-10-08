@@ -63,7 +63,7 @@ public:
 	/*ipAddress of an active host. If not active, an exception is thrown.
 	 *source path of the file or of the directory. If it does not exist,
 	 *an exception is thrown.*/
-	FileTransfer( string ipAddress, path source );
+	FileTransfer( string ipAddress, wstring source );
 	~FileTransfer();
 
 	/*Returns the percentage sent.*/

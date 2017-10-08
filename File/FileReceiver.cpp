@@ -1,10 +1,12 @@
 #include "FileReceiver.h"
 
-FileReceiver::FileReceiver(TCPSocket s, path p) : controlS(std::move(s)) {
+FileReceiver::FileReceiver(TCPSocket s, wstring p) : controlS(std::move(s)) {
+	std::replace( p.begin(), p.end(), '\\', '/' );
 	dest = p;
 	dest=dest.generic_path();
 	overallSent = 0;
 	overallSize = 0;
+	success = true;
 }
 
 FileReceiver::~FileReceiver() {
@@ -35,7 +37,8 @@ bool FileReceiver::receive() {
 				transferThreads[i].join();
 		transferThreads.clear();
 
-	}catch(...){
+	}catch(std::exception de ){
+		cout <<"Eccezione: " << de.what() << endl;
 		success.store( false );
 	}
 
@@ -57,7 +60,7 @@ string FileReceiver::getFileName() {
 
 void FileReceiver::tradeport() {
 	vector<char> msg(6);
-	struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
+	struct timeval timeout; timeout.tv_sec = 2; timeout.tv_usec = 0;
 	if(!controlS.Receive(msg, 6, timeout))
 		throw std::domain_error("Can't trade ports. ");
 	
@@ -110,8 +113,8 @@ void FileReceiver::prepareSockets() {
 void FileReceiver::threadReceive(uint16_t i){
 	vector<char> msgV(4);
 	string msgS;
-	struct timeval timeout1; timeout1.tv_sec = 100; timeout1.tv_usec = 0;
-	struct timeval timeout2; timeout2.tv_sec = 100; timeout2.tv_usec = 0;
+	struct timeval timeout1; timeout1.tv_sec = 2; timeout1.tv_usec = 0;
+	struct timeval timeout2; timeout2.tv_sec = 1; timeout2.tv_usec = 0;
 	boost::filesystem::fstream file;
 	while ( success.load() ) {
 		if ( !fileSockets[i].Receive( msgV, 4, timeout1 ) ) {
@@ -163,7 +166,6 @@ void FileReceiver::threadReceive(uint16_t i){
 				uint64_t fileSize;
 				memcpy( &fileSize, msgV.data(),  sizeof( fileSize ) );
 				fileSize = boost::endian::big_to_native( fileSize );
-				cout << "File: " << filePath.string() << " Dim: " << fileSize << endl;
 				uint32_t chunkSize;
 				uint32_t padding;
 				if ( fileSize >= 32768 ) {
@@ -272,10 +274,14 @@ void FileReceiver::threadReceive(uint16_t i){
 			success.store( false );
 		}
 	}
+	
+	
 }
 
 uint8_t FileReceiver::getProgress(){
 	uint8_t progress;
+	if ( overallSize.load()  == 0)
+		return 0;
 	progress = (overallSent.load() * 100) / overallSize.load();
 	return progress;
 }
