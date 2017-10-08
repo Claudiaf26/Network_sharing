@@ -31,5 +31,6 @@ void FileSending::on_sendButton_pressed(){
         newUser.ip = item->data(Qt::UserRole).toString().toUtf8().constData();
         selectedUsers.push_back(newUser);
     }
+    this->hide();
     emit sendToUsers(selectedUsers);
 }

@@ -17,7 +17,7 @@ TCPServerSocket_Windows::TCPServerSocket_Windows(uint16_t port) : TCPServerSocke
 	address.sin_addr.s_addr=htonl(INADDR_ANY);
 	address.sin_port = htons(port);
 
-	if (::bind(s, (struct sockaddr*) &address, sizeof(address)) == SOCKET_ERROR)
+    if (::bind(s, (struct sockaddr*) &address, sizeof(address)) == SOCKET_ERROR)
 		throw std::invalid_argument("Error during binding: " + WSAGetLastError());
 
 	if(listen(s, SOMAXCONN) == SOCKET_ERROR)
