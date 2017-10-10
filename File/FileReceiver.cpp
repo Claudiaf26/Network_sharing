@@ -53,14 +53,6 @@ bool FileReceiver::receive() {
 	return success.load();
 }
 
-wstring FileReceiver::getFileName() {
-	lock_guard<mutex> l( fileNameMutex );
-	return fileName;
-}
-
-bool FileReceiver::getSuccess() {
-	return success.load();
-}
 
 void FileReceiver::tradeport() {
 	vector<char> msg(6);
@@ -295,6 +287,22 @@ uint8_t FileReceiver::getProgress(){
 		return 0;
 	progress = (overallSent.load() * 100) / overallSize.load();
 	return progress;
+}
+
+
+wstring FileReceiver::getFileName() {
+	lock_guard<mutex> l( fileNameMutex );
+	return fileName;
+}
+
+uint8_t FileReceiver::getStatus() {
+	if ( !success.load() )
+		return FT_ERROR;
+	uint8_t progress = getProgress();
+	if ( progress < 100 )
+		return progress;
+
+	return FT_COMPLETE;
 }
 
 void FileReceiver::stop() {

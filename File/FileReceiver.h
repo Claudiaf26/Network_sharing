@@ -11,8 +11,9 @@
 #include <thread>
 #include <future>
 #include <mutex>
-#include "TCPSocket/TCPSocket.h"
-#include "TCPServerSocket/TCPServerSocket.h"
+#include "TCPSocket.h"
+#include "TCPServerSocket.h"
+#include "../../define.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -47,6 +48,9 @@ private:
 	*or the actual file. */
 	void threadReceive(uint16_t i);
 
+	/*Returns an int with the percentage of the total size sent.*/
+	uint8_t getProgress();
+
 public:
 	/*TCPSocket is a connected Socket, obtained from a TCPServerSocket.accept().
 	 *The TCPServerSocket.accept() will be always listening for incoming control 
@@ -59,16 +63,16 @@ public:
 	/*Stop the transfer from both the client and the server in a thread-safe fashion.*/
 	void stop();
 
-	/*Returns an int with the percentage of the total size sent.*/
-	uint8_t getProgress();
-
 	/*To be called to effectively start the transfer. It is important that after this call
 	 *the object does not go out of scope.*/
 	bool receive();
 
+	/*Returns the file/folder name that is being transferred*/
     wstring getFileName();
 
-	bool getSuccess();
+	/*Returns the progress (0-99), the FT_COMPLETE or the FT_ERROR defined in define.h*/
+	uint8_t getStatus();
+
 	
 
 };
