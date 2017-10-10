@@ -105,10 +105,15 @@ public:
     void setPath(std::wstring newPath){this->path = newPath;}
     void start();
     bool isActive(){return socketLoop->getState();}
+    void setMode(bool mode){automaticMode = mode;}
 
 public slots:
     void createUI();
     void checkProgress();
+    void showError(QString);
+
+signals:
+    void error(QString);
 
 };
 #endif // RECEIVERMANAGER_H

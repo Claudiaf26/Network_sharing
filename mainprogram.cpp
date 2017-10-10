@@ -125,6 +125,7 @@ void MainProgram::startProgram(uint8_t flg, string user, string direct){
     notification->setMode(curr.notificationNoShowMode);
     udpDiscover->start(curr.username, curr.privateMode);
     receiver->setPath(StringToWString(direct));
+    receiver->setMode(curr.automaticMode);
     if(receiver->isActive())
         receiver->start();
 }

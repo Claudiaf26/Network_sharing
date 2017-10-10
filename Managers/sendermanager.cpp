@@ -33,15 +33,17 @@ void SenderManager::sendToUsers(const vector<User>& selectedUsers){
 void SenderManager::checkProgress(){
     if (transferList.empty())
         QApplication::quit();
-    for (auto it = transferList.begin(); it != transferList.end(); it++){
-        uint8_t progress = it->transfer->getProgress();
-        it->progressUI->setProgress(progress);
-        if (it->progressUI->isClosed()){
-            if (progress < 100)
+    for (auto it = transferList.begin(); it != transferList.end();){
+        if (!it->progressUI->isClosed()){
+            it->progressUI->setProgress(it->transfer->getProgress());
+            it++;
+        }
+        else {
+            if (it->transfer->getProgress() < 100)
                 it->transfer->stop();
-            it->sendingThread->join();
-            it->progressUI->close();
-            transferList.erase(it);
+            if(it->sendingThread->joinable())
+                it->sendingThread->join();
+            it = transferList.erase(it);
         }
     }
 }

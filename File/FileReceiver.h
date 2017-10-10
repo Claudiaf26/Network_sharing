@@ -11,8 +11,8 @@
 #include <thread>
 #include <future>
 #include <mutex>
-#include "TCPSocket.h"
-#include "TCPServerSocket.h"
+#include "TCPSocket/TCPSocket.h"
+#include "TCPServerSocket/TCPServerSocket.h"
 
 using namespace std;
 using namespace boost::filesystem;
