@@ -267,6 +267,7 @@ void FileReceiver::threadReceive(uint16_t i){
 			}
 			dest = dest / tempPath;
 			pos1 = pos2 + 1;
+			create_directories( dest );
 
 			while ( pos1 < wmsgS.size() ) {
 				pos2=wmsgS.find( '^' , pos1 );
