@@ -16,13 +16,12 @@
 #include "../../define.h"
 
 using namespace std;
-using namespace boost::filesystem;
 
 class FileReceiver {
 private:
 	TCPSocket controlS;
 
-	path dest;
+	boost::filesystem::path dest;
 	vector<uint16_t> ports;
 
 	atomic<bool> success;
@@ -57,7 +56,7 @@ public:
 	 *connection. Destination is a local folder in which files will be received. 
 	 *It accepts a string. Pass it a wstring. If the path does not
 	 *exists, it will be created.*/
-	FileReceiver(TCPSocket s, path destination);
+	FileReceiver(TCPSocket s, boost::filesystem::path destination);
 	~FileReceiver();
 
 	/*Stop the transfer from both the client and the server in a thread-safe fashion.*/
