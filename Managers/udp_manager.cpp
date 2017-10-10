@@ -48,7 +48,7 @@ UDP_Manager::~UDP_Manager(){
 }
 
 void UDP_Manager::start(string user, bool mod){
-    UDP_Discover_Status status = (mod != true) ? UDS_ACTIVE : UDS_STOP;
+    UDP_Discover_Status status = (mod != true) ? UDS_ACTIVE : UDS_HIDDEN; //mod == true significa che la modalità privata è attiva
     if (!running){
         udp = new UDPDiscover(user, "1");
 
