@@ -5,9 +5,22 @@
 
 
 //flag per il passaggio dati da mainprogram a settings
-#define AUTOMATIC_FLAG      1
-#define NOTIFICATION_FLAG   2
-#define PRIVATE_FLAG        4
+
+enum Settings_Status {
+    AUTOMATIC_FLAG = 1,
+    NOTIFICATION_FLAG = 2,
+    PRIVATE_FLAG = 4
+};
+
+typedef enum Settings_Status Settings_Status;
+
+//flag per la ricezione/invio dei file
+enum FileTransfer_Status {
+    FT_COMPLETE = 100,
+    FT_ERROR = 101,
+};
+
+typedef enum FileTransfer_Status FileTransfer_Status;
 
 //struttura comune per gli utenti
 #include <string>

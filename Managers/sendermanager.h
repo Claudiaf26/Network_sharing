@@ -63,6 +63,10 @@ public:
 public slots:
     void sendToUsers(const std::vector<User>&);
     void checkProgress();
+    void showError(QString);
+
+signals:
+    void error(QString);
 };
 
 #endif // SENDERMANAGER_H

@@ -1,5 +1,7 @@
 #include "sendermanager.h"
+#include "define.h"
 #include <QApplication>
+#include <QMessageBox>
 
 using namespace std;
 
@@ -34,18 +36,30 @@ void SenderManager::checkProgress(){
     if (transferList.empty())
         QApplication::quit();
     for (auto it = transferList.begin(); it != transferList.end();){
+        uint8_t status = it->transfer->getStatus();
+        if (status == FT_ERROR){
+            it->progressUI->close();
+            emit error("Il trasferimento è fallito");
+        }
+
         if (!it->progressUI->isClosed()){
-            it->progressUI->setProgress(it->transfer->getProgress());
+            it->progressUI->setProgress(status);
             it++;
         }
-        else {
-            if (it->transfer->getProgress() < 100)
+         else {
+            if ( (status != FT_COMPLETE) && (status != FT_ERROR) )
                 it->transfer->stop();
-            if(it->sendingThread->joinable())
+            if (it->sendingThread->joinable())
                 it->sendingThread->join();
             it = transferList.erase(it);
         }
     }
+}
+
+void SenderManager::showError(QString errorText){
+    QMessageBox errorBox;
+    errorBox.setText(errorText);
+    errorBox.exec();
 }
 
 
