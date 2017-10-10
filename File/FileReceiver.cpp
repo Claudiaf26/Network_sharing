@@ -1,6 +1,6 @@
 #include "FileReceiver.h"
 
-FileReceiver::FileReceiver(TCPSocket s, path p) : controlS(std::move(s)) {
+FileReceiver::FileReceiver(TCPSocket s, boost::filesystem::path p) : controlS(std::move(s)) {
 	dest = p;
 	dest=dest.generic_path();
 	overallSent = 0;
@@ -133,7 +133,7 @@ void FileReceiver::threadReceive(uint16_t i){
 					return;
 				}
 
-				path filePath( msgV.begin(), msgV.end() );
+				boost::filesystem::path filePath( msgV.begin(), msgV.end() );
 
 				fileNameMutex.lock();
 				if(fileName.empty() )
@@ -141,8 +141,8 @@ void FileReceiver::threadReceive(uint16_t i){
 				fileNameMutex.unlock();
 
 				uint8_t duplicate=1;
-				if ( exists( dest.generic() / filePath ) ) {
-					while ( exists( dest.generic() / (filePath.stem().string() + "(" + to_string( duplicate ) + ")" + filePath.extension().string()) ) ) {
+				if ( boost::filesystem::exists( dest.generic() / filePath ) ) {
+					while ( boost::filesystem::exists( dest.generic() / (filePath.stem().string() + "(" + to_string( duplicate ) + ")" + filePath.extension().string()) ) ) {
 						++duplicate;
 					}
 					filePath = filePath.stem().string() + "(" + to_string( duplicate ) + ")" + filePath.extension().string();
@@ -237,7 +237,7 @@ void FileReceiver::threadReceive(uint16_t i){
 			string wmsgS;
 			wmsgS.assign(msgV.begin(), msgV.end());
 			uint32_t pos1=0, pos2 = 0;
-			path tempPath;
+			boost::filesystem::path tempPath;
 			/*The first path received is the main folder. It is checked if it is a duplicated
 			 * and a number is put next to the name. Than all other directories are computed
 			 * inside it.*/
@@ -249,20 +249,20 @@ void FileReceiver::threadReceive(uint16_t i){
 			fileNameMutex.unlock();
 
 			uint8_t duplicate = 1;
-			if ( exists( dest / tempPath.generic() ) ) {
-				while ( exists( dest / (tempPath.string() + "(" + to_string( duplicate ) + ")") ) ) {
+			if ( boost::filesystem::exists( dest / tempPath.generic() ) ) {
+				while ( boost::filesystem::exists( dest / (tempPath.string() + "(" + to_string( duplicate ) + ")") ) ) {
 					++duplicate;
 				}
 				tempPath = tempPath.string() + "(" + to_string( duplicate ) + ")";
 			}
 			dest = dest / tempPath;
 			pos1 = pos2 + 1;
-			create_directories( dest );
+			boost::filesystem::create_directory( dest );
 
 			while ( pos1 < wmsgS.size() ) {
 				pos2=wmsgS.find( '^' , pos1 );
 				tempPath = wmsgS.substr( pos1, pos2 - pos1 );
-				create_directories( dest / tempPath );
+				boost::filesystem::create_directories( dest / tempPath );
 				pos1 = pos2 + 1;
 			}
 

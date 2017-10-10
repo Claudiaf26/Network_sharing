@@ -1,11 +1,11 @@
 #include "FileTransfer.h"
 
 
-FileTransfer::FileTransfer( string ipAddress, path sourceString ) : ip( ipAddress ), source(sourceString), overallSize( 0 ), transferStart( std::chrono::system_clock::now() ) {
+FileTransfer::FileTransfer( string ipAddress, boost::filesystem::path sourceString ) : ip( ipAddress ), source(sourceString), overallSize( 0 ), transferStart( std::chrono::system_clock::now() ) {
 	if ( is_directory( source ) ) {
-		recursive_directory_iterator rdi( source.generic_path() );
+		boost::filesystem::recursive_directory_iterator rdi( source.generic_path() );
 		this->rdi = rdi;
-		recursive_directory_iterator end_rdi;
+		boost::filesystem::recursive_directory_iterator end_rdi;
 		this->end_rdi = end_rdi;
 	}
 	success.store( true );
@@ -151,7 +151,7 @@ bool FileTransfer::sendDir() {
 	message.clear();
 	tree = future_tree.get();
 	message = createDirectoryPacket( tree );
-	cout << "message: " << message << endl;
+
 	if ( !fileSockets[0].Send( message ) )
 		throw std::domain_error( "Connection closed. " );
 
@@ -169,9 +169,9 @@ bool FileTransfer::sendDir() {
 void FileTransfer::sendFile( uint16_t i ) {
 	boost::filesystem::ifstream file;
 	bool flag = true;
-	bool isDirectory = is_directory( source );
+	bool isDirectory = boost::filesystem::is_directory( source );
 	string relativePath;
-	path p;
+	boost::filesystem::path p;
 	try {
 		while ( success.load() ) {
 			if ( isDirectory ) {
@@ -182,7 +182,7 @@ void FileTransfer::sendFile( uint16_t i ) {
 					} else {
 						p = rdi->path();
 						++rdi;
-						if ( !is_directory( p ) ) {
+						if ( !boost::filesystem::is_directory( p ) ) {
 							break;
 						}
 					}
@@ -192,7 +192,7 @@ void FileTransfer::sendFile( uint16_t i ) {
 
 				if ( flag == false )
 					break;
-				relativePath = (relative( p.generic(), source.generic() )).generic().string();
+				relativePath = (boost::filesystem::relative( p.generic(), source.generic() )).generic().string();
 			} else {
 				p = source;
 				relativePath = source.filename().string();
@@ -277,8 +277,8 @@ vector<string> FileTransfer::exploreDir() {
 	if ( !exists( source ) )
 		throw std::domain_error( "The source does not exists. " ); //The directory does not exists.
 
-	recursive_directory_iterator rdi( source );
-	recursive_directory_iterator end_rdi;
+	boost::filesystem::recursive_directory_iterator rdi( source );
+	boost::filesystem::recursive_directory_iterator end_rdi;
 
 	tree.push_back( relative( source.generic(), source.parent_path() ).generic().string() );
 	for ( ; rdi != end_rdi; rdi++ ) {
@@ -293,8 +293,8 @@ uint64_t FileTransfer::dirSize() {
 	if ( !exists( source ) )
 		throw std::domain_error( "The source does not exists. " ); //The directory does not exists.
 
-	recursive_directory_iterator rdi( source );
-	recursive_directory_iterator end_rdi;
+	boost::filesystem::recursive_directory_iterator rdi( source );
+	boost::filesystem::recursive_directory_iterator end_rdi;
 
 	for ( ; rdi != end_rdi; rdi++ ) {
 		if ( !is_directory( (*rdi).path() ) )

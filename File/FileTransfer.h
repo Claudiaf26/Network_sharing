@@ -14,12 +14,11 @@
 #include "define.h"
 
 using namespace std;
-using namespace boost::filesystem;
 
 
 class FileTransfer {
 private:
-	path source;
+	boost::filesystem::path source;
 	string ip;
 	vector<uint16_t> ports;
 
@@ -32,8 +31,8 @@ private:
 	vector<TCPSocket> fileSockets;
 
 	mutex rdi_protection;
-	recursive_directory_iterator rdi;
-	recursive_directory_iterator end_rdi;
+	boost::filesystem::recursive_directory_iterator rdi;
+	boost::filesystem::recursive_directory_iterator end_rdi;
 
 	vector<thread> transferThreads;
 
@@ -66,7 +65,7 @@ public:
 	/*ipAddress of an active host. If not active, an exception is thrown.
 	 *source path of the file or of the directory. If it does not exist,
 	 *an exception is thrown.*/
-	FileTransfer( string ipAddress, path source );
+	FileTransfer( string ipAddress, boost::filesystem::path source );
 	~FileTransfer();
 
 	/*Returns the estimated time in s*/
