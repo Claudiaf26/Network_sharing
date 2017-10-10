@@ -58,6 +58,10 @@ wstring FileReceiver::getFileName() {
 	return fileName;
 }
 
+bool FileReceiver::getSuccess() {
+	return success.load();
+}
+
 void FileReceiver::tradeport() {
 	vector<char> msg(6);
     struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
@@ -167,6 +171,11 @@ void FileReceiver::threadReceive(uint16_t i){
 				uint64_t fileSize;
 				memcpy( &fileSize, msgV.data(),  sizeof( fileSize ) );
 				fileSize = boost::endian::big_to_native( fileSize );
+				if ( overallSize == 0 ) {
+					//This means that it is a file being sent, not a directory, so the overallSize is given by the file size
+					overallSize.store( fileSize );
+				}
+
 				uint32_t chunkSize;
 				uint32_t padding;
 				if ( fileSize >= 32768 ) {
@@ -269,7 +278,7 @@ void FileReceiver::threadReceive(uint16_t i){
 			vector<char> ackMessage;
 			ackMessage.push_back( 'A' ); ackMessage.push_back( 'C' ); ackMessage.push_back( 'K' );
 			if ( !fileSockets[0].Send( ackMessage ) )
-				throw std::domain_error( "Connection closed before the SIZE ACK. " );
+				success.store( false );
 			
 		} else {
 			success.store( false );

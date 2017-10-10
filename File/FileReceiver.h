@@ -11,8 +11,8 @@
 #include <thread>
 #include <future>
 #include <mutex>
-#include "TCPSocket/TCPSocket.h"
-#include "TCPServerSocket/TCPServerSocket.h"
+#include "TCPSocket.h"
+#include "TCPServerSocket.h"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -67,6 +67,8 @@ public:
 	bool receive();
 
     wstring getFileName();
+
+	bool getSuccess();
 	
 
 };
