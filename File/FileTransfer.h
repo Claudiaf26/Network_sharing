@@ -47,10 +47,10 @@ private:
 	/*Explore the dir to find the overall size, given by the sum of the file size.*/
 	uint64_t dirSize();
 	/*Explore the dir and all subdirectories and saves the path in a proper packet.*/
-	vector<wstring> exploreDir();
+	vector<string> exploreDir();
 
 	/*Creates the packet with all the directories according to the protocol. */
-	vector<char> createDirectoryPacket(vector<wstring> tree);
+	vector<char> createDirectoryPacket(vector<string> tree);
 	
 	/*Based on the hardware concurrency, trades the number of ports to be used.
 	 *It asks for a certain number, if the receiver can't hold them, it will send
@@ -66,7 +66,7 @@ public:
 	/*ipAddress of an active host. If not active, an exception is thrown.
 	 *source path of the file or of the directory. If it does not exist,
 	 *an exception is thrown.*/
-	FileTransfer( string ipAddress, wstring source );
+	FileTransfer( string ipAddress, path source );
 	~FileTransfer();
 
 	/*Returns the estimated time in s*/

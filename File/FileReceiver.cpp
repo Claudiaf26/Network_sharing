@@ -1,7 +1,6 @@
 #include "FileReceiver.h"
 
-FileReceiver::FileReceiver(TCPSocket s, wstring p) : controlS(std::move(s)) {
-	std::replace( p.begin(), p.end(), '\\', '/' );
+FileReceiver::FileReceiver(TCPSocket s, path p) : controlS(std::move(s)) {
 	dest = p;
 	dest=dest.generic_path();
 	overallSent = 0;
@@ -134,20 +133,19 @@ void FileReceiver::threadReceive(uint16_t i){
 					return;
 				}
 
-                wstring prova(msgV.begin(), msgV.end());
-                path filePath(prova);
+				path filePath( msgV.begin(), msgV.end() );
 
 				fileNameMutex.lock();
 				if(fileName.empty() )
-                    fileName = filePath.wstring();
+                    fileName = filePath.string();
 				fileNameMutex.unlock();
 
 				uint8_t duplicate=1;
 				if ( exists( dest.generic() / filePath ) ) {
-					while ( exists( dest.generic() / (filePath.stem().wstring() + L"(" + to_wstring( duplicate ) + L")" + filePath.extension().wstring()) ) ) {
+					while ( exists( dest.generic() / (filePath.stem().string() + "(" + to_string( duplicate ) + ")" + filePath.extension().string()) ) ) {
 						++duplicate;
 					}
-					filePath = filePath.stem().wstring() + L"(" + to_wstring( duplicate ) + L")" + filePath.extension().wstring();
+					filePath = filePath.stem().string() + "(" + to_string( duplicate ) + ")" + filePath.extension().string();
 				}
 				file.open(dest.generic() / filePath, ios::out | ios::binary );
 				if ( !file.is_open() ) {
@@ -236,7 +234,7 @@ void FileReceiver::threadReceive(uint16_t i){
 				success.store( false );
 				return;
 			}
-			wstring wmsgS;
+			string wmsgS;
 			wmsgS.assign(msgV.begin(), msgV.end());
 			uint32_t pos1=0, pos2 = 0;
 			path tempPath;
@@ -247,15 +245,15 @@ void FileReceiver::threadReceive(uint16_t i){
 			tempPath = wmsgS.substr( pos1, pos2 - pos1 );
 			
 			fileNameMutex.lock();
-            fileName = tempPath.wstring();
+            fileName = tempPath.string();
 			fileNameMutex.unlock();
 
 			uint8_t duplicate = 1;
 			if ( exists( dest / tempPath.generic() ) ) {
-				while ( exists( dest / (tempPath.wstring() + L"(" + to_wstring( duplicate ) + L")") ) ) {
+				while ( exists( dest / (tempPath.string() + "(" + to_string( duplicate ) + ")") ) ) {
 					++duplicate;
 				}
-				tempPath = tempPath.wstring() + L"(" + to_wstring( duplicate ) + L")";
+				tempPath = tempPath.string() + "(" + to_string( duplicate ) + ")";
 			}
 			dest = dest / tempPath;
 			pos1 = pos2 + 1;
@@ -290,7 +288,7 @@ uint8_t FileReceiver::getProgress(){
 }
 
 
-wstring FileReceiver::getFileName() {
+string FileReceiver::getFileName() {
 	lock_guard<mutex> l( fileNameMutex );
 	return fileName;
 }

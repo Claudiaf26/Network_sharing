@@ -1,9 +1,7 @@
 #include "FileTransfer.h"
 
 
-FileTransfer::FileTransfer( string ipAddress, wstring sourceString ) : ip( ipAddress ), overallSize( 0 ), transferStart( std::chrono::system_clock::now() ) {
-	std::replace( sourceString.begin(), sourceString.end(), '\\', '/' );
-	source = sourceString;
+FileTransfer::FileTransfer( string ipAddress, path sourceString ) : ip( ipAddress ), source(sourceString), overallSize( 0 ), transferStart( std::chrono::system_clock::now() ) {
 	if ( is_directory( source ) ) {
 		recursive_directory_iterator rdi( source.generic_path() );
 		this->rdi = rdi;
@@ -125,7 +123,7 @@ void FileTransfer::prepareSockets() {
 bool FileTransfer::sendDir() {
 	/*Computing directories tree and overall dimension*/
 
-	vector<wstring> tree;
+	vector<string> tree;
 	vector<char> message;
 	auto future_tree = async( &FileTransfer::exploreDir, this );
 	auto future_dirSize = async( &FileTransfer::dirSize, this );
@@ -172,7 +170,7 @@ void FileTransfer::sendFile( uint16_t i ) {
 	boost::filesystem::ifstream file;
 	bool flag = true;
 	bool isDirectory = is_directory( source );
-	wstring relativePath;
+	string relativePath;
 	path p;
 	try {
 		while ( success.load() ) {
@@ -194,10 +192,10 @@ void FileTransfer::sendFile( uint16_t i ) {
 
 				if ( flag == false )
 					break;
-				relativePath = (relative( p.generic(), source.generic() )).generic().wstring();
+				relativePath = (relative( p.generic(), source.generic() )).generic().string();
 			} else {
 				p = source;
-				relativePath = source.filename().wstring();
+				relativePath = source.filename().string();
 			}
 			uint64_t fileSize = file_size( p );
 			if ( !isDirectory )
@@ -274,18 +272,18 @@ void FileTransfer::sendFile( uint16_t i ) {
 
 
 
-vector<wstring> FileTransfer::exploreDir() {
-	vector<wstring> tree;
+vector<string> FileTransfer::exploreDir() {
+	vector<string> tree;
 	if ( !exists( source ) )
 		throw std::domain_error( "The source does not exists. " ); //The directory does not exists.
 
 	recursive_directory_iterator rdi( source );
 	recursive_directory_iterator end_rdi;
 
-	tree.push_back( relative( source.generic(), source.parent_path() ).generic().wstring() );
+	tree.push_back( relative( source.generic(), source.parent_path() ).generic().string() );
 	for ( ; rdi != end_rdi; rdi++ ) {
 		if ( is_directory( (*rdi).path() ) )
-			tree.push_back( relative( (*rdi).path(), source ).generic().wstring() );
+			tree.push_back( relative( (*rdi).path(), source ).generic().string() );
 	}
 	return tree;
 }
@@ -305,7 +303,7 @@ uint64_t FileTransfer::dirSize() {
 	return size;
 }
 
-vector<char> FileTransfer::createDirectoryPacket( vector<wstring> tree ) {
+vector<char> FileTransfer::createDirectoryPacket( vector<string> tree ) {
 	string temp( "DIRT" );
 	vector<char> message;
 	message.insert( message.begin(), temp.begin(), temp.end() );
