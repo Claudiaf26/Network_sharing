@@ -10,8 +10,8 @@
 #include <future>
 #include <mutex>
 #include <string.h>
-#include "TCPSocket.h"
-#include "../../define.h"
+#include "TCPSocket/TCPSocket.h"
+#include "define.h"
 
 using namespace std;
 

@@ -1,4 +1,5 @@
 #include "receivermanager.h"
+#include "define.h"
 #include <QApplication>
 #include <QMessageBox>
 
@@ -41,9 +42,9 @@ void ReceiverManager::createUI(){
     int ret = QMessageBox::Ok;
     if(!automaticMode){
         QMessageBox msgBox;
-        wstring message(L"Ti sta venendo inviato il file ");
+        string message("Ti sta arrivando un file o cartella\n");
         message.append(newReceiver.receiver->getFileName());
-        msgBox.setText(QString::fromStdWString(message));
+        msgBox.setText(message.c_str());
         msgBox.setInformativeText("Vuoi accettarlo?");
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::No);
         ret = msgBox.exec();
@@ -58,17 +59,18 @@ void ReceiverManager::createUI(){
 
 void ReceiverManager::checkProgress(){
     for (auto it = receivingList.begin(); it != receivingList.end();){
-        if (it->receiver->getSuccess() == 0){
+        uint8_t status = it->receiver->getStatus();
+        if (status == FT_ERROR){
             it->progressUI->close();
-            emit error("Il trasferimento del file è fallito");
+            emit error("Il trasferimento è fallito");
         }
 
         if (!it->progressUI->isClosed()){
-            it->progressUI->setProgress(it->receiver->getProgress());
+            it->progressUI->setProgress(status);
             it++;
         }
          else {
-            if ( (it->receiver->getSuccess() != 0)  && (it->receiver->getProgress() < 100))
+            if ( (status != FT_COMPLETE) && (status != FT_ERROR) )
                 it->receiver->stop();
             if (it->receivingThread->joinable())
                 it->receivingThread->join();
