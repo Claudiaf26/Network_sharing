@@ -146,7 +146,7 @@ unix:LIBS += -lpthread
 win32{
     INCLUDEPATH += E:/boost_1_64_0
     DEPENDPATH += E:/boost_1_64_0/stage/lib-release/lib
-    LIBS += -LE:/boost_1_64_0/stage/lib-release/lib -lboost_filesystem-vc140-mt-1_64
+    LIBS += -LE:/boost_1_64_0/stage/lib-release/lib -lboost_filesystem-vc140-mt-gd-1_64
 }
 unix{
     LIBS += -L$$PWD/libraries_linux/lib/ -lboost_filesystem

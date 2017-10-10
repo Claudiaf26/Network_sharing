@@ -34,7 +34,7 @@ private:
 	vector<thread> transferThreads;
 
 	mutex fileNameMutex;
-	string fileName;
+    wstring fileName;
 
 	/*Based on the hardware concurrency, trades the number of ports to be used.
 	*It receives a proposal with a certain number, 
@@ -66,7 +66,7 @@ public:
 	 *the object does not go out of scope.*/
 	bool receive();
 
-	string getFileName();
+    wstring getFileName();
 	
 
 };

@@ -77,7 +77,7 @@ void FileTransfer::tradePort() {
 	if ( s.Send( message ) == false )
 		throw std::domain_error( "Err send 1 " );
 
-	struct timeval t; t.tv_sec = 1; t.tv_usec = 0;
+    struct timeval t; t.tv_sec = 120; t.tv_usec = 0;
 	if ( s.Receive( message, 6, t ) == false )
 		throw std::domain_error( "Err rcv 1 " );
 
@@ -141,7 +141,7 @@ bool FileTransfer::sendDir() {
 
 	vector<char> msgV( 3 );
 	string msgS;
-	struct timeval timeout; timeout.tv_sec = 1; timeout.tv_usec = 0;
+    struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
 	if ( !fileSockets[0].Receive( msgV, 3, timeout ) ) {
 		throw std::domain_error( "Connection closed before SIZE ACK. " );
 	}

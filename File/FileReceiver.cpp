@@ -53,14 +53,14 @@ bool FileReceiver::receive() {
 	return success.load();
 }
 
-string FileReceiver::getFileName() {
+wstring FileReceiver::getFileName() {
 	lock_guard<mutex> l( fileNameMutex );
 	return fileName;
 }
 
 void FileReceiver::tradeport() {
 	vector<char> msg(6);
-	struct timeval timeout; timeout.tv_sec = 2; timeout.tv_usec = 0;
+    struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
 	if(!controlS.Receive(msg, 6, timeout))
 		throw std::domain_error("Can't trade ports. ");
 	
@@ -111,10 +111,10 @@ void FileReceiver::prepareSockets() {
 }
 
 void FileReceiver::threadReceive(uint16_t i){
-	vector<char> msgV(4);
-	string msgS;
-	struct timeval timeout1; timeout1.tv_sec = 2; timeout1.tv_usec = 0;
-	struct timeval timeout2; timeout2.tv_sec = 1; timeout2.tv_usec = 0;
+    vector<char> msgV(4);
+    string msgS;
+    struct timeval timeout1; timeout1.tv_sec = 120; timeout1.tv_usec = 0;
+    struct timeval timeout2; timeout2.tv_sec = 120; timeout2.tv_usec = 0;
 	boost::filesystem::fstream file;
 	while ( success.load() ) {
 		if ( !fileSockets[i].Receive( msgV, 4, timeout1 ) ) {
@@ -138,11 +138,12 @@ void FileReceiver::threadReceive(uint16_t i){
 					return;
 				}
 
-				path filePath( msgV.begin(), msgV.end() );
+                wstring prova(msgV.begin(), msgV.end());
+                path filePath(prova);
 
 				fileNameMutex.lock();
 				if(fileName.empty() )
-					fileName = filePath.string();
+                    fileName = filePath.wstring();
 				fileNameMutex.unlock();
 
 				uint8_t duplicate=1;
@@ -245,7 +246,7 @@ void FileReceiver::threadReceive(uint16_t i){
 			tempPath = wmsgS.substr( pos1, pos2 - pos1 );
 			
 			fileNameMutex.lock();
-			fileName = tempPath.string();
+            fileName = tempPath.wstring();
 			fileNameMutex.unlock();
 
 			uint8_t duplicate = 1;
