@@ -42,9 +42,9 @@ void ReceiverManager::createUI(){
     int ret = QMessageBox::Ok;
     if(!automaticMode){
         QMessageBox msgBox;
-        wstring message(L"Ti sta venendo inviato il file ");
+        string message("Ti sta arrivando un file o cartella\n");
         message.append(newReceiver.receiver->getFileName());
-        msgBox.setText(QString::fromStdWString(message));
+        msgBox.setText(message.c_str());
         msgBox.setInformativeText("Vuoi accettarlo?");
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::No);
         ret = msgBox.exec();
