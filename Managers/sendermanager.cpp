@@ -9,7 +9,6 @@ SenderManager::SenderManager(wstring thisPath):path(thisPath){
     timerThread = new QThread(this);
     timer = new QTimer();
     timer->setInterval(1000);
-    QObject::connect(this, SIGNAL(error(QString)), this, SLOT(showError(QString)));
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
     QObject::connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
     timer->moveToThread(timerThread);
@@ -38,8 +37,14 @@ void SenderManager::checkProgress(){
         QApplication::quit();
     for (auto it = transferList.begin(); it != transferList.end();){
         uint8_t status = it->transfer->getStatus();
+        if (it->failed){
+            it++;
+            continue;
+        }
         if (status == FT_ERROR){
+
             it->progressUI->close();
+            it->failed = true;
             emit error("Il trasferimento è fallito");
         }
 
@@ -56,12 +61,5 @@ void SenderManager::checkProgress(){
         }
     }
 }
-
-void SenderManager::showError(QString errorText){
-    QMessageBox errorBox;
-    errorBox.setText(errorText);
-    errorBox.exec();
-}
-
 
 

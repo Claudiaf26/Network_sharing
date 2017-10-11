@@ -14,7 +14,6 @@ ReceiverManager::ReceiverManager():automaticMode(false) {
     timer = new QTimer();
     socketLoop = new SocketThread();
     timer->setInterval(1000);
-    QObject::connect(this, SIGNAL(error(QString)), this, SLOT(showError(QString)));
     QObject::connect(socketLoop, SIGNAL(createUI()), this, SLOT(createUI()), Qt::BlockingQueuedConnection);
     QObject::connect(socketThread, SIGNAL(started()), socketLoop, SLOT(loop()));
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
@@ -52,8 +51,6 @@ void ReceiverManager::createUI(){
             message.append(sFile);
         else if(fileOrFolder == FT_DIRECTORY)
             message.append(sFolder);
-        else
-           message.append("Ti sto inviando qualcosa\n");
 
         message.append(fileName);
 
@@ -64,24 +61,23 @@ void ReceiverManager::createUI(){
         ret = msgBox.exec();
     }
 
-    newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
-
     if (ret == QMessageBox::Ok){
+        newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
         newReceiver.progressUI->show();
         receivingList.push_back(move(newReceiver));
-    }
-    else{
-        newReceiver.receiver->stop();
-        if (newReceiver.receivingThread->joinable())
-            newReceiver.receivingThread->join();
     }
 }
 
 void ReceiverManager::checkProgress(){
     for (auto it = receivingList.begin(); it != receivingList.end();){
+        if (it->failed){
+            it++;
+            continue;
+        }
         uint8_t status = it->receiver->getStatus();
         if (status == FT_ERROR){
             it->progressUI->close();
+            it->failed = true;
             emit error("Il trasferimento è fallito");
         }
 
@@ -97,11 +93,5 @@ void ReceiverManager::checkProgress(){
             it = receivingList.erase(it);
         }
     }
-}
-
-void ReceiverManager::showError(QString errorText){
-    QMessageBox errorBox;
-    errorBox.setText(errorText);
-    errorBox.exec();
 }
 

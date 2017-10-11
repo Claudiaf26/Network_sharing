@@ -18,6 +18,9 @@ private:
 
 public:
     explicit SendingProgram(const char* ,QObject *parent = 0);
+
+public slots:
+    void showError(QString);
 };
 
 #endif // SENDINGPROGRAM_H

@@ -19,21 +19,25 @@ struct ReceivingObject {
     ProgressDialog* progressUI;
     FileReceiver* receiver;
     std::unique_ptr<std::thread> receivingThread;
+    bool failed;
 
-    ReceivingObject(std::wstring filePath, TCPSocket socket){
+    ReceivingObject(std::wstring filePath, TCPSocket socket):failed(false){
         progressUI = new ProgressDialog(QString::fromStdWString(filePath), true);
         receiver = new FileReceiver(std::move(socket), filePath);
     }
 
     ~ReceivingObject(){
-        delete progressUI;
-        delete receiver;
+        if (progressUI != nullptr)
+            delete progressUI;
+        if (receiver != nullptr)
+            delete receiver;
     }
 
     ReceivingObject(ReceivingObject&& original) {
         this->progressUI = original.progressUI;
         this->receiver = original.receiver;
         this->receivingThread = std::move(original.receivingThread);
+        this->failed = original.failed;
         original.progressUI = nullptr;
         original.receiver = nullptr;
     }
@@ -45,6 +49,7 @@ struct ReceivingObject {
             this->progressUI = original.progressUI;
             this->receiver = original.receiver;
             this->receivingThread = std::move(original.receivingThread);
+            this->failed = original.failed;
             original.progressUI = nullptr;
             original.receiver = nullptr;
         }
@@ -110,7 +115,6 @@ public:
 public slots:
     void createUI();
     void checkProgress();
-    void showError(QString);
 
 signals:
     void error(QString);

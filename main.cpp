@@ -1,11 +1,6 @@
 //#include "settings.h"
 #include "mainprogram.h"
 #include "sendingprogram.h"
-
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/endian/arithmetic.hpp>
-
 #include <QApplication>
 #include <QMessageBox>
 #include <QString>

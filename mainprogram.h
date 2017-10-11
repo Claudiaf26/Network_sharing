@@ -52,6 +52,7 @@ public slots:
     void startProgram(uint8_t, string, string);
     void addUser(User);
     void deleteUser(User);
+    void showError(QString);
 signals:
     void changeSettings(uint8_t, string, string);
 };

@@ -16,8 +16,9 @@ struct SendingObject{
     ProgressDialog* progressUI;
     FileTransfer* transfer;
     std::unique_ptr<std::thread> sendingThread;
+    bool failed;
 
-    SendingObject(std::wstring filePath, std::string destinationIP){
+    SendingObject(std::wstring filePath, std::string destinationIP):failed(false){
         progressUI = new ProgressDialog(QString::fromStdWString(filePath), true);
         transfer = new FileTransfer(destinationIP, filePath);
     }
@@ -31,6 +32,7 @@ struct SendingObject{
         this->progressUI = original.progressUI;
         this->transfer = original.transfer;
         this->sendingThread = std::move(original.sendingThread);
+        this->failed = original.failed;
         original.progressUI = nullptr;
         original.transfer = nullptr;
     }
@@ -42,6 +44,7 @@ struct SendingObject{
             this->progressUI = original.progressUI;
             this->transfer = original.transfer;
             this->sendingThread = std::move(original.sendingThread);
+            this->failed = original.failed;
             original.progressUI = nullptr;
             original.transfer = nullptr;
         }
@@ -63,7 +66,7 @@ public:
 public slots:
     void sendToUsers(const std::vector<User>&);
     void checkProgress();
-    void showError(QString);
+
 
 signals:
     void error(QString);

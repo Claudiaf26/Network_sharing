@@ -2,6 +2,7 @@
 #include "DataStruct/usersingleton.h"
 #include <string>
 #include <cstdlib>
+#include <QMessageBox>
 
 using namespace std;
 
@@ -20,5 +21,12 @@ SendingProgram::SendingProgram(const char* path, QObject *parent) : QObject(pare
     chooseDestUI = new FileSending(QString::fromStdWString(filePath), userVect);
     transfer = new SenderManager(filePath);
     QObject::connect(chooseDestUI, SIGNAL(sendToUsers(std::vector<User>)), transfer, SLOT(sendToUsers(std::vector<User>)));
+    QObject::connect(transfer, SIGNAL(error(QString)), this, SLOT(showError(QString)), Qt::DirectConnection);
     chooseDestUI->show();
+}
+
+void SendingProgram::showError(QString errorText){
+    QMessageBox errorBox;
+    errorBox.setText(errorText);
+    errorBox.exec();
 }
