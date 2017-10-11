@@ -5,6 +5,9 @@
 
 using namespace std;
 
+const string sFolder = "Ti sta venendo inviata la cartella\n";
+const string sFile = "Ti sta venendo inviato il file\n";
+
 ReceiverManager::ReceiverManager():automaticMode(false) {
     socketThread = new QThread(this);
     timerThread = new QThread(this);
@@ -41,9 +44,20 @@ void ReceiverManager::createUI(){
     ReceivingObject newReceiver(path, move(socketLoop->getSocket()));
     int ret = QMessageBox::Ok;
     if(!automaticMode){
+        uint8_t fileOrFolder = FT_FILE;
+        string message;
+        string fileName("Error");
+        newReceiver.receiver->getFileDetails(fileName, fileOrFolder);
+        if(fileOrFolder == FT_FILE)
+            message.append(sFile);
+        else if(fileOrFolder == FT_DIRECTORY)
+            message.append(sFolder);
+        else
+           message.append("Ti sto inviando qualcosa\n");
+
+        message.append(fileName);
+
         QMessageBox msgBox;
-        string message("Ti sta arrivando un file o cartella\n");
-        message.append(newReceiver.receiver->getFileName());
         msgBox.setText(message.c_str());
         msgBox.setInformativeText("Vuoi accettarlo?");
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::No);
