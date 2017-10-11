@@ -22,7 +22,17 @@ FileTransfer::~FileTransfer() {
 
 bool FileTransfer::transfer() {
 	try {
-		tradePort(); //throws
+		/*Using the control connection (on which the receiver is always listening):
+		1. Connection established, the FileReceiver is notified by the 3-way TCP Handshake
+		2. File name sent, the FileReceiver will be able to ask the user for approval
+		3. Data connection established
+		4. Control connection closed
+		*/
+		TCPSocket s( ip, 50000 );
+		sendTransferRequest( s ); //throws
+		tradePort(s); //throws
+		s.Close();
+
 		prepareSockets(); //throws
 
 		if ( is_directory( source ) ) {
@@ -54,10 +64,29 @@ bool FileTransfer::transfer() {
 
 }
 
-void FileTransfer::tradePort() {
-	//Control connection
-	TCPSocket s( ip, 50000 );
+void FileTransfer::sendTransferRequest( TCPSocket& s ) {
+	string transferRequestS;
+	if ( boost::filesystem::is_directory( source ) )
+		transferRequestS = "DIRTREQ";
+	else
+		transferRequestS = "FILEREQ";
 
+	string transferName = source.filename().string();
+	vector<char> message( transferRequestS.begin(), transferRequestS.end() );
+
+	uint16_t transferNameSize = htons( transferName.size() );
+
+	message.resize( transferRequestS.size() + 2 );
+	memcpy( message.data() + message.size() - 2, &transferNameSize, sizeof( transferNameSize ) );
+	if ( s.Send( message ) == false )
+		throw std::domain_error( "Err sending request 1 " );
+
+	message.assign(transferName.begin(), transferName.end());
+	if ( s.Send( message ) == false )
+		throw std::domain_error( "Err sending request 2 " );
+}
+
+void FileTransfer::tradePort(TCPSocket& s) {
 	//Asking to open nThreads data connection (nThreads ports are needed)
 	string msg( "PORT" );
 	vector<char> message( msg.begin(), msg.end() );
@@ -98,8 +127,6 @@ void FileTransfer::tradePort() {
 		ports[i] = ntohs( ports[i] );
 		cout << "Port: " << ports[i] << endl;
 	}
-
-	s.Close();
 
 }
 

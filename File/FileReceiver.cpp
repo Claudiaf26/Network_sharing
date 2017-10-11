@@ -6,6 +6,9 @@ FileReceiver::FileReceiver(TCPSocket s, boost::filesystem::path p) : controlS(st
 	overallSent = 0;
 	overallSize = 0;
 	success = true;
+
+	receiveTransferRequest();
+
 }
 
 FileReceiver::~FileReceiver() {
@@ -25,7 +28,10 @@ FileReceiver::~FileReceiver() {
 
 bool FileReceiver::receive() {
 	try {
+		//Here the connection has been accepted, so it is possible to establish data connections and close the control one.
 		tradeport();
+		controlS.Close();
+
 		prepareSockets();
 
 		for ( uint16_t  i = 0; i < fileSockets.size(); ++i ) {
@@ -52,6 +58,32 @@ bool FileReceiver::receive() {
 	return success.load();
 }
 
+void FileReceiver::receiveTransferRequest() {
+	lock_guard<mutex> l( transferDetailsMutex );
+	vector<char> reqV( 9 );
+	struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
+	if ( !controlS.Receive( reqV, 9, timeout ) )
+		throw std::domain_error( "Can't receive initialization request. " );
+
+	string requestS( reqV.begin(), reqV.begin() + 7 );
+	if ( requestS.compare( "DIRTREQ" ) == 0 )
+		transferType = FT_DIRECTORY;
+	else if ( requestS.compare( "FILEREQ" ) == 0 )
+		transferType = FT_FILE;
+	else
+		throw std::domain_error( "Wrong protocol. " );
+
+	uint16_t transferNameSize;
+	memcpy( &transferNameSize, reqV.data() + 7, sizeof( transferNameSize ) );
+	transferNameSize = ntohs( transferNameSize );
+
+	reqV.resize( transferNameSize );
+	timeout.tv_sec = 120; timeout.tv_usec = 0;
+	if ( !controlS.Receive( reqV, transferNameSize, timeout ) )
+		throw std::domain_error( "Can't receive the name. " );
+
+	transferName.assign( reqV.begin(), reqV.end());
+}
 
 void FileReceiver::tradeport() {
 	vector<char> msg(6);
@@ -95,7 +127,6 @@ void FileReceiver::tradeport() {
 		}catch (...) {}
 	}
 	controlS.Send(msg);
-	controlS.Close();
 
 }
 
@@ -134,11 +165,6 @@ void FileReceiver::threadReceive(uint16_t i){
 				}
 
 				boost::filesystem::path filePath( msgV.begin(), msgV.end() );
-
-				fileNameMutex.lock();
-				if(fileName.empty() )
-                    fileName = filePath.string();
-				fileNameMutex.unlock();
 
 				uint8_t duplicate=1;
 				if ( boost::filesystem::exists( dest.generic() / filePath ) ) {
@@ -243,10 +269,6 @@ void FileReceiver::threadReceive(uint16_t i){
 			 * inside it.*/
 			pos2 = wmsgS.find( '^', pos1 );
 			tempPath = wmsgS.substr( pos1, pos2 - pos1 );
-			
-			fileNameMutex.lock();
-            fileName = tempPath.string();
-			fileNameMutex.unlock();
 
 			uint8_t duplicate = 1;
 			if ( boost::filesystem::exists( dest / tempPath.generic() ) ) {
@@ -288,11 +310,6 @@ uint8_t FileReceiver::getProgress(){
 }
 
 
-string FileReceiver::getFileName() {
-	lock_guard<mutex> l( fileNameMutex );
-	return fileName;
-}
-
 uint8_t FileReceiver::getStatus() {
 	if ( !success.load() )
 		return FT_ERROR;
@@ -301,6 +318,12 @@ uint8_t FileReceiver::getStatus() {
 		return progress;
 
 	return FT_COMPLETE;
+}
+
+void FileReceiver::getFileDetails( string & name, uint8_t & type ) {
+	lock_guard<mutex> l(transferDetailsMutex);
+	name = transferName;
+	type = transferType;
 }
 
 void FileReceiver::stop() {

@@ -10,8 +10,8 @@
 #include <future>
 #include <mutex>
 #include <string.h>
-#include "TCPSocket/TCPSocket.h"
-#include "define.h"
+#include "TCPSocket.h"
+#include "../../define.h"
 
 using namespace std;
 
@@ -50,11 +50,15 @@ private:
 
 	/*Creates the packet with all the directories according to the protocol. */
 	vector<char> createDirectoryPacket(vector<string> tree);
+
+	/*Send transfer request*/
+	void sendTransferRequest( TCPSocket& s );
 	
 	/*Based on the hardware concurrency, trades the number of ports to be used.
 	 *It asks for a certain number, if the receiver can't hold them, it will send
 	 *a counter-proposal that will be accepted.*/
-	void tradePort();
+	void tradePort( TCPSocket& s );
+
 	/*Both sockets will open a data connection for each traded port.*/
 	void prepareSockets();
 

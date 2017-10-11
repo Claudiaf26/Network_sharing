@@ -5,22 +5,9 @@
 
 
 //flag per il passaggio dati da mainprogram a settings
-
-enum Settings_Status {
-    AUTOMATIC_FLAG = 1,
-    NOTIFICATION_FLAG = 2,
-    PRIVATE_FLAG = 4
-};
-
-typedef enum Settings_Status Settings_Status;
-
-//flag per la ricezione/invio dei file
-enum FileTransfer_Status {
-    FT_COMPLETE = 100,
-    FT_ERROR = 101,
-};
-
-typedef enum FileTransfer_Status FileTransfer_Status;
+#define AUTOMATIC_FLAG      1
+#define NOTIFICATION_FLAG   2
+#define PRIVATE_FLAG        4
 
 //struttura comune per gli utenti
 #include <string>
@@ -41,8 +28,19 @@ enum UDP_Discover_Status {
     UDS_HIDDEN = 1,
     UDS_ACTIVE = 2,
 };
-
 typedef enum UDP_Discover_Status UDP_Discover_Status;
+
+enum FileTransfer_Status {
+    FT_COMPLETE = 100,
+    FT_ERROR = 101,
+};
+typedef enum FileTransfer_Status FileTransfer_Status;
+
+enum FileTransfer_Type {
+	FT_DIRECTORY = 0,
+	FT_FILE = 1,
+};
+typedef enum FileTransfer_Type FileTransfer_Type;
 
 
 #endif // DEFINE_H

@@ -11,9 +11,9 @@
 #include <thread>
 #include <future>
 #include <mutex>
-#include "TCPSocket/TCPSocket.h"
-#include "TCPServerSocket/TCPServerSocket.h"
-#include "define.h"
+#include "TCPSocket.h"
+#include "TCPServerSocket.h"
+#include "../../define.h"
 
 using namespace std;
 
@@ -33,8 +33,12 @@ private:
 	vector<TCPSocket> fileSockets;
 	vector<thread> transferThreads;
 
-	mutex fileNameMutex;
-    string fileName;
+	mutex transferDetailsMutex;
+    string transferName;
+	uint8_t transferType;
+
+	/*Receives the transfer request containing the file/folder name and type*/
+	void receiveTransferRequest();
 
 	/*Based on the hardware concurrency, trades the number of ports to be used.
 	*It receives a proposal with a certain number, 
@@ -49,6 +53,8 @@ private:
 
 	/*Returns an int with the percentage of the total size sent.*/
 	uint8_t getProgress();
+
+	
 
 public:
 	/*TCPSocket is a connected Socket, obtained from a TCPServerSocket.accept().
@@ -66,11 +72,11 @@ public:
 	 *the object does not go out of scope.*/
 	bool receive();
 
-	/*Returns the file/folder name that is being transferred*/
-    string getFileName();
-
 	/*Returns the progress (0-99), the FT_COMPLETE or the FT_ERROR defined in define.h*/
 	uint8_t getStatus();
+
+	/*Sets the name of the file/directory transferred and the type, either FT_FILE or FT_DIRECTORY defined in define.h*/
+	void getFileDetails(string& name, uint8_t& type);
 
 	
 
