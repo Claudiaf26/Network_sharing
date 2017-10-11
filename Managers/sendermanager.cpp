@@ -9,6 +9,7 @@ SenderManager::SenderManager(wstring thisPath):path(thisPath){
     timerThread = new QThread(this);
     timer = new QTimer();
     timer->setInterval(1000);
+    QObject::connect(this, SIGNAL(error(QString)), this, SLOT(showError(QString)));
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
     QObject::connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
     timer->moveToThread(timerThread);

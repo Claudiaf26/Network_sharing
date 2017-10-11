@@ -11,7 +11,7 @@ ReceiverManager::ReceiverManager():automaticMode(false) {
     timer = new QTimer();
     socketLoop = new SocketThread();
     timer->setInterval(1000);
-    QObject::connect(this, SIGNAL(error(QString)), this, SLOT(showError(QString)), Qt::BlockingQueuedConnection);
+    QObject::connect(this, SIGNAL(error(QString)), this, SLOT(showError(QString)));
     QObject::connect(socketLoop, SIGNAL(createUI()), this, SLOT(createUI()), Qt::BlockingQueuedConnection);
     QObject::connect(socketThread, SIGNAL(started()), socketLoop, SLOT(loop()));
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
@@ -50,10 +50,16 @@ void ReceiverManager::createUI(){
         ret = msgBox.exec();
     }
 
+    newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
+
     if (ret == QMessageBox::Ok){
-        newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
         newReceiver.progressUI->show();
         receivingList.push_back(move(newReceiver));
+    }
+    else{
+        newReceiver.receiver->stop();
+        if (newReceiver.receivingThread->joinable())
+            newReceiver.receivingThread->join();
     }
 }
 
