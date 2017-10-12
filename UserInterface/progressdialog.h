@@ -12,7 +12,7 @@ class ProgressDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit ProgressDialog(QString path, bool sending, QWidget *parent = 0);
+    explicit ProgressDialog(QString path, QString user, bool sending, QWidget *parent = 0);
     ~ProgressDialog();
 
     bool isClosed() {return closed;}

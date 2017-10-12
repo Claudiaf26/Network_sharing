@@ -8,7 +8,7 @@ using namespace std;
 const string sFolder = "Ti sta venendo inviata la cartella\n";
 const string sFile = "Ti sta venendo inviato il file\n";
 
-ReceiverManager::ReceiverManager():automaticMode(false) {
+ReceiverManager::ReceiverManager(QObject *parent):automaticMode(false), QObject(parent){
     socketThread = new QThread(this);
     timerThread = new QThread(this);
     timer = new QTimer();
@@ -40,18 +40,22 @@ void ReceiverManager::start(){
 }
 
 void ReceiverManager::createUI(){
-    ReceivingObject newReceiver(path, move(socketLoop->getSocket()));
+    TCPSocket socket = socketLoop->getSocket();
     int ret = QMessageBox::Ok;
+    string username;
+    emit searchUser(username, socket.getPeerIp());
+    uint8_t fileOrFolder = FT_FILE;
+    string fileName("Error");
+
+    ReceivingObject newReceiver(path, move(socket));
+    newReceiver.receiver->getFileDetails(fileName, fileOrFolder);
+
     if(!automaticMode){
-        uint8_t fileOrFolder = FT_FILE;
-        string message;
-        string fileName("Error");
-        newReceiver.receiver->getFileDetails(fileName, fileOrFolder);
+        string message(username);
         if(fileOrFolder == FT_FILE)
             message.append(sFile);
         else if(fileOrFolder == FT_DIRECTORY)
             message.append(sFolder);
-
         message.append(fileName);
 
         QMessageBox msgBox;
@@ -62,6 +66,7 @@ void ReceiverManager::createUI(){
     }
 
     if (ret == QMessageBox::Ok){
+        newReceiver.setUI(fileName, username);
         newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
         newReceiver.progressUI->show();
         receivingList.push_back(move(newReceiver));

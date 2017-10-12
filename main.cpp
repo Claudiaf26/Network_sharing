@@ -10,6 +10,7 @@
 
 int main(int argc, char *argv[]){
     QApplication a(argc, argv);
+    a.setQuitOnLastWindowClosed(false);
 
     if (argc < 2){
         MainProgram m;

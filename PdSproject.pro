@@ -53,8 +53,7 @@ SOURCES += main.cpp\
     UDPSocket/UDPSocketMulticast.cpp \
     UDPSocket/UDPSocketMulticast_Linux.cpp \
     UDPSocket/UDPSocketMulticast_Windows.cpp \
-    DataStruct/userlistsingleton.cpp \
-    Managers/dialogmanager.cpp
+    DataStruct/userlistsingleton.cpp
 
 HEADERS  += \
     mainprogram.h \
@@ -93,8 +92,7 @@ HEADERS  += \
     UDPSocket/UDPSocketMulticast_Interface.h \
     UDPSocket/UDPSocketMulticast_Linux.h \
     UDPSocket/UDPSocketMulticast_Windows.h \
-    DataStruct/userlistsingleton.h \
-    Managers/dialogmanager.h
+    DataStruct/userlistsingleton.h
 
 FORMS    += settings.ui \
     settings_copy.ui \

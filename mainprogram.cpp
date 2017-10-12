@@ -38,8 +38,8 @@ MainProgram::MainProgram(){
     context = new ContextMenu(L"FileSender");
     settingsUI = new Settings();
     notification = new NotificationManager(this);
-    udpDiscover = new UDP_Manager();
-    receiver = new ReceiverManager();
+    udpDiscover = new UDP_Manager(this);
+    receiver = new ReceiverManager(this);
 
     QObject::connect(settingsUI, SIGNAL(startProgram(uint8_t,string,string)), this, SLOT(startProgram(uint8_t,string,string)) );
     QObject::connect(udpDiscover, SIGNAL(showSignal(QString)), notification, SLOT(showNotification(QString)) );
@@ -49,6 +49,7 @@ MainProgram::MainProgram(){
     QObject::connect(udpDiscover, SIGNAL(deleteUser(User)), settingsUI, SLOT(deleteUser(User)) );
     QObject::connect(this, SIGNAL(changeSettings(uint8_t, string, string)), settingsUI, SLOT(changeSettings(uint8_t, string, string)) );
     QObject::connect(receiver, SIGNAL(error(QString)), this, SLOT(showError(QString)), Qt::DirectConnection);
+    QObject::connect(receiver, SIGNAL(searchUser(std::string&,std::string)), this, SLOT(searchUser(std::string&,std::string)), Qt::DirectConnection);
 }
 
 MainProgram::~MainProgram(){
@@ -146,4 +147,11 @@ void MainProgram::showError(QString errorText){
     QMessageBox errorBox;
     errorBox.setText(errorText);
     errorBox.exec();
+}
+
+void MainProgram::searchUser(std::string& name, std::string searchedIP){
+    for (auto it = userVect.begin(); it != userVect.end(); it++){
+        if (it->ip == searchedIP)
+            name = it->name;
+    }
 }

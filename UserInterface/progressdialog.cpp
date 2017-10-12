@@ -1,7 +1,7 @@
 #include "progressdialog.h"
 #include "ui_progressdialog.h"
 
-ProgressDialog::ProgressDialog(QString path, bool sending,  QWidget *parent) :
+ProgressDialog::ProgressDialog(QString path, QString user, bool sending,  QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ProgressDialog),
     closed(false)
@@ -10,9 +10,9 @@ ProgressDialog::ProgressDialog(QString path, bool sending,  QWidget *parent) :
     ui->progressBar->setValue(0);
     QObject::connect(ui->endButton, SIGNAL(pressed()), this, SLOT(close()));
     if(sending)
-        ui->textLabel->setText("Stai inviando il file" + path);
+        ui->textLabel->setText("Stai inviando " + path + " a " + user);
     else
-        ui->textLabel->setText("Stai ricevendo un file");
+        ui->textLabel->setText("Stai ricevendo " + path +" da " + user);
 }
 
 ProgressDialog::~ProgressDialog()

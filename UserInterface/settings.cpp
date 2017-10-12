@@ -2,6 +2,7 @@
 #include "ui_settings.h"
 #include <QFileDialog>
 #include <QListWidget>
+#include <QMessageBox>
 
 Settings::Settings(QWidget* parent) :
     QWidget(parent),
@@ -21,7 +22,7 @@ Settings::Settings(QWidget* parent) :
 
     QObject::connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
                      this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
-    QObject::connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    QObject::connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
     QObject::connect(settingAction, SIGNAL(triggered()), this, SLOT(show()));
 }
 
@@ -95,5 +96,18 @@ void Settings::deleteUser(User deletedUser){
         if ( (rowItem->text() == QString::fromStdString(deletedUser.name) )
            &&(rowItem->data(Qt::UserRole) == QString::fromStdString(deletedUser.ip)) )
                 delete ui->listWidget->takeItem(row);
+    }
+}
+
+void Settings::closeEvent (QCloseEvent *event){
+    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "FileSender",
+                                                                tr("Sei sicuro di voler uscire?\n"),
+                                                                QMessageBox::No | QMessageBox::Yes,
+                                                                QMessageBox::Yes);
+    if (resBtn != QMessageBox::Yes) {
+        event->ignore();
+    } else {
+        event->accept();
+        QApplication::exit(0);
     }
 }

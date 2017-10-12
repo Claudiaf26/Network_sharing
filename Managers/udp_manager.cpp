@@ -5,29 +5,12 @@
 UDP_Manager::UDP_Manager(QObject *parent) :
     QObject(parent)
 {
-    //creazione oggetti di prova
-    /*User user1, user2, user3, user4;
-    user1.name = "Lamberti";
-    user1.ip = "192.178.3.3";
-    user2.name = "Pagiogi";
-    user2.ip = "192.178.2.1";
-    user3.name = "Raggibusco";
-    user3.ip = "192.178.10.0";
-    user4.name = "Lamberti";
-    user4.ip = "192.178.10.0";
-    newQueue.push(user1);
-    newQueue.push(user2);
-    newQueue.push(user3);
-    newQueue.push(user4);*/
-    //fine prova
-
-
     running = false;
     udp = nullptr;
     newThread = nullptr;
     deletedThread = nullptr;
     timerThread = new QThread(this);
-    timer = new QTimer(this);
+    timer = new QTimer();
     timer->setInterval(500);
     timer->moveToThread(timerThread);
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkUser()));

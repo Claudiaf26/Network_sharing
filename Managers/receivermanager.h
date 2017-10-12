@@ -14,6 +14,7 @@
 #include <vector>
 #include <queue>
 #include <atomic>
+#include <iostream>
 
 struct ReceivingObject {
     ProgressDialog* progressUI;
@@ -22,7 +23,7 @@ struct ReceivingObject {
     bool failed;
 
     ReceivingObject(std::wstring filePath, TCPSocket socket):failed(false){
-        progressUI = new ProgressDialog(QString::fromStdWString(filePath), true);
+        progressUI = nullptr;
         receiver = new FileReceiver(std::move(socket), filePath);
     }
 
@@ -54,6 +55,10 @@ struct ReceivingObject {
             original.receiver = nullptr;
         }
         return *this;
+    }
+
+    void setUI(std::string fileName, std::string username){
+        progressUI = new ProgressDialog(QString::fromStdString(fileName), QString::fromStdString(username), false);
     }
 
 };
@@ -97,6 +102,9 @@ signals:
 class ReceiverManager : public QObject {
     Q_OBJECT
 private:
+    const string sFolder = " ti sta inviando la cartella\n";
+    const string sFile = " ti sta inviando il file\n";
+
     std::wstring path;
     std::vector<ReceivingObject> receivingList;
     QThread* timerThread;
@@ -105,7 +113,7 @@ private:
     SocketThread* socketLoop;
     bool automaticMode; //da implementare
 public:
-    ReceiverManager();
+    ReceiverManager(QObject *parent = 0);
     ~ReceiverManager();
     void setPath(std::wstring newPath){this->path = newPath;}
     void start();
@@ -118,6 +126,7 @@ public slots:
 
 signals:
     void error(QString);
+    void searchUser(std::string&, std::string);
 
 };
 #endif // RECEIVERMANAGER_H

@@ -53,6 +53,8 @@ public slots:
     void addUser(User);
     void deleteUser(User);
     void showError(QString);
+    void searchUser(std::string&, std::string);
+
 signals:
     void changeSettings(uint8_t, string, string);
 };

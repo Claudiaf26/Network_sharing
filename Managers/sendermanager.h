@@ -18,8 +18,8 @@ struct SendingObject{
     std::unique_ptr<std::thread> sendingThread;
     bool failed;
 
-    SendingObject(std::wstring filePath, std::string destinationIP):failed(false){
-        progressUI = new ProgressDialog(QString::fromStdWString(filePath), true);
+    SendingObject(std::wstring filePath, std::string username, std::string destinationIP):failed(false){
+        progressUI = new ProgressDialog(QString::fromStdWString(filePath), QString::fromStdString(username), true);
         transfer = new FileTransfer(destinationIP, filePath);
     }
 

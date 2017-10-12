@@ -6,6 +6,7 @@
 #include <string>
 #include <QSystemTrayIcon>
 #include <QMenu>
+#include <QCloseEvent>
 
 using namespace std;
 
@@ -20,6 +21,8 @@ class Settings : public QWidget {
 public:
     explicit Settings(QWidget* parent = 0);
     ~Settings();
+
+    void closeEvent(QCloseEvent*);
 
 public slots:
     void on_okButton_pressed();

@@ -23,7 +23,7 @@ SenderManager::~SenderManager(){
 
 void SenderManager::sendToUsers(const vector<User>& selectedUsers){
     for (auto it = selectedUsers.begin(); it != selectedUsers.end(); it++){
-        SendingObject newTransfer(path, it->ip);
+        SendingObject newTransfer(path, it->name, it->ip);
         newTransfer.sendingThread = unique_ptr<std::thread>(new std::thread(&FileTransfer::transfer, newTransfer.transfer));
         newTransfer.progressUI->show();
         transferList.push_back(move(newTransfer));
