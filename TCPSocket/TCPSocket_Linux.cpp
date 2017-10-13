@@ -100,4 +100,10 @@ bool TCPSocket_Linux::Send(vector<char> source) {
 		return true;
 }
 
+string TCPSocket_Linux::getPeerIp() {
+	char ipAddress[INET_ADDRSTRLEN];
+	inet_ntop( AF_INET, &(serverAddress.sin_addr), ipAddress, INET_ADDRSTRLEN );
+	return string( ipAddress );
+}
+
 #endif
