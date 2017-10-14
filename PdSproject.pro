@@ -45,7 +45,6 @@ SOURCES += main.cpp\
     TCPServerSocket/TCPServerSocket.cpp \
     TCPServerSocket/TCPServerSocket_Linux.cpp \
     TCPServerSocket/TCPServerSocket_Windows.cpp \
-    TCPSocket/Main.cpp \
     TCPSocket/TCPSocket.cpp \
     TCPSocket/TCPSocket_Linux.cpp \
     TCPSocket/TCPSocket_Windows.cpp \
@@ -118,9 +117,6 @@ win32 {
 }
 macx {
     DEPLOY_COMMAND = macdeployqt
-}
-linux {
-    DEPLOY_COMMAND = linuxdeployqt
 }
 
 win32{

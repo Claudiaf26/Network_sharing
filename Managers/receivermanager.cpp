@@ -25,7 +25,6 @@ ReceiverManager::ReceiverManager(QObject *parent):automaticMode(false), QObject(
 ReceiverManager::~ReceiverManager(){
     socketLoop->disable();
     socketThread->quit();
-    QThread::sleep(2);
     socketThread->wait();
     delete socketLoop;
     timerThread->quit();

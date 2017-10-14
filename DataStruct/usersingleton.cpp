@@ -1,6 +1,7 @@
 #include "usersingleton.h"
 #include <sstream>
 #include <future>
+#include <locale>
 #include <codecvt>
 #include <algorithm>
 
@@ -9,22 +10,8 @@ using namespace std;
 mutex UserSingleton::istantiation_mutex;
 
 inline string WStringToString(const wstring& s){
-    #ifdef _WIN32
     wstring_convert<codecvt_utf8_utf16<wchar_t>> convert;
     string temp = convert.to_bytes(s);
-    #endif
-    #ifdef __linux__
-    setlocale(LC_ALL, "");
-    const locale locale("");
-    typedef codecvt<wchar_t, char, mbstate_t> converter_type;
-    const converter_type& converter = use_facet<converter_type>(locale);
-    vector<char> to(s.length() * converter.max_length());
-    mbstate_t state;
-    const wchar_t* from_next;
-    char* to_next;
-    converter.out(state, s.data(), s.data() + s.length(), from_next, &to[0], &to[0] + to.size(), to_next);
-    string temp(to.begin(), to.end());
-    #endif
     return temp;
  }
 
