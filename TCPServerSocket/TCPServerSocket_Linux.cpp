@@ -38,8 +38,12 @@ void TCPServerSocket_Linux::Close() {
 	started = false;
 	
 	/*The accept() in Linux will block, no matter what. The only way to unblock it is to connect to it and gracefully close the connection. */
-	TCPSocket tcpToClose("127.0.0.1", 50000);
-	tcpToClose.Close();
+	try{
+		TCPSocket tcpToClose("127.0.0.1", 50000);
+		tcpToClose.Close();
+	}	catch(...){
+		cout << "There was no opened connection." <<endl;
+	}
 
 	close(s);
 }
