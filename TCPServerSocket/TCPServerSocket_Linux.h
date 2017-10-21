@@ -22,6 +22,7 @@ using namespace std;
 class TCPServerSocket_Linux : public TCPServerSocket_Interface {
 private:
 	bool started;
+    bool accepting;
 
 	int16_t s;
 	sockaddr_in address;

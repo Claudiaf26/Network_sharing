@@ -3,7 +3,7 @@
 #include "TCPServerSocket_Linux.h"
 
 TCPServerSocket_Linux::TCPServerSocket_Linux(uint16_t port) : TCPServerSocket_Interface() {
-
+    accepting=false;
 	s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (s < 0)
 		throw std::invalid_argument("Error during socket: " + errno);
@@ -37,22 +37,26 @@ TCPServerSocket_Linux::~TCPServerSocket_Linux() {
 void TCPServerSocket_Linux::Close() {
 	started = false;
 	
-	/*The accept() in Linux will block, no matter what. The only way to unblock it is to connect to it and gracefully close the connection. */
-	try{
-		TCPSocket tcpToClose("127.0.0.1", 50000);
-		tcpToClose.Close();
-	}	catch(...){
-		cout << "There was no opened connection." <<endl;
-	}
+    if(accepting){
+        /*The accept() in Linux will block, no matter what. The only way to unblock it is to connect to it and gracefully close the connection. */
+        try{
+            TCPSocket tcpToClose("127.0.0.1", 50000);
+            tcpToClose.Close();
+        }	catch(...){
+            cout << "There was no opened connection." <<endl;
+        }
+     }
 
 	close(s);
 }
 
 TCPSocket TCPServerSocket_Linux::Accept() {
+    accepting=true;
 	int16_t connectedSocket;
 	sockaddr_in clientAddress;
 	socklen_t clen= sizeof(clientAddress);
 	connectedSocket = accept(s, (struct sockaddr*) &clientAddress, &clen);
+    accepting=false;
 	if (connectedSocket < 0 )
 		throw std::invalid_argument("The client has problems: " + errno);
 	
