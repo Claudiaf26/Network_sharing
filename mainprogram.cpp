@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <QMessageBox>
+#include <exception>
 
 using namespace std;
 
@@ -53,6 +54,7 @@ MainProgram::MainProgram(){
 }
 
 MainProgram::~MainProgram(){
+    UserSingleton::get_instance().close();
     context->removeFromContextMenu();
     if (context != nullptr)
         delete context;
@@ -105,7 +107,7 @@ void MainProgram::start(){
     settingsUI->show();
 }
 
-void MainProgram::startProgram(uint8_t flg, string user, string direct){
+void MainProgram::startProgram(uint8_t flg, string user, string direct){    
     curr.username = user;
     curr.directory = direct;
     curr.automaticMode = ((flg & AUTOMATIC_FLAG) != 0) ? true : false;

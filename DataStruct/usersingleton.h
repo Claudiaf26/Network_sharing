@@ -46,6 +46,7 @@ public:
       }
 
     bool initialize();
+    void close();
     bool open();
     std::vector<User> getList();
     void setList(const std::vector<User>&);

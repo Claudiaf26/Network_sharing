@@ -41,6 +41,13 @@ bool UserSingleton::initialize(){
     return shared;
 }
 
+void UserSingleton::close(){
+    if(shared){
+        memory->releaseMem();
+        shared = false;
+    }
+}
+
 bool UserSingleton::open(){
     auto result = async(std::launch::async, &SharedMem::openMem, memory.get());
     result.wait();
