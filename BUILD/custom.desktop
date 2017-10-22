@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Action
+ToolbarLabel=
+Name=
+Profiles=profile-zero;
+
+[X-Action-Profile profile-zero]
+Name=
+Exec=
+ExecutionMode=DisplayOutput
