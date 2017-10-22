@@ -70,9 +70,9 @@ bool ContextMenu_Linux::addToContextMenu(){
     buffer.append(contextPath);
     dst << buffer << endl;
 
-    //da eliminare
-    getline(src, buffer);
-    dst << buffer << endl;
+    //da eliminare, stampa l'output
+    //getline(src, buffer);
+    //dst << buffer << endl;
 
     dst.flush();
 

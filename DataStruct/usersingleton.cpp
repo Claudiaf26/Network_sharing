@@ -29,8 +29,6 @@ UserSingleton::UserSingleton() : shared(false) {
 UserSingleton::~UserSingleton(){
     if (t != nullptr)
         delete t;
-    if(shared)
-        memory->releaseMem();
 }
 
 bool UserSingleton::initialize(){
