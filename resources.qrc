@@ -1,5 +1,20 @@
 <RCC>
-    <qresource prefix="/images/icon">
-        <file>IconFileTransfer.png</file>
+    <qresource prefix="/images/tray">
+        <file>Style/TrayIcon.png</file>
+    </qresource>
+    <qresource prefix="/style/darkorange">
+        <file>Style/darkorange.stylesheet</file>
+    </qresource>
+    <qresource prefix="/images/icons">
+        <file>Icons/1.png</file>
+        <file>Icons/2.png</file>
+        <file>Icons/3.png</file>
+        <file>Icons/4.png</file>
+        <file>Icons/5.png</file>
+        <file>Icons/6.png</file>
+        <file>Icons/7.png</file>
+        <file>Icons/8.png</file>
+        <file>Style/FileIcon.png</file>
+        <file>Style/SystemIcon.png</file>
     </qresource>
 </RCC>

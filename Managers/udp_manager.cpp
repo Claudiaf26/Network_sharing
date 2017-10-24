@@ -30,10 +30,10 @@ UDP_Manager::~UDP_Manager(){
     delete timerThread;
 }
 
-void UDP_Manager::start(string user, bool mod){
+void UDP_Manager::start(string user, bool mod, string pic){
     UDP_Discover_Status status = (mod != true) ? UDS_ACTIVE : UDS_HIDDEN; //mod == true significa che la modalità privata è attiva
     if (!running){
-        udp = new UDPDiscover(user, "1");
+        udp = new UDPDiscover(user, pic);
 
         udp->run(status);
         running = !running;
@@ -47,13 +47,18 @@ void UDP_Manager::start(string user, bool mod){
         if (user != username){
             udp->changeUserName(user);
         }
+
         if (mod != mode){
             udp->changeMode(status);
         }
+
+        if (pic != picture)
+            udp->changePicture(pic);
     }
 
     username = user;
     mode = mod;
+    picture = pic;
 }
 
 void UDP_Manager::run(bool newOrDeleted){
@@ -79,8 +84,10 @@ void UDP_Manager::checkUser(){
         newQueue.pop();
         emit addUser(newUser);
 
-        string message("L'utente " + newUser.name + " è connesso");
-        emit showSignal(QString::fromStdString(message));
+        string message("L'utente\n" + newUser.name + "\nè connesso");
+        QString imgStr(QString::fromStdString(iconString));
+        imgStr.append(QString::fromStdString(newUser.picture));
+        emit showSignal(QString::fromStdString(message), imgStr);
     }
 
     if(!deletedQueue.empty()){
@@ -88,7 +95,9 @@ void UDP_Manager::checkUser(){
         deletedQueue.pop();
         emit deleteUser(deletedUser);
 
-        string message("L'utente " + deletedUser.name + " è disconnesso");
-        emit showSignal(QString::fromStdString(message));
+        string message("L'utente\n" + deletedUser.name + "\nè disconnesso");
+        QString imgStr(QString::fromStdString(iconString));
+        imgStr.append(QString::fromStdString(deletedUser.picture));
+        emit showSignal(QString::fromStdString(message), imgStr);
     }
 }

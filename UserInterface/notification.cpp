@@ -1,20 +1,23 @@
 #include "notification.h"
-#include <QApplication>
+#include "ui_notification.h"
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
 #include <QDesktopWidget>
 
+Notification::Notification(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::Notification)
+{
+    ui->setupUi(this);
 
-Notification::Notification(QWidget *parent)
-    : QDialog(parent){
     setModal(false);
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint);
     QRect screenSize = QApplication::desktop()->availableGeometry();
-    int w = screenSize.width()/9; int h = screenSize.height()/9;
+    int w = screenSize.width()/8; int h = screenSize.height()/8;
+    w = (w < 77) ? 77 : w; h = (h < 77) ? 77 : h;
     setFixedSize(w,h);
-    move(w*8,h*8-28);
-    dialogLayout = new QBoxLayout(QBoxLayout::TopToBottom, this);
-    testo = new QLabel(this);
-    dialogLayout->addWidget(testo, 0, Qt::AlignHCenter);
-    setLayout(dialogLayout);
+    move(w*7,h*7-28);
+
     timerThread = new QThread(this);
     timer = new QTimer(0);
     timer->setInterval(5000);
@@ -23,16 +26,21 @@ Notification::Notification(QWidget *parent)
     QObject::connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
 }
 
-Notification::~Notification() {
-    delete dialogLayout;
-    delete testo;
+Notification::~Notification()
+{
+    delete ui;
     timerThread->quit();
     timerThread->wait();
 }
 
-void Notification::showNotification(QString text) {
+void Notification::showNotification(QString text, QString picture) {
     if(!isVisible()){
-        testo->setText(text);
+        ui->userLabel->setText(text);
+        QGraphicsScene* scene = new QGraphicsScene();
+        ui->iconView->setScene(scene);
+        QImage* image = new QImage(picture);
+        QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(*image));
+        scene->addItem(item);
         show();
 
         timerThread->start();

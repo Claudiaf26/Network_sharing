@@ -1,6 +1,7 @@
 //#include "settings.h"
 #include "mainprogram.h"
 #include "sendingprogram.h"
+#include "UserInterface/showusers.h"
 #include <QApplication>
 #include <QMessageBox>
 #include <QString>
@@ -11,6 +12,8 @@
 int main(int argc, char *argv[]){
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(false);
+    QIcon mainIcon(":/images/icons/Style/SystemIcon.png");
+    a.setWindowIcon(mainIcon);
     try{
         if (argc < 2){
             MainProgram m;

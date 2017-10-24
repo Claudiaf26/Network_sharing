@@ -2,25 +2,32 @@
 #define NOTIFICATION_H
 
 #include <QDialog>
-#include <QLayout>
-#include <QLabel>
 #include <QThread>
 #include <QTimer>
 
-class Notification: public QDialog {
+namespace Ui {
+class Notification;
+}
+
+class Notification : public QDialog
+{
     Q_OBJECT
-    QBoxLayout* dialogLayout;
-    QLabel* testo;
-    QThread* timerThread;
-    QTimer* timer;
+
 public:
-    Notification(QWidget *parent = 0);
+    explicit Notification(QWidget *parent = 0);
     ~Notification();
+
 public slots:
-    void showNotification(QString);
+    void showNotification(QString, QString);
     void hideNotification();
 signals:
     void terminated();
+
+private:
+    Ui::Notification *ui;
+
+    QThread* timerThread;
+    QTimer* timer;
 };
 
 #endif // NOTIFICATION_H

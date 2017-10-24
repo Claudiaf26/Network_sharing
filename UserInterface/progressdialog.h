@@ -16,7 +16,7 @@ public:
     ~ProgressDialog();
 
     bool isClosed() {return closed;}
-    void setProgress(int);
+    void setProgress(int, QString, QString);
 
     void closeEvent(QCloseEvent*);
 

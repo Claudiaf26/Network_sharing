@@ -2,7 +2,7 @@
 #define SENDINGPROGRAM_H
 
 #include "define.h"
-#include "UserInterface/filesending.h"
+#include "UserInterface/showusers.h"
 #include "Managers/sendermanager.h"
 #include <QObject>
 #include <vector>
@@ -13,7 +13,7 @@ class SendingProgram : public QObject
 private:
     std::vector<User> userVect;
 
-    FileSending* chooseDestUI;
+    ShowUsers* chooseDestUI;
     SenderManager* transfer;
 
 public:

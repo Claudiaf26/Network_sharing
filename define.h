@@ -42,5 +42,6 @@ enum FileTransfer_Type {
 };
 typedef enum FileTransfer_Type FileTransfer_Type;
 
+const std::string iconString = ":/images/icons/Icons/";
 
 #endif // DEFINE_H

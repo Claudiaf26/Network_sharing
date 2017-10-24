@@ -3,6 +3,9 @@
 
 #include "define.h"
 #include "UserInterface/settings.h"
+#include "UserInterface/startui.h"
+#include "UserInterface/userselection.h"
+#include "UserInterface/showusers.h"
 #include "Managers/notificationmanager.h"
 #include "UDPDiscover/UDPDiscover.h"
 #include "Managers/udp_manager.h"
@@ -20,8 +23,10 @@
 
 
 struct curSettings{
-    string username;
-    string directory;
+    std::string username;
+    std::string directory;
+    std::string picture;
+
     bool automaticMode;
     bool notificationNoShowMode;
     bool privateMode;
@@ -38,6 +43,9 @@ private:
 
     ContextMenu* context;
     Settings* settingsUI;
+    StartUI* startUI;
+    UserSelection* userUI;
+    ShowUsers* showUI;
     NotificationManager* notification;
     UDP_Manager* udpDiscover;
     ReceiverManager* receiver;
@@ -49,14 +57,14 @@ public:
 
 public slots:
     void start();
-    void startProgram(uint8_t, string, string);
+    void startProgram(uint8_t, std::string, std::string, std::string);
     void addUser(User);
     void deleteUser(User);
     void showError(QString);
     void searchUser(std::string&, std::string);
 
 signals:
-    void changeSettings(uint8_t, string, string);
+    void changeSettings(uint8_t, std::string, std::string, std::string);
 };
 
 #endif // MAINPROGRAM_H

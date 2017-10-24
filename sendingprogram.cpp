@@ -18,10 +18,11 @@ SendingProgram::SendingProgram(const char* path, QObject *parent) : QObject(pare
     if (!UserSingleton::get_instance().open())
         exit(EXIT_FAILURE);
     userVect = UserSingleton::get_instance().getList();
-    chooseDestUI = new FileSending(QString::fromStdWString(filePath), userVect);
+    chooseDestUI = new ShowUsers(false, path);
     transfer = new SenderManager(filePath);
     QObject::connect(chooseDestUI, SIGNAL(sendToUsers(std::vector<User>)), transfer, SLOT(sendToUsers(std::vector<User>)));
     QObject::connect(transfer, SIGNAL(error(QString)), this, SLOT(showError(QString)), Qt::DirectConnection);
+    chooseDestUI->createList(userVect);
     chooseDestUI->show();
 }
 

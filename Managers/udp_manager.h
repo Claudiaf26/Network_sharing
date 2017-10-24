@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <queue>
 #include <thread>
+#include <string>
 
 class UDP_Manager : public QObject
 {
@@ -18,7 +19,8 @@ private:
     std::queue<struct User> newQueue;
     std::queue<struct User> deletedQueue;
 
-    string username;
+    std::string username;
+    std::string picture;
 
     std::thread* newThread;
     std::thread* deletedThread;
@@ -33,9 +35,9 @@ private:
 public:
     explicit UDP_Manager(QObject *parent = 0 );
     ~UDP_Manager();
-    void start(string, bool);
+    void start(string, bool, std::string);
 signals:
-    void showSignal(QString);
+    void showSignal(QString, QString);
     void addUser(User);
     void deleteUser(User);
 public slots:

@@ -32,7 +32,6 @@ SOURCES += main.cpp\
     ContextMenu/contextmenu_windows.cpp \
     Managers/notificationmanager.cpp \
     Managers/udp_manager.cpp \
-    UserInterface/notification.cpp \
     UserInterface/settings.cpp \
     DataStruct/usersingleton.cpp \
     File/FileReceiver.cpp \
@@ -52,7 +51,12 @@ SOURCES += main.cpp\
     UDPSocket/UDPSocketMulticast.cpp \
     UDPSocket/UDPSocketMulticast_Linux.cpp \
     UDPSocket/UDPSocketMulticast_Windows.cpp \
-    DataStruct/userlistsingleton.cpp
+    DataStruct/userlistsingleton.cpp \
+    UserInterface/userselection.cpp \
+    UserInterface/startui.cpp \
+    UserInterface/showusers.cpp \
+    UserInterface/notification2.cpp \
+    UserInterface/notification.cpp
 
 HEADERS  += \
     mainprogram.h \
@@ -68,7 +72,6 @@ HEADERS  += \
     ContextMenu/contextmenu_windows.h \
     Managers/notificationmanager.h \
     Managers/udp_manager.h \
-    UserInterface/notification.h \
     UserInterface/settings.h \
     DataStruct/usersingleton.h \
     File/FileReceiver.h \
@@ -91,12 +94,21 @@ HEADERS  += \
     UDPSocket/UDPSocketMulticast_Interface.h \
     UDPSocket/UDPSocketMulticast_Linux.h \
     UDPSocket/UDPSocketMulticast_Windows.h \
-    DataStruct/userlistsingleton.h
+    DataStruct/userlistsingleton.h \
+    UserInterface/userselection.h \
+    UserInterface/startui.h \
+    UserInterface/showusers.h \
+    UserInterface/notification2.h \
+    UserInterface/notification.h
 
 FORMS    += settings.ui \
     settings_copy.ui \
     UserInterface/filesending.ui \
-    UserInterface/progressdialog.ui
+    UserInterface/progressdialog.ui \
+    UserInterface/userselection.ui \
+    UserInterface/startui.ui \
+    UserInterface/showusers.ui \
+    UserInterface/notification.ui
 
 RESOURCES += \
     resources.qrc
@@ -155,4 +167,44 @@ unix{
 }
 
 DISTFILES += \
-    PdSproject.config
+    PdSproject.config \
+    rc/branch_closed-on.png \
+    rc/branch_closed.png \
+    rc/branch_open-on.png \
+    rc/branch_open.png \
+    rc/checkbox_checked.png \
+    rc/checkbox_checked_disabled.png \
+    rc/checkbox_checked_focus.png \
+    rc/checkbox_indeterminate.png \
+    rc/checkbox_indeterminate_disabled.png \
+    rc/checkbox_indeterminate_focus.png \
+    rc/checkbox_unchecked.png \
+    rc/checkbox_unchecked_disabled.png \
+    rc/checkbox_unchecked_focus.png \
+    rc/close-hover.png \
+    rc/close-pressed.png \
+    rc/close.png \
+    rc/down_arrow.png \
+    rc/down_arrow_disabled.png \
+    rc/Hmovetoolbar.png \
+    rc/Hsepartoolbar.png \
+    rc/left_arrow.png \
+    rc/left_arrow_disabled.png \
+    rc/radio_checked.png \
+    rc/radio_checked_disabled.png \
+    rc/radio_checked_focus.png \
+    rc/radio_unchecked.png \
+    rc/radio_unchecked_disabled.png \
+    rc/radio_unchecked_focus.png \
+    rc/right_arrow.png \
+    rc/right_arrow_disabled.png \
+    rc/sizegrip.png \
+    rc/stylesheet-branch-end.png \
+    rc/stylesheet-branch-more.png \
+    rc/stylesheet-vline.png \
+    rc/transparent.png \
+    rc/undock.png \
+    rc/up_arrow.png \
+    rc/up_arrow_disabled.png \
+    rc/Vmovetoolbar.png \
+    rc/Vsepartoolbar.png

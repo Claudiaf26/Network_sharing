@@ -9,7 +9,7 @@ Settings::Settings(QWidget* parent) :
     ui(new Ui::Settings)
 {
     ui->setupUi(this);
-    mainIcon = new QIcon(":/images/icon/IconFileTransfer.png");
+    mainIcon = new QIcon(":/images/tray/Style/TrayIcon.png");
     settingAction = new QAction("Impostazioni", this);
     quitAction = new QAction("Esci", this);
     trayIconMenu = new QMenu(this);

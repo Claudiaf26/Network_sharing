@@ -43,6 +43,8 @@ void ReceiverManager::createUI(){
     int ret = QMessageBox::Ok;
     string username;
     emit searchUser(username, socket.getPeerIp());
+    if (username.empty())
+        username = "Un utente anonimo";
     uint8_t fileOrFolder = FT_FILE;
     string fileName("Error");
 
@@ -86,7 +88,7 @@ void ReceiverManager::checkProgress(){
         }
 
         if (!it->progressUI->isClosed()){
-            it->progressUI->setProgress(status);
+            it->progressUI->setProgress(status, "", "");
             it++;
         }
          else {

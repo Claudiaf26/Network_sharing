@@ -19,7 +19,7 @@ public:
 signals:
 
 public slots:
-    void showNotification(QString);
+    void showNotification(QString, QString);
     void removeNotification();
 };
 

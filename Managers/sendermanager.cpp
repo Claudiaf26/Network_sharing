@@ -49,7 +49,11 @@ void SenderManager::checkProgress(){
         }
 
         if (!it->progressUI->isClosed()){
-            it->progressUI->setProgress(status);
+            QString speed = QString::number(it->transfer->getCurrentSpeed());
+            QString time =  QString::number(it->transfer->getTimeLeft());
+            speed.append(" MBps"); time.append(" s");
+
+            it->progressUI->setProgress(status, speed, time);
             it++;
         }
          else {

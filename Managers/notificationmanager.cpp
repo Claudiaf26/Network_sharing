@@ -5,14 +5,14 @@ NotificationManager::NotificationManager(QObject *parent) : QObject(parent)
     notificationCount = 0;
 }
 
-void NotificationManager::showNotification(QString text){
+void NotificationManager::showNotification(QString text, QString picture){
     if (!mode){
         Notification* newNotif = new Notification();
         QObject::connect(newNotif, SIGNAL(terminated()), this, SLOT(removeNotification()) );
         QPoint newNotifPosition = newNotif->pos();
         newNotifPosition.ry() -= (notificationCount * newNotif->size().rheight() );
         newNotif->move(newNotifPosition);
-        newNotif->showNotification(text);
+        newNotif->showNotification(text, picture);
         notificationQueue.push(newNotif);
         notificationCount++;
     }
