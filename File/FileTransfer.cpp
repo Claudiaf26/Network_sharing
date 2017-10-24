@@ -30,6 +30,10 @@ bool FileTransfer::transfer() {
 		*/
 		TCPSocket s( ip, 50000 );
 		sendTransferRequest( s ); //throws
+		
+		//Here the other side has accepted the transfer, so it makes sense to start evaluating from here.
+		transferStart.store(std::chrono::system_clock::now());
+
 		tradePort(s); //throws
 		s.Close();
 
@@ -358,12 +362,12 @@ uint8_t FileTransfer::getProgress() {
 	return progress;
 }
 
-double FileTransfer::getTimeLeft() {
-	return static_cast<double>(overallSize.load() - overallSent.load()) / getCurrentSpeed();
-}
-
-double FileTransfer::getCurrentSpeed() {
-	return static_cast<double>((overallSize.load() - overallSent.load())) /1024* std::chrono::duration<double>( std::chrono::system_clock::now() - transferStart.load() ).count();
+void FileTransfer::getStatistics(double& speed, double& timeLeft) {
+	int overallSizeTemp = overallSize.load();
+	int overallSentTemp = overallSent.load();
+	std::chrono::seconds timeElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>( std::chrono::system_clock::now() - transferStart.load() ));
+	speed = static_cast<double>(overallSentTemp) / (1048576 * timeElapsed.count());
+	timeLeft = static_cast<double>(overallSizeTemp - overallSentTemp) / (104876 * speed);
 }
 
 uint8_t FileTransfer::getStatus() {

@@ -10,8 +10,10 @@
 #include <future>
 #include <mutex>
 #include <string.h>
-#include "TCPSocket/TCPSocket.h"
-#include "define.h"
+#include "TCPSocket.h"
+#include "../../define.h"
+//#include "TCPSocket/TCPSocket.h"
+//#include "define.h"
 
 using namespace std;
 
@@ -72,10 +74,8 @@ public:
 	FileTransfer( string ipAddress, boost::filesystem::path source );
 	~FileTransfer();
 
-	/*Returns the estimated time in s*/
-	double getTimeLeft();
-	/*Returns the current speed in KBps*/
-	double getCurrentSpeed();
+	/*Returns the estimated time in s and the current speed in MBps*/
+	void getStatistics( double& speed, double& timeLeft );
 
 	/*Returns the progress (0-99), the FT_COMPLETE or the FT_ERROR defined in define.h*/
 	uint8_t getStatus();
