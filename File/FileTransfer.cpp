@@ -367,7 +367,7 @@ void FileTransfer::getStatistics(double& speed, double& timeLeft) {
 	int overallSentTemp = overallSent.load();
 	std::chrono::seconds timeElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>( std::chrono::system_clock::now() - transferStart.load() ));
 	speed = static_cast<double>(overallSentTemp) / (1048576 * timeElapsed.count());
-	timeLeft = static_cast<double>(overallSizeTemp - overallSentTemp) / (104876 * speed);
+	timeLeft = static_cast<double>(overallSizeTemp - overallSentTemp) / (1048576 * speed);
 }
 
 uint8_t FileTransfer::getStatus() {
