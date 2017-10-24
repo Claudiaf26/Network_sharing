@@ -32,11 +32,9 @@ SOURCES += main.cpp\
     ContextMenu/contextmenu_windows.cpp \
     Managers/notificationmanager.cpp \
     Managers/udp_manager.cpp \
-    UserInterface/settings.cpp \
     DataStruct/usersingleton.cpp \
     File/FileReceiver.cpp \
     File/FileTransfer.cpp \
-    UserInterface/filesending.cpp \
     UserInterface/progressdialog.cpp \
     sendingprogram.cpp \
     Managers/sendermanager.cpp \
@@ -55,7 +53,6 @@ SOURCES += main.cpp\
     UserInterface/userselection.cpp \
     UserInterface/startui.cpp \
     UserInterface/showusers.cpp \
-    UserInterface/notification2.cpp \
     UserInterface/notification.cpp
 
 HEADERS  += \
@@ -72,11 +69,9 @@ HEADERS  += \
     ContextMenu/contextmenu_windows.h \
     Managers/notificationmanager.h \
     Managers/udp_manager.h \
-    UserInterface/settings.h \
     DataStruct/usersingleton.h \
     File/FileReceiver.h \
     File/FileTransfer.h \
-    UserInterface/filesending.h \
     UserInterface/progressdialog.h \
     sendingprogram.h \
     Managers/sendermanager.h \
@@ -98,12 +93,9 @@ HEADERS  += \
     UserInterface/userselection.h \
     UserInterface/startui.h \
     UserInterface/showusers.h \
-    UserInterface/notification2.h \
     UserInterface/notification.h
 
-FORMS    += settings.ui \
-    settings_copy.ui \
-    UserInterface/filesending.ui \
+FORMS    += \
     UserInterface/progressdialog.ui \
     UserInterface/userselection.ui \
     UserInterface/startui.ui \

@@ -2,7 +2,6 @@
 #define MAINPROGRAM_H
 
 #include "define.h"
-#include "UserInterface/settings.h"
 #include "UserInterface/startui.h"
 #include "UserInterface/userselection.h"
 #include "UserInterface/showusers.h"
@@ -42,7 +41,6 @@ private:
     curSettings curr;
 
     ContextMenu* context;
-    Settings* settingsUI;
     StartUI* startUI;
     UserSelection* userUI;
     ShowUsers* showUI;

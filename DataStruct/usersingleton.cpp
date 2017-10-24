@@ -67,6 +67,8 @@ vector<User> UserSingleton::threadGetter(){
         newUser.ip = WStringToString(currentLine);
         getline(stringRead, currentLine);
         newUser.age = stoi(currentLine);
+        getline(stringRead, currentLine);
+        newUser.picture = WStringToString(currentLine);
         newList.push_back(newUser);
 
         getline(stringRead, currentLine);
@@ -86,6 +88,8 @@ void UserSingleton::threadSetter(const vector<User>& newList){
         currentline = StringToWString(currentUser.ip+'\n');
         serializedUser.append(currentline);
         serializedUser.append(to_wstring(currentUser.age)+L"\n");
+        currentline = StringToWString(currentUser.picture+'\n');
+        serializedUser.append(currentline);
         serializedUser.append(L"\n");
     }
 

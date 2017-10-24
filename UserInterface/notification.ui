@@ -42,7 +42,7 @@
      </property>
     </widget>
    </item>
-   <item>
+   <item alignment="Qt::AlignHCenter">
     <widget class="QLabel" name="userLabel">
      <property name="text">
       <string>Testo</string>

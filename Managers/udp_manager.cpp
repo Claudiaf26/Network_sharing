@@ -84,7 +84,7 @@ void UDP_Manager::checkUser(){
         newQueue.pop();
         emit addUser(newUser);
 
-        string message("L'utente\n" + newUser.name + "\nè connesso");
+        string message("L'utente\n\n" + newUser.name + "\n\nè connesso");
         QString imgStr(QString::fromStdString(iconString));
         imgStr.append(QString::fromStdString(newUser.picture));
         emit showSignal(QString::fromStdString(message), imgStr);
@@ -95,7 +95,7 @@ void UDP_Manager::checkUser(){
         deletedQueue.pop();
         emit deleteUser(deletedUser);
 
-        string message("L'utente\n" + deletedUser.name + "\nè disconnesso");
+        string message("L'utente\n\n" + deletedUser.name + "\n\nè disconnesso");
         QString imgStr(QString::fromStdString(iconString));
         imgStr.append(QString::fromStdString(deletedUser.picture));
         emit showSignal(QString::fromStdString(message), imgStr);

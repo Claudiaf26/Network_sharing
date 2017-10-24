@@ -24,7 +24,6 @@ inline wstring StringToWString(const string& s){
 
 MainProgram::MainProgram(){
     context = nullptr;
-    settingsUI = nullptr;
     startUI = nullptr;
     userUI = nullptr;
     showUI = nullptr;
@@ -55,7 +54,6 @@ MainProgram::MainProgram(){
     curr.notificationNoShowMode = false;
 
     context = new ContextMenu(L"FileSender");
-    settingsUI = new Settings();
     startUI = new StartUI();
     userUI = new UserSelection();
     showUI = new ShowUsers(true, "");
@@ -63,7 +61,6 @@ MainProgram::MainProgram(){
     udpDiscover = new UDP_Manager(this);
     receiver = new ReceiverManager(this);
 
-    //QObject::connect(settingsUI, SIGNAL(startProgram(uint8_t,string,string)), this, SLOT(startProgram(uint8_t,string,string)) );
     QObject::connect(startUI, SIGNAL(startProgram(uint8_t, std::string, std::string, std::string)), this, SLOT(startProgram(uint8_t, std::string, std::string, std::string)) );
     QObject::connect(userUI, SIGNAL(changeUser(QString, uint8_t)), startUI, SLOT(setUser(QString, uint8_t)));
     QObject::connect(startUI, SIGNAL(showUserList()), showUI, SLOT(show()));
@@ -73,7 +70,6 @@ MainProgram::MainProgram(){
     QObject::connect(udpDiscover, SIGNAL(deleteUser(User)), this, SLOT(deleteUser(User)) );
     QObject::connect(udpDiscover, SIGNAL(addUser(User)), showUI, SLOT(addUser(User)) );
     QObject::connect(udpDiscover, SIGNAL(deleteUser(User)), showUI, SLOT(deleteUser(User)) );
-    //QObject::connect(this, SIGNAL(changeSettings(uint8_t, string, string)), settingsUI, SLOT(changeSettings(uint8_t, string, string)) );
     QObject::connect(this, SIGNAL(changeSettings(uint8_t, std::string, std::string, std::string)), startUI, SLOT(changeSettings(uint8_t, std::string, std::string, std::string)) );
     QObject::connect(this, SIGNAL(changeSettings(uint8_t, std::string, std::string, std::string)), userUI, SLOT(changeSettings(uint8_t, std::string, std::string, std::string)) );
     QObject::connect(receiver, SIGNAL(error(QString)), this, SLOT(showError(QString)), Qt::DirectConnection);
@@ -86,8 +82,6 @@ MainProgram::~MainProgram(){
     context->removeFromContextMenu();
     if (context != nullptr)
         delete context;
-    if (settingsUI != nullptr)
-        delete settingsUI;
     if (notification != nullptr)
         delete notification;
     if (udpDiscover != nullptr)
