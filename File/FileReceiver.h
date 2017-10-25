@@ -14,6 +14,11 @@
 #include "TCPSocket/TCPSocket.h"
 #include "TCPServerSocket/TCPServerSocket.h"
 #include "define.h"
+/*
+#include "TCPSocket.h"
+#include "TCPServerSocket.h"
+#include "../../define.h"
+*/
 
 using namespace std;
 
@@ -28,6 +33,8 @@ private:
 
 	atomic<uint64_t> overallSize;
 	atomic<uint64_t> overallSent;
+
+	atomic<std::chrono::time_point<std::chrono::system_clock>> transferStart;
 
 	vector<TCPServerSocket> fileServerSockets;
 	vector<TCPSocket> fileSockets;
@@ -74,6 +81,9 @@ public:
 
 	/*Returns the progress (0-99), the FT_COMPLETE or the FT_ERROR defined in define.h*/
 	uint8_t getStatus();
+
+	/*Returns the transfer speed in MBps and the time left in seconds*/
+	void getStatistics( double& speed, double& timeLeft );
 
 	/*Sets the name of the file/directory transferred and the type, either FT_FILE or FT_DIRECTORY defined in define.h*/
 	void getFileDetails(string& name, uint8_t& type);

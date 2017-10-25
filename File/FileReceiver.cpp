@@ -1,6 +1,6 @@
 #include "FileReceiver.h"
 
-FileReceiver::FileReceiver(TCPSocket s, boost::filesystem::path p) : controlS(std::move(s)) {
+FileReceiver::FileReceiver(TCPSocket s, boost::filesystem::path p) : controlS(std::move(s)), transferStart( std::chrono::system_clock::now() ) {
 	dest = p;
 	dest=dest.generic_path();
 	overallSent = 0;
@@ -28,7 +28,9 @@ FileReceiver::~FileReceiver() {
 
 bool FileReceiver::receive() {
 	try {
-		//Here the connection has been accepted, so it is possible to establish data connections and close the control one.
+		/*Here the connection has been accepted, so it is possible to establish data connections and close the control one.
+		Moreover, it makes sense to evaluate the the starting time. */
+		transferStart.store( std::chrono::system_clock::now() );
 		tradeport();
 		controlS.Close();
 
@@ -318,6 +320,14 @@ uint8_t FileReceiver::getStatus() {
 		return progress;
 
 	return FT_COMPLETE;
+}
+
+void FileReceiver::getStatistics( double& speed, double& timeLeft ) {
+	int overallSizeTemp = overallSize.load();
+	int overallSentTemp = overallSent.load();
+	std::chrono::seconds timeElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>( std::chrono::system_clock::now() - transferStart.load() ));
+	speed = static_cast<double>(overallSentTemp) / (1048576 * timeElapsed.count());
+	timeLeft = static_cast<double>(overallSizeTemp - overallSentTemp) / (1048576 * speed);
 }
 
 void FileReceiver::getFileDetails( string & name, uint8_t & type ) {
