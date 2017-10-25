@@ -7,10 +7,10 @@
 
 class SharedMem_Linux : public SharedMem_Interface {
 private:
-    int sharedMemID;
-    key_t key;
-    wchar_t* pMem;
-    sem_t* sem;
+    int m_sharedMemoryID;
+    key_t m_uniqueKey;
+    wchar_t* m_sharedMemoryWString;
+    sem_t* m_semaphore;
 public:
     SharedMem_Linux();
     virtual bool createMem();

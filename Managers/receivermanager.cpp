@@ -5,41 +5,41 @@
 
 using namespace std;
 
-const string sFolder = "Ti sta venendo inviata la cartella\n";
-const string sFile = "Ti sta venendo inviato il file\n";
+const string m_folderString = "Ti sta venendo inviata la cartella\n";
+const string m_fileString = "Ti sta venendo inviato il file\n";
 
-ReceiverManager::ReceiverManager(QObject *parent):automaticMode(false), QObject(parent){
-    socketThread = new QThread(this);
-    timerThread = new QThread(this);
-    timer = new QTimer();
-    socketLoop = new SocketThread();
-    timer->setInterval(1000);
-    QObject::connect(socketLoop, SIGNAL(createUI()), this, SLOT(createUI()), Qt::BlockingQueuedConnection);
-    QObject::connect(socketThread, SIGNAL(started()), socketLoop, SLOT(loop()));
-    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
-    QObject::connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
-    timer->moveToThread(timerThread);
-    socketLoop->moveToThread(socketThread);
+ReceiverManager::ReceiverManager(QObject *parent):m_automaticMode(false), QObject(parent){
+    m_socketThread = new QThread(this);
+    m_timerThread = new QThread(this);
+    m_timer = new QTimer();
+    m_loopAccept = new SocketLoop();
+    m_timer->setInterval(1000);
+    QObject::connect(m_loopAccept, SIGNAL(createUI()), this, SLOT(createUI()), Qt::BlockingQueuedConnection);
+    QObject::connect(m_socketThread, SIGNAL(started()), m_loopAccept, SLOT(loop()));
+    QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
+    QObject::connect(m_timerThread, SIGNAL(started()), m_timer, SLOT(start()));
+    m_timer->moveToThread(m_timerThread);
+    m_loopAccept->moveToThread(m_socketThread);
 }
 
 ReceiverManager::~ReceiverManager(){
-    socketLoop->disable();
-    socketThread->quit();
-    socketThread->wait();
-    delete socketLoop;
-    timerThread->quit();
-    timerThread->wait();
-    delete timerThread;
-    delete socketThread;
+    m_loopAccept->disable();
+    m_socketThread->quit();
+    m_socketThread->wait();
+    delete m_loopAccept;
+    m_timerThread->quit();
+    m_timerThread->wait();
+    delete m_timerThread;
+    delete m_socketThread;
 
 }
 void ReceiverManager::start(){
-    socketThread->start();
-    timerThread->start();
+    m_socketThread->start();
+    m_timerThread->start();
 }
 
 void ReceiverManager::createUI(){
-    TCPSocket socket = socketLoop->getSocket();
+    TCPSocket socket = m_loopAccept->getSocket();
     int ret = QMessageBox::Ok;
     string username;
     emit searchUser(username, socket.getPeerIp());
@@ -48,15 +48,15 @@ void ReceiverManager::createUI(){
     uint8_t fileOrFolder = FT_FILE;
     string fileName("Error");
 
-    ReceivingObject newReceiver(path, move(socket));
+    ReceivingObject newReceiver(m_downloadPath, move(socket));
     newReceiver.receiver->getFileDetails(fileName, fileOrFolder);
 
-    if(!automaticMode){
+    if(!m_automaticMode){
         string message(username);
         if(fileOrFolder == FT_FILE)
-            message.append(sFile);
+            message.append(m_fileString);
         else if(fileOrFolder == FT_DIRECTORY)
-            message.append(sFolder);
+            message.append(m_folderString);
         message.append(fileName);
 
         QMessageBox msgBox;
@@ -70,12 +70,12 @@ void ReceiverManager::createUI(){
         newReceiver.setUI(fileName, username);
         newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
         newReceiver.progressUI->show();
-        receivingList.push_back(move(newReceiver));
+        m_receivingList.push_back(move(newReceiver));
     }
 }
 
 void ReceiverManager::checkProgress(){
-    for (auto it = receivingList.begin(); it != receivingList.end();){
+    for (auto it = m_receivingList.begin(); it != m_receivingList.end();){
         if (it->failed){
             it++;
             continue;
@@ -88,6 +88,17 @@ void ReceiverManager::checkProgress(){
         }
 
         if (!it->progressUI->isClosed()){
+            /*double speed, time;
+            it->transfer->getStatistics(speed, time);
+            int totSeconds = static_cast<int>(time);
+            int seconds = totSeconds % 60;
+            int minutes = totSeconds / 60;
+            QString speedStr = QString::number(speed, 'g', 2);
+            QString timeStr =  QString::number(minutes);
+            speedStr.append(" MBps");
+            timeStr.append("' "); timeStr.append(QString::number(seconds));
+            timeStr.append('s');*/
+
             it->progressUI->setProgress(status, "", "");
             it++;
         }
@@ -96,7 +107,7 @@ void ReceiverManager::checkProgress(){
                 it->receiver->stop();
             if (it->receivingThread->joinable())
                 it->receivingThread->join();
-            it = receivingList.erase(it);
+            it = m_receivingList.erase(it);
         }
     }
 }

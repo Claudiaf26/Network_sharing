@@ -5,21 +5,21 @@
 
 using namespace std;
 
-ShowUsers::ShowUsers(bool isList, string fileName, QWidget *parent) :
-    list(isList),
-    userCount(0),
+ShowUsers::ShowUsers(bool t_isList, string fileName, QWidget *parent) :
+    m_isList(t_isList),
+    m_userCount(0),
     QWidget(parent),
     ui(new Ui::ShowUsers)
 {
     ui->setupUi(this);
 
-    if(list){
+    if(m_isList){
         ui->pushButton->hide();
-        ui->label->setText(QString::fromStdString(listingString));
+        ui->label->setText(QString::fromStdString(m_listingString));
         ui->tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
     }
     else{
-        ui->label->setText(QString::fromStdString(sendingString+fileName));
+        ui->label->setText(QString::fromStdString(m_sendingString+fileName));
     }
 }
 
@@ -30,16 +30,16 @@ ShowUsers::~ShowUsers()
 
 
 void ShowUsers::addUser(User newUser){
-    ui->tableWidget->setRowCount(++userCount);
+    ui->tableWidget->setRowCount(++m_userCount);
     QTableWidgetItem *item = new QTableWidgetItem(0);
     QImage* img = new QImage(":/images/icons/Icons/"+QString::fromStdString(newUser.picture));
     item->setData(Qt::DecorationRole, QPixmap::fromImage(*img));
     item->setData(Qt::DisplayRole, QString::fromStdString(newUser.name));
     item->setData(Qt::UserRole, QString::fromStdString(newUser.ip));
-    ui->tableWidget->setItem(userCount-1, 0, item);
+    ui->tableWidget->setItem(m_userCount-1, 0, item);
 }
 void ShowUsers::deleteUser(User deletedUser){
-    for(int row = 0; row < userCount; row++){
+    for(int row = 0; row < m_userCount; row++){
         QTableWidgetItem *rowItem = ui->tableWidget->item(row, 0);
         if ( (rowItem->text() == QString::fromStdString(deletedUser.name) )
            &&(rowItem->data(Qt::UserRole) == QString::fromStdString(deletedUser.ip)) ){
@@ -47,7 +47,7 @@ void ShowUsers::deleteUser(User deletedUser){
                 break;
         }
     }
-    userCount--;
+    m_userCount--;
 }
 
 void ShowUsers::createList(vector<User> userList){
@@ -73,7 +73,7 @@ void ShowUsers::on_pushButton_pressed(){
 }
 
 void ShowUsers::closeEvent (QCloseEvent *event){
-    if (!list){
+    if (!m_isList){
         QMessageBox::StandardButton resBtn = QMessageBox::question( this, "FileSender",
                                                                     tr("Sei sicuro di voler chiudere senza inviare?\n"),
                                                                     QMessageBox::No | QMessageBox::Yes,

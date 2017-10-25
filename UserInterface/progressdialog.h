@@ -15,14 +15,14 @@ public:
     explicit ProgressDialog(QString path, QString user, bool sending, QWidget *parent = 0);
     ~ProgressDialog();
 
-    bool isClosed() {return closed;}
+    bool isClosed() {return m_closed;}
     void setProgress(int, QString, QString);
 
     void closeEvent(QCloseEvent*);
 
 private:
-    Ui::ProgressDialog *ui;
-    bool closed;
+    Ui::ProgressDialog* ui;
+    bool m_closed;
 };
 
 #endif // PROGRESSDIALOG_H

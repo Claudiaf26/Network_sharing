@@ -9,8 +9,8 @@ using namespace std;
 
 class ContextMenu_Windows : public ContextMenu_Interface{
 private:
-    wstring fileRegister = L"*\\shell\\%\\command";
-    wstring directoryRegister = L"Directory\\shell\\%\\command";
+    wstring m_fileRegister = L"*\\shell\\%\\command";
+    wstring m_directoryRegister = L"Directory\\shell\\%\\command";
 public:
     ContextMenu_Windows(wstring);
     virtual bool addToContextMenu();

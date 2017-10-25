@@ -4,7 +4,7 @@
 ProgressDialog::ProgressDialog(QString path, QString user, bool sending,  QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ProgressDialog),
-    closed(false)
+    m_closed(false)
 {
     ui->setupUi(this);
     ui->progressBar->setValue(0);
@@ -40,8 +40,8 @@ void ProgressDialog::setProgress(int value, QString speed, QString time){
 
 
 void ProgressDialog::closeEvent(QCloseEvent* cEvent){
-    if (!closed){
-        closed = true;
+    if (!m_closed){
+        m_closed = true;
         cEvent->ignore();
     }
     else

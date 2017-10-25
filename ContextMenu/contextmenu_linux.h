@@ -9,8 +9,8 @@ using namespace std;
 
 class ContextMenu_Linux : public ContextMenu_Interface {
 private:
-    const string registrationPath = "/.local/share/file-manager/actions/";
-    string completeRegPath;
+    const string m_registrationPath = "/.local/share/file-manager/actions/";
+    string m_completeRegistrationPath;
 public:
     ContextMenu_Linux(wstring);
     virtual bool addToContextMenu();

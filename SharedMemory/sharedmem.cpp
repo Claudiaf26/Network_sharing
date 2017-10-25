@@ -4,34 +4,34 @@ using namespace std;
 
 SharedMem::SharedMem(){
 #ifdef _WIN32
-    base = make_unique<SharedMem_Windows>();
+    m_base = make_unique<SharedMem_Windows>();
 #endif
-#ifdef __linux__
+/*#ifdef __linux__
     base = unique_ptr<SharedMem_Linux>(new SharedMem_Linux());
-#endif
+#endif*/
 }
 
 bool SharedMem::createMem(){
-    return base->createMem();
+    return m_base->createMem();
 }
 
 bool SharedMem::openMem(){
-    return base->openMem();
+    return m_base->openMem();
 }
 
 void SharedMem::releaseMem(){
-    base->releaseMem();
+    m_base->releaseMem();
 }
 
 void SharedMem::setContent(wstring newContent){
     if(openMem()){
-        base->setContent(newContent);
+        m_base->setContent(newContent);
     }
 }
 
 wstring SharedMem::getContent(){
     if(openMem()){
-       return base->getContent();
+       return m_base->getContent();
     }
     else
         return L"ERROR";

@@ -28,41 +28,41 @@ SharedMem_Linux::SharedMem_Linux(){
     if(bytes >= 0)
         pBuf[bytes] = '\0';
 
-    key = ftok(pBuf, PROJ_ID);
+    m_uniqueKey = ftok(pBuf, PROJ_ID);
 }
 
 bool SharedMem_Linux::createMem(){
-    sem = sem_open(to_string(key).c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1);
-    if (sem == SEM_FAILED)
+    m_semaphore = sem_open(to_string(m_uniqueKey).c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1);
+    if (m_semaphore == SEM_FAILED)
         return false;
 
-    sem_wait(sem);
+    sem_wait(m_semaphore);
 
-    sharedMemID = shmget(key, MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
-    if (sharedMemID < 0){
-        sem_post(sem);
+    m_sharedMemoryID = shmget(m_uniqueKey, MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
+    if (m_sharedMemoryID < 0){
+        sem_post(m_semaphore);
         return false;
     }
 
-    sem_post(sem);
+    sem_post(m_semaphore);
 
     return true;
 }
 
 bool SharedMem_Linux::openMem(){
-    sem = sem_open(to_string(key).c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1);
-    if (sem == SEM_FAILED)
+    m_semaphore = sem_open(to_string(m_uniqueKey).c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1);
+    if (m_semaphore == SEM_FAILED)
         return false;
 
-    sem_wait(sem);
+    sem_wait(m_semaphore);
 
-    sharedMemID = shmget(key, MEM_SIZE, IPC_CREAT | 0666);
-    if (sharedMemID < 0){
-        sem_post(sem);
+    m_sharedMemoryID = shmget(m_uniqueKey, MEM_SIZE, IPC_CREAT | 0666);
+    if (m_sharedMemoryID < 0){
+        sem_post(m_semaphore);
         return false;
     }
 
-    sem_post(sem);
+    sem_post(m_semaphore);
 
     return true;
 }
@@ -70,40 +70,40 @@ bool SharedMem_Linux::openMem(){
 void SharedMem_Linux::releaseMem(){
     struct shmid_ds shmid_ds;
 
-    sem_close(sem);
-    shmctl(sharedMemID, IPC_RMID, &shmid_ds);
+    sem_close(m_semaphore);
+    shmctl(m_sharedMemoryID, IPC_RMID, &shmid_ds);
 }
 
 wstring SharedMem_Linux::getContent(){
-    sem_wait(sem);
-    pMem = (wchar_t*)shmat(sharedMemID, NULL, 0);
-    if (pMem == (wchar_t*)(-1) ){
-        sem_post(sem);
+    sem_wait(m_semaphore);
+    m_sharedMemoryWString = (wchar_t*)shmat(m_sharedMemoryID, NULL, 0);
+    if (m_sharedMemoryWString == (wchar_t*)(-1) ){
+        sem_post(m_semaphore);
         return L"";
     }
 
-    wstring content = pMem;
+    wstring content = m_sharedMemoryWString;
 
-    shmdt(pMem);
-    sem_post(sem);
+    shmdt(m_sharedMemoryWString);
+    sem_post(m_semaphore);
 
     return content;
 }
 
 void SharedMem_Linux::setContent(wstring newContent){
-    sem_wait(sem);
-    pMem = (wchar_t*)shmat(sharedMemID, NULL, 0);
-    if (pMem == (wchar_t*)(-1) ){
+    sem_wait(m_semaphore);
+    m_sharedMemoryWString = (wchar_t*)shmat(m_sharedMemoryID, NULL, 0);
+    if (m_sharedMemoryWString == (wchar_t*)(-1) ){
         char* error = strerror(errno);
         cout << error << endl;
-        sem_post(sem);
+        sem_post(m_semaphore);
         return;
     }
 
-    wcscpy(pMem, newContent.c_str() );
+    wcscpy(m_sharedMemoryWString, newContent.c_str() );
 
-    shmdt(pMem);
-    sem_post(sem);
+    shmdt(m_sharedMemoryWString);
+    sem_post(m_semaphore);
 }
 
 #endif

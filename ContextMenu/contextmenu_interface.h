@@ -5,7 +5,7 @@
 
 class ContextMenu_Interface{
 protected:
-    std::wstring contextString;
+    std::wstring m_contextString;
 public:
     virtual bool addToContextMenu() = 0;
     virtual bool removeFromContextMenu() = 0;

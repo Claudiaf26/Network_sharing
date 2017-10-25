@@ -5,37 +5,37 @@
 
 using namespace std;
 
-SenderManager::SenderManager(wstring thisPath):path(thisPath){
-    timerThread = new QThread(this);
-    timer = new QTimer();
-    timer->setInterval(1000);
-    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
-    QObject::connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
-    timer->moveToThread(timerThread);
+SenderManager::SenderManager(wstring thisPath):m_filePath(thisPath){
+    m_timerThread = new QThread(this);
+    m_timer = new QTimer();
+    m_timer->setInterval(1000);
+    QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
+    QObject::connect(m_timerThread, SIGNAL(started()), m_timer, SLOT(start()));
+    m_timer->moveToThread(m_timerThread);
 }
 
 SenderManager::~SenderManager(){
-    timerThread->quit();
-    timerThread->wait();
-    delete timerThread;
-    delete timer;
+    m_timerThread->quit();
+    m_timerThread->wait();
+    delete m_timerThread;
+    delete m_timer;
 }
 
 void SenderManager::sendToUsers(const vector<User>& selectedUsers){
     for (auto it = selectedUsers.begin(); it != selectedUsers.end(); it++){
-        SendingObject newTransfer(path, it->name, it->ip);
+        SendingObject newTransfer(m_filePath, it->name, it->ip);
         newTransfer.sendingThread = unique_ptr<std::thread>(new std::thread(&FileTransfer::transfer, newTransfer.transfer));
         newTransfer.progressUI->show();
-        transferList.push_back(move(newTransfer));
+        m_transferList.push_back(move(newTransfer));
     }
 
-    timerThread->start();
+    m_timerThread->start();
 }
 
 void SenderManager::checkProgress(){
-    if (transferList.empty())
+    if (m_transferList.empty())
         QApplication::quit();
-    for (auto it = transferList.begin(); it != transferList.end();){
+    for (auto it = m_transferList.begin(); it != m_transferList.end();){
         uint8_t status = it->transfer->getStatus();
         if (it->failed){
             it++;
@@ -49,11 +49,18 @@ void SenderManager::checkProgress(){
         }
 
         if (!it->progressUI->isClosed()){
-            QString speed = QString::number(it->transfer->getCurrentSpeed());
-            QString time =  QString::number(it->transfer->getTimeLeft());
-            speed.append(" MBps"); time.append(" s");
+            double speed, time;
+            it->transfer->getStatistics(speed, time);
+            int totSeconds = static_cast<int>(time);
+            int seconds = totSeconds % 60;
+            int minutes = totSeconds / 60;
+            QString speedStr = QString::number(speed, 'g', 2);
+            QString timeStr =  QString::number(minutes);
+            speedStr.append(" MBps");
+            timeStr.append("' "); timeStr.append(QString::number(seconds));
+            timeStr.append('s');
 
-            it->progressUI->setProgress(status, speed, time);
+            it->progressUI->setProgress(status, speedStr, timeStr);
             it++;
         }
          else {
@@ -61,7 +68,7 @@ void SenderManager::checkProgress(){
                 it->transfer->stop();
             if (it->sendingThread->joinable())
                 it->sendingThread->join();
-            it = transferList.erase(it);
+            it = m_transferList.erase(it);
         }
     }
 }

@@ -37,18 +37,12 @@ signals:
     void showUserList();
 
 private:
-    Ui::StartUI *ui;
+    Ui::StartUI* ui;
 
-    QAction* settingAction;
-    QAction* quitAction;
-    QAction* usersAction;
-    QMenu* trayIconMenu;
+    QSystemTrayIcon* m_trayIcon;
 
-    QIcon* mainIcon;
-    QSystemTrayIcon* trayIcon;
-
-    QGraphicsScene* scene;
-    QGraphicsPixmapItem* item;
+    QGraphicsScene* m_scene;
+    QGraphicsPixmapItem* m_item;
     uint8_t iconNumber;
 
     void setIcon(QString);

@@ -14,7 +14,7 @@
 
 class SharedMem {
 private:
-    std::unique_ptr<SharedMem_Interface> base;
+    std::unique_ptr<SharedMem_Interface> m_base;
 
 public:
     SharedMem();

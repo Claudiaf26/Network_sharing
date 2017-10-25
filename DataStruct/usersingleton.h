@@ -14,12 +14,12 @@ private:
     bool shared;
 
     //gestore della memoria condivisa fra processi
-     std::unique_ptr<SharedMem> memory;
+     std::unique_ptr<SharedMem> m_sharedMemory;
 
     //il mutex per l'istanziazione
-    static std::mutex istantiation_mutex;
+    static std::mutex m_istantiationMutex;
 
-    std::thread* t;
+    std::thread* sendingThread;
 
     //costruttore dichiarato privato in modo che non si possano costruire esternamente oggetti di questa classe
     UserSingleton();
@@ -38,7 +38,7 @@ public:
     //il metodo statico che genera l'istanza la prima volta che viene richiamato e la restituisce ogni volta
     static UserSingleton& get_instance() {
         //rendiamo atomica l'istanziazione dell'oggetto singleton
-        std::lock_guard<std::mutex> l( istantiation_mutex );
+        std::lock_guard<std::mutex> l( m_istantiationMutex );
         //questo è l'unico oggetto statico della classe, creato la prima volta che viene chiamata la funzione
         static UserSingleton istance;
 

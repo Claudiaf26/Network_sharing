@@ -10,8 +10,8 @@ class NotificationManager : public QObject
 {
     Q_OBJECT
 private:
-  std::queue<Notification*> notificationQueue;
-  uint16_t notificationCount;
+  std::queue<Notification*> m_notificationQueue;
+  uint16_t m_notificationCount;
   bool mode; //notificationNoShowMode
 public:
     explicit NotificationManager(QObject *parent = 0);

@@ -8,95 +8,95 @@
 using namespace std;
 
 SharedMem_Windows::SharedMem_Windows() {
-    size = MEM_SIZE;
+    m_size = MEM_SIZE;
 }
 
 bool SharedMem_Windows::createMem(){
-    mutexHandle = CreateMutexW(NULL, FALSE, mutexName.c_str());
-    if (mutexHandle == NULL)
+    m_mutexHandle = CreateMutexW(NULL, FALSE, m_mutexName.c_str());
+    if (m_mutexHandle == NULL)
         return false;
 
-    DWORD waitResult = WaitForSingleObject(mutexHandle, WAIT_MS);
+    DWORD waitResult = WaitForSingleObject(m_mutexHandle, WAIT_MS);
     if (waitResult != WAIT_OBJECT_0){
-        CloseHandle(mutexHandle);
+        CloseHandle(m_mutexHandle);
         return false;
     }
 
-    sharedHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, size, name.c_str());
-    if((sharedHandle == NULL) || (GetLastError() == ERROR_ALREADY_EXISTS)){
-        ReleaseMutex(mutexHandle);
-        CloseHandle(mutexHandle);
+    m_sharedHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, m_size, m_sharedName.c_str());
+    if((m_sharedHandle == NULL) || (GetLastError() == ERROR_ALREADY_EXISTS)){
+        ReleaseMutex(m_mutexHandle);
+        CloseHandle(m_mutexHandle);
         return false;
     }
 
-    ReleaseMutex(mutexHandle);
+    ReleaseMutex(m_mutexHandle);
     return true;
 }
 
 bool SharedMem_Windows::openMem(){
-    mutexHandle = CreateMutexW(NULL, FALSE, mutexName.c_str());
-    if (mutexHandle == NULL)
+    m_mutexHandle = CreateMutexW(NULL, FALSE, m_mutexName.c_str());
+    if (m_mutexHandle == NULL)
         return false;
 
-    DWORD waitResult = WaitForSingleObject(mutexHandle, WAIT_MS);
+    DWORD waitResult = WaitForSingleObject(m_mutexHandle, WAIT_MS);
     if (waitResult != WAIT_OBJECT_0){
         return false;
     }
 
-    sharedHandle = OpenFileMappingW(FILE_MAP_ALL_ACCESS, TRUE, name.c_str());
-    if(sharedHandle == NULL){
-        ReleaseMutex(mutexHandle);
+    m_sharedHandle = OpenFileMappingW(FILE_MAP_ALL_ACCESS, TRUE, m_sharedName.c_str());
+    if(m_sharedHandle == NULL){
+        ReleaseMutex(m_mutexHandle);
         return false;
     }
 
-    ReleaseMutex(mutexHandle);
+    ReleaseMutex(m_mutexHandle);
 
     return true;
 }
 
 void SharedMem_Windows::releaseMem(){
-    CloseHandle(sharedHandle);
-    CloseHandle(mutexHandle);
+    CloseHandle(m_sharedHandle);
+    CloseHandle(m_mutexHandle);
 }
 
 wstring SharedMem_Windows::getContent(){
-    DWORD waitResult = WaitForSingleObject(mutexHandle, WAIT_MS);
+    DWORD waitResult = WaitForSingleObject(m_mutexHandle, WAIT_MS);
     if (waitResult != WAIT_OBJECT_0){
         return L"";
     }
 
     wstring content;
 
-    pMem = (LPTSTR) MapViewOfFile(sharedHandle, FILE_MAP_ALL_ACCESS, 0, 0, size);
-    if (pMem == NULL){
-        ReleaseMutex(mutexHandle);
+    m_sharedMemoryWString = (LPTSTR) MapViewOfFile(m_sharedHandle, FILE_MAP_ALL_ACCESS, 0, 0, m_size);
+    if (m_sharedMemoryWString == NULL){
+        ReleaseMutex(m_mutexHandle);
         return L"";
     }
 
-    content = pMem;
+    content = m_sharedMemoryWString;
 
-    UnmapViewOfFile(pMem);
-    ReleaseMutex(mutexHandle);
+    UnmapViewOfFile(m_sharedMemoryWString);
+    ReleaseMutex(m_mutexHandle);
 
     return content;
 }
 
 void SharedMem_Windows::setContent(wstring newContent){
-    DWORD waitResult = WaitForSingleObject(mutexHandle, WAIT_MS);
+    DWORD waitResult = WaitForSingleObject(m_mutexHandle, WAIT_MS);
     if (waitResult != WAIT_OBJECT_0){
         return;
     }
 
-    pMem = (LPTSTR) MapViewOfFile(sharedHandle, FILE_MAP_ALL_ACCESS, 0, 0, size);
-    if (pMem == NULL){
-        ReleaseMutex(mutexHandle);
+    m_sharedMemoryWString = (LPTSTR) MapViewOfFile(m_sharedHandle, FILE_MAP_ALL_ACCESS, 0, 0, m_size);
+    if (m_sharedMemoryWString == NULL){
+        ReleaseMutex(m_mutexHandle);
         return;
     }
 
-    CopyMemory((PVOID)pMem, newContent.c_str(), size);
+    CopyMemory((PVOID)m_sharedMemoryWString, newContent.c_str(), m_size);
 
-    UnmapViewOfFile(pMem);
-    ReleaseMutex(mutexHandle);
+    UnmapViewOfFile(m_sharedMemoryWString);
+    ReleaseMutex(m_mutexHandle);
 }
 
 

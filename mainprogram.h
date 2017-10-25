@@ -34,21 +34,30 @@ struct curSettings{
 class MainProgram:public QObject{
     Q_OBJECT
 private:
-    bool running;
+    bool m_running;
 
-    std::fstream settingsFile;
-    std::vector<User> userVect;
-    curSettings curr;
+    std::fstream m_settingsFile;
+    std::vector<User> m_userVector;
+    curSettings m_currentUser;
 
-    ContextMenu* context;
-    StartUI* startUI;
-    UserSelection* userUI;
-    ShowUsers* showUI;
-    NotificationManager* notification;
-    UDP_Manager* udpDiscover;
-    ReceiverManager* receiver;
+    ContextMenu* m_contextMenuHandler;
+    StartUI* m_startUI;
+    UserSelection* m_userUI;
+    ShowUsers* m_showUI;
+    NotificationManager* m_notifications;
+    UDP_Manager* m_udpDiscover;
+    ReceiverManager* m_fileReceiving;
 
+    void clearMembers();
+    void clearCurrentUser();
+    void initializeMembers();
+    void connectSlots();
 
+    void loadCurrentUserFromFile();
+    void saveCurrentUserToFile();
+    void checkModeFlag(uint8_t);
+
+    void startMainRoutine();
 public:
     MainProgram();
     ~MainProgram();

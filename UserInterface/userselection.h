@@ -28,7 +28,7 @@ signals:
     void error(QString);
 
 private:
-    Ui::UserSelection *ui;
+    Ui::UserSelection* ui;
 };
 
 #endif // USERSELECTION_H

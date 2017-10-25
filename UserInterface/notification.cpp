@@ -18,19 +18,19 @@ Notification::Notification(QWidget *parent) :
     setFixedSize(w,h);
     move(w*7,h*7-28);
 
-    timerThread = new QThread(this);
-    timer = new QTimer(0);
-    timer->setInterval(5000);
-    timer->moveToThread(timerThread);
-    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(hideNotification()));
-    QObject::connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
+    m_timerThread = new QThread(this);
+    m_timer = new QTimer(0);
+    m_timer->setInterval(5000);
+    m_timer->moveToThread(m_timerThread);
+    QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(hideNotification()));
+    QObject::connect(m_timerThread, SIGNAL(started()), m_timer, SLOT(start()));
 }
 
 Notification::~Notification()
 {
     delete ui;
-    timerThread->quit();
-    timerThread->wait();
+    m_timerThread->quit();
+    m_timerThread->wait();
 }
 
 void Notification::showNotification(QString text, QString picture) {
@@ -43,7 +43,7 @@ void Notification::showNotification(QString text, QString picture) {
         scene->addItem(item);
         show();
 
-        timerThread->start();
+        m_timerThread->start();
     }
 }
 

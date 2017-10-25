@@ -13,7 +13,7 @@ inline int MIN(int a, int b){
 }
 
 ContextMenu_Linux::ContextMenu_Linux(wstring arg){
-    contextString = arg;
+    m_contextString = arg;
 }
 
 bool ContextMenu_Linux::addToContextMenu(){
@@ -28,7 +28,7 @@ bool ContextMenu_Linux::addToContextMenu(){
     string contextPath = pBuf;
     contextPath.append(" %f");
     wstring_convert<codecvt_utf8_utf16<wchar_t>> convert;
-    string contextStringA = convert.to_bytes(contextString);
+    string contextStringA = convert.to_bytes(m_contextString);
 
     //prende l'home path
     const char* cHomeDirect;
@@ -37,12 +37,12 @@ bool ContextMenu_Linux::addToContextMenu(){
             }
 
     string homeDirect = cHomeDirect;
-    completeRegPath = homeDirect + registrationPath + "custom.desktop"; // controlla che esista
+    m_completeRegistrationPath = homeDirect + m_registrationPath + "custom.desktop"; // controlla che esista
 
     ifstream  src("custom.desktop");
     if(!src.good())
         return false;
-    ofstream  dst(completeRegPath, ios_base::out | ios_base::trunc);
+    ofstream  dst(m_completeRegistrationPath, ios_base::out | ios_base::trunc);
     if(!dst.good())
         return false;
 
@@ -80,7 +80,7 @@ bool ContextMenu_Linux::addToContextMenu(){
 }
 
 bool ContextMenu_Linux::removeFromContextMenu(){
-    if (0 == remove(completeRegPath.c_str()) )
+    if (0 == remove(m_completeRegistrationPath.c_str()) )
         return true;
     else
         return false;

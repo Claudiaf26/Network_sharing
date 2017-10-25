@@ -63,33 +63,33 @@ struct ReceivingObject {
 
 };
 
-class SocketThread : public QObject {
+class SocketLoop : public QObject {
     Q_OBJECT
 private:
-    unique_ptr<TCPServerSocket> serverSock;
-    std::queue<TCPSocket> newSockets;
-    bool active;
+    unique_ptr<TCPServerSocket> m_serverSocket;
+    std::queue<TCPSocket> m_newSockets;
+    bool m_active;
 public:
-    SocketThread(): active(true){
-        serverSock = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
+    SocketLoop(): m_active(true){
+        m_serverSocket = unique_ptr<TCPServerSocket>(new TCPServerSocket(50000));
     }
-    ~SocketThread(){}
+    ~SocketLoop(){}
     TCPSocket getSocket() {
-        TCPSocket tempSocket = std::move(newSockets.front());
-        newSockets.pop();
+        TCPSocket tempSocket = std::move(m_newSockets.front());
+        m_newSockets.pop();
         return std::move(tempSocket);
     }
-    bool getState(){return active;}
+    bool getState(){return m_active;}
     void disable(){
-        active = false;
-        serverSock->Close();}
+        m_active = false;
+        m_serverSocket->Close();}
 public slots:
     void loop(){
-        while(active){
+        while(m_active){
                 try{
-                    TCPSocket socket = serverSock->Accept();
-                if (active){
-                    newSockets.push(std::move(socket));
+                    TCPSocket socket = m_serverSocket->Accept();
+                if (m_active){
+                    m_newSockets.push(std::move(socket));
                     emit createUI();
                 }
                 }catch(...){}
@@ -102,23 +102,23 @@ signals:
 class ReceiverManager : public QObject {
     Q_OBJECT
 private:
-    const string sFolder = " ti sta inviando la cartella\n";
-    const string sFile = " ti sta inviando il file\n";
+    const string m_folderString = " ti sta inviando la cartella\n";
+    const string m_fileString = " ti sta inviando il file\n";
 
-    std::wstring path;
-    std::vector<ReceivingObject> receivingList;
-    QThread* timerThread;
-    QThread* socketThread;
-    QTimer* timer;
-    SocketThread* socketLoop;
-    bool automaticMode; //da implementare
+    std::wstring m_downloadPath;
+    std::vector<ReceivingObject> m_receivingList;
+    QThread* m_timerThread;
+    QThread* m_socketThread;
+    QTimer* m_timer;
+    SocketLoop* m_loopAccept;
+    bool m_automaticMode;
 public:
     ReceiverManager(QObject *parent = 0);
     ~ReceiverManager();
-    void setPath(std::wstring newPath){this->path = newPath;}
+    void setPath(std::wstring newPath){this->m_downloadPath = newPath;}
     void start();
-    bool isActive(){return socketLoop->getState();}
-    void setMode(bool mode){automaticMode = mode;}
+    bool isActive(){return m_loopAccept->getState();}
+    void setMode(bool mode){m_automaticMode = mode;}
 
 public slots:
     void createUI();

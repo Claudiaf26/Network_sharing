@@ -3,6 +3,12 @@
 
 //contiene definizioni generali utilizzate da più oggetti
 
+//controlla che l'oggetto sia stato creato prima di cancellarlo
+template <class T>
+inline void safeDelete(T object){
+    if (object != nullptr)
+        delete object;
+}
 
 //flag per il passaggio dati da mainprogram a settings
 #define AUTOMATIC_FLAG      1

@@ -5,7 +5,7 @@
 
 class SharedMem_Interface {
 protected:
-    uint32_t size;
+    uint32_t m_size;
 public:
     virtual bool createMem() = 0;
     virtual bool openMem() = 0;

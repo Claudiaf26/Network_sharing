@@ -9,13 +9,13 @@
 using namespace std;
 
 void StartUI::setIcon(QString str){
-    if (item != nullptr){
-        scene->removeItem(item);
-        delete item;
+    if (m_item != nullptr){
+        m_scene->removeItem(m_item);
+        delete m_item;
     }
     QImage* image = new QImage(str);
-    item = new QGraphicsPixmapItem(QPixmap::fromImage(*image));
-    scene->addItem(item);
+    m_item = new QGraphicsPixmapItem(QPixmap::fromImage(*image));
+    m_scene->addItem(m_item);
 }
 
 StartUI::StartUI(QWidget *parent) :
@@ -24,28 +24,28 @@ StartUI::StartUI(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    scene = new QGraphicsScene();
-    ui->iconView->setScene(scene);
-    item = nullptr;
+    m_scene = new QGraphicsScene();
+    ui->iconView->setScene(m_scene);
+    m_item = nullptr;
 
     ui->folderButton->setIcon(QIcon(":/images/icons/Style/FileIcon.png"));
     ui->folderButton->setIconSize(QSize(20, 20));
 
 
-    mainIcon = new QIcon(":/images/tray/Style/TrayIcon.png");
-    settingAction = new QAction("Impostazioni", this);
-    usersAction = new QAction("Utenti connessi", this);
-    quitAction = new QAction("Esci", this);
-    trayIconMenu = new QMenu(this);
-    trayIcon = new QSystemTrayIcon(*mainIcon, this);
+    QIcon* mainIcon = new QIcon(":/images/tray/Style/TrayIcon.png");
+    QAction* settingAction = new QAction("Impostazioni", this);
+    QAction* usersAction = new QAction("Utenti connessi", this);
+    QAction* quitAction = new QAction("Esci", this);
+    QMenu* trayIconMenu = new QMenu(this);
+    m_trayIcon = new QSystemTrayIcon(*mainIcon, this);
 
     trayIconMenu->addAction(settingAction);
     trayIconMenu->addAction(usersAction);
     trayIconMenu->addAction(quitAction);
 
-    trayIcon->setContextMenu(trayIconMenu);
+    m_trayIcon->setContextMenu(trayIconMenu);
 
-    QObject::connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+    QObject::connect(m_trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
                      this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
     QObject::connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
     QObject::connect(settingAction, SIGNAL(triggered()), this, SLOT(show()));
@@ -55,15 +55,10 @@ StartUI::StartUI(QWidget *parent) :
 StartUI::~StartUI()
 {
     delete ui;
-    delete mainIcon;
-    delete settingAction;
-    delete usersAction;
-    delete quitAction;
-    delete trayIconMenu;
-    delete trayIcon;
-    if (item != nullptr)
-        delete item;
-    delete scene;
+    delete m_trayIcon;
+    if (m_item != nullptr)
+        delete m_item;
+    delete m_scene;
 }
 
 void StartUI::setUser(QString username, uint8_t imgNmb){
@@ -101,7 +96,7 @@ void StartUI::on_startButton_pressed(){
         flags |= PRIVATE_FLAG;
     QString iconName((char)(iconNumber+49)); iconName.append(".png");
     emit startProgram(flags, ui->nameButton->text().toStdString(), iconName.toStdString(), ui->folderEdit->text().toStdString());
-    trayIcon->show();
+    m_trayIcon->show();
     this->hide();
 }
 

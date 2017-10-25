@@ -31,12 +31,12 @@ signals:
     void sendToUsers(const std::vector<User>&);
 
 private:
-    Ui::ShowUsers *ui;
-    uint16_t userCount;
-    bool list;
+    Ui::ShowUsers* ui;
+    uint16_t m_userCount;
+    bool m_isList;
 
-    const std::string sendingString = "Seleziona gli utenti a cui inviare il file\n";
-    const std::string listingString = "Gli utenti attualmente connessi sono";
+    const std::string m_sendingString = "Seleziona gli utenti a cui inviare il file\n";
+    const std::string m_listingString = "Gli utenti attualmente connessi sono";
 };
 
 #endif // SHOWUSERS_H

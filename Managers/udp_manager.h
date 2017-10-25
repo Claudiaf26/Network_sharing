@@ -14,24 +14,24 @@ class UDP_Manager : public QObject
 {
     Q_OBJECT
 private:
-    UDPDiscover* udp;
+    UDPDiscover* m_udpDiscovery;
 
-    std::queue<struct User> newQueue;
-    std::queue<struct User> deletedQueue;
+    std::queue<struct User> m_newUsersQueue;
+    std::queue<struct User> m_deletedUsersQueue;
 
-    std::string username;
-    std::string picture;
+    std::string m_username;
+    std::string m_picture;
 
-    std::thread* newThread;
-    std::thread* deletedThread;
+    std::thread* m_newThread;
+    std::thread* m_deletedThread;
 
-    bool running;
-    bool mode;
+    bool m_running;
+    bool m_privateMode;
+
+    QThread* m_timerThread;
+    QTimer* m_timer;
 
     void run(bool);
-
-    QThread* timerThread;
-    QTimer* timer;
 public:
     explicit UDP_Manager(QObject *parent = 0 );
     ~UDP_Manager();

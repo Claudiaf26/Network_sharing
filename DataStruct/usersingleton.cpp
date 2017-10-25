@@ -7,7 +7,7 @@
 
 using namespace std;
 
-mutex UserSingleton::istantiation_mutex;
+mutex UserSingleton::m_istantiationMutex;
 
 inline string WStringToString(const wstring& s){
     wstring_convert<codecvt_utf8_utf16<wchar_t>> convert;
@@ -22,17 +22,17 @@ inline wstring StringToWString(const string& s){
  }
 
 UserSingleton::UserSingleton() : shared(false) {
-    t = nullptr;
-    memory = unique_ptr<SharedMem>(new SharedMem());
+    sendingThread = nullptr;
+    m_sharedMemory = unique_ptr<SharedMem>(new SharedMem());
 }
 
 UserSingleton::~UserSingleton(){
-    if (t != nullptr)
-        delete t;
+    if (sendingThread != nullptr)
+        delete sendingThread;
 }
 
 bool UserSingleton::initialize(){
-    auto result = async(std::launch::async, &SharedMem::createMem, memory.get());
+    auto result = async(std::launch::async, &SharedMem::createMem, m_sharedMemory.get());
     result.wait();
     shared = result.get();
 
@@ -41,13 +41,13 @@ bool UserSingleton::initialize(){
 
 void UserSingleton::close(){
     if(shared){
-        memory->releaseMem();
+        m_sharedMemory->releaseMem();
         shared = false;
     }
 }
 
 bool UserSingleton::open(){
-    auto result = async(std::launch::async, &SharedMem::openMem, memory.get());
+    auto result = async(std::launch::async, &SharedMem::openMem, m_sharedMemory.get());
     result.wait();
     shared = result.get();
 
@@ -57,7 +57,7 @@ bool UserSingleton::open(){
 vector<User> UserSingleton::threadGetter(){
     vector<User> newList;
 
-    wstringstream stringRead(memory->getContent());
+    wstringstream stringRead(m_sharedMemory->getContent());
     wstring currentLine;
     getline(stringRead, currentLine);
     while(currentLine != L""){
@@ -95,7 +95,7 @@ void UserSingleton::threadSetter(const vector<User>& newList){
 
     serializedUser.append(L"\n");
 
-    memory->setContent(serializedUser);
+    m_sharedMemory->setContent(serializedUser);
 }
 
 vector<User> UserSingleton::getList(){
@@ -105,6 +105,6 @@ vector<User> UserSingleton::getList(){
 }
 
 void UserSingleton::setList(const vector<User>& newList){
-    t = new thread(&UserSingleton::threadSetter, this, newList);
-    t->detach();
+    sendingThread = new thread(&UserSingleton::threadSetter, this, newList);
+    sendingThread->detach();
 }

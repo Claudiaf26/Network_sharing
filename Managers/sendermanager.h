@@ -56,10 +56,10 @@ struct SendingObject{
 class SenderManager : public QObject {
     Q_OBJECT
 private:
-    std::wstring path;
-    std::vector<SendingObject> transferList;
-    QThread* timerThread;
-    QTimer* timer;
+    std::wstring m_filePath;
+    std::vector<SendingObject> m_transferList;
+    QThread* m_timerThread;
+    QTimer* m_timer;
 public:
     SenderManager(std::wstring);
     ~SenderManager();

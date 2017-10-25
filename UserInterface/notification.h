@@ -24,10 +24,10 @@ signals:
     void terminated();
 
 private:
-    Ui::Notification *ui;
+    Ui::Notification* ui;
 
-    QThread* timerThread;
-    QTimer* timer;
+    QThread* m_timerThread;
+    QTimer* m_timer;
 };
 
 #endif // NOTIFICATION_H

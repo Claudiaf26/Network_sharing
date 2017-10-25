@@ -8,11 +8,11 @@
 //questa versione non gestisce il caso in cui si sfori la dimensione
 class SharedMem_Windows : public SharedMem_Interface {
 private:
-    HANDLE sharedHandle;
-    HANDLE mutexHandle;
-    LPTSTR pMem;
-    const std::wstring mutexName = L"Global\\FileSharingMutex";
-    const std::wstring name = L"Global\\FileSharingProject";
+    HANDLE m_sharedHandle;
+    HANDLE m_mutexHandle;
+    LPTSTR m_sharedMemoryWString;
+    const std::wstring m_mutexName = L"Global\\FileSharingMutex";
+    const std::wstring m_sharedName = L"Global\\FileSharingProject";
 
 public:
     SharedMem_Windows();
