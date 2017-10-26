@@ -13,6 +13,8 @@ ShowUsers::ShowUsers(bool t_isList, string t_fileName, QWidget *parent) :
 {
     ui->setupUi(this);
 
+    this->setWindowFlags(Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint);
+
     if(m_isList){
         ui->pushButton->hide();
         ui->label->setText(QString::fromStdString(m_listingString));

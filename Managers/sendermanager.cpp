@@ -9,6 +9,7 @@ SenderManager::SenderManager(wstring thisPath):m_filePath(thisPath){
     m_timerThread = new QThread(this);
     m_timer = new QTimer();
     m_timer->setInterval(1000);
+    QObject::connect(m_timerThread, SIGNAL(finished()), this, SLOT(deleteLater()));
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
     QObject::connect(m_timerThread, SIGNAL(started()), m_timer, SLOT(start()));
     m_timer->moveToThread(m_timerThread);
@@ -24,7 +25,7 @@ SenderManager::~SenderManager(){
 void SenderManager::sendToUsers(const vector<User>& selectedUsers){
     for (auto it = selectedUsers.begin(); it != selectedUsers.end(); ++it){
         SendingObject newTransfer(m_filePath, it->name, it->ip);
-        newTransfer.sendingThread = unique_ptr<std::thread>(new std::thread(&FileTransfer::transfer, newTransfer.transfer));
+        newTransfer.sendingThread = unique_ptr<std::thread>(new std::thread(&SendingObject::transferThread, &newTransfer));
         newTransfer.progressUI->show();
         m_transferList.push_back(move(newTransfer));
     }
@@ -35,14 +36,14 @@ void SenderManager::sendToUsers(const vector<User>& selectedUsers){
 void SenderManager::checkProgress(){
     if (m_transferList.empty())
         QApplication::quit();
-    for (auto it = m_transferList.begin(); it != m_transferList.end();){
-        uint8_t status = it->transfer->getStatus();
+    for (auto it = m_transferList.begin(); it != m_transferList.end();){        
         if (it->failed){
             ++it;
             continue;
         }
-        if (status == FT_ERROR){
 
+        uint8_t status = (it->transferException) ? FT_ERROR : it->transfer->getStatus();
+        if (status == FT_ERROR){
             it->progressUI->close();
             it->failed = true;
             emit error("Il trasferimento è fallito");
@@ -64,7 +65,7 @@ void SenderManager::checkProgress(){
             ++it;
         }
          else {
-            if ( (status != FT_COMPLETE) && (status != FT_ERROR) )
+            if ( ((status != FT_COMPLETE) && (status != FT_ERROR)) || it->transferException )
                 it->transfer->stop();
             if (it->sendingThread->joinable())
                 it->sendingThread->join();

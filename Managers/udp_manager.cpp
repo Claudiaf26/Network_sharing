@@ -13,6 +13,7 @@ UDP_Manager::UDP_Manager(QObject *parent) :
     m_timer = new QTimer();
     m_timer->setInterval(500);
     m_timer->moveToThread(m_timerThread);
+    QObject::connect(m_timerThread, SIGNAL(finished()), this, SLOT(deleteLater()));
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(checkUser()));
     QObject::connect(m_timerThread, SIGNAL(started()), m_timer, SLOT(start()));
 }

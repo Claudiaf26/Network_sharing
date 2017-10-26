@@ -4,6 +4,9 @@
 #include <string>
 #include <cstdlib>
 #include <QMessageBox>
+#include <QTextStream>
+#include <QFile>
+#include <QApplication>
 
 using namespace std;
 
@@ -15,6 +18,17 @@ SendingProgram::SendingProgram(const char* t_path, QObject *parent) : QObject(pa
         showError("ERRORE GRAVE: Impossibile aprire la memoria condivisa!");
         exit(EXIT_FAILURE);
     }
+
+    QFile f(":/style/better/Style/better.stylesheet");
+    if (!f.exists()) {
+        showError("Impossibile settare lo stile, il file non esiste");
+    }
+    else {
+        f.open(QFile::ReadOnly | QFile::Text);
+        QTextStream ts(&f);
+        qApp->setStyleSheet(ts.readAll());
+    }
+
 
     try{
         m_userVector = UserSingleton::get_instance().getList();

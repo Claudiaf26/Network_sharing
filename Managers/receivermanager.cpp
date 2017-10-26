@@ -14,6 +14,7 @@ ReceiverManager::ReceiverManager(QObject *parent):m_automaticMode(false), QObjec
     QObject::connect(m_loopAccept, SIGNAL(createUI()), this, SLOT(createUI()), Qt::BlockingQueuedConnection);
     QObject::connect(m_socketThread, SIGNAL(started()), m_loopAccept, SLOT(loop()));
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(checkProgress()));
+    QObject::connect(m_timerThread, SIGNAL(finished()), this, SLOT(deleteLater()));
     QObject::connect(m_timerThread, SIGNAL(started()), m_timer, SLOT(start()));
     m_timer->moveToThread(m_timerThread);
     m_loopAccept->moveToThread(m_socketThread);
@@ -66,7 +67,7 @@ void ReceiverManager::createUI(){
 
     if (ret == QMessageBox::Ok){
         newReceiver.setUI(fileName, username);
-        newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver));
+        newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&ReceivingObject::receiveThread, &newReceiver));
         newReceiver.progressUI->show();
         m_receivingList.push_back(move(newReceiver));
     }
@@ -78,7 +79,7 @@ void ReceiverManager::checkProgress(){
             ++it;
             continue;
         }
-        uint8_t status = it->receiver->getStatus();
+        uint8_t status = (it->receiverException) ? FT_ERROR : it->receiver->getStatus();
         if (status == FT_ERROR){
             it->progressUI->close();
             it->failed = true;
@@ -101,7 +102,7 @@ void ReceiverManager::checkProgress(){
             ++it;
         }
          else {
-            if ( (status != FT_COMPLETE) && (status != FT_ERROR) )
+            if ( ((status != FT_COMPLETE) && (status != FT_ERROR)) || it->receiverException )
                 it->receiver->stop();
             if (it->receivingThread->joinable())
                 it->receivingThread->join();

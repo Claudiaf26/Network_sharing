@@ -5,6 +5,7 @@
 #include "UserInterface/startui.h"
 #include "UserInterface/userselection.h"
 #include "UserInterface/showusers.h"
+#include "UserInterface/tutorial.h"
 #include "Managers/notificationmanager.h"
 #include "UDPDiscover/UDPDiscover.h"
 #include "Managers/udp_manager.h"
@@ -48,6 +49,7 @@ private:
     StartUI* m_startUI;
     UserSelection* m_userUI;
     ShowUsers* m_showUI;
+    Tutorial* m_tutorialUI;
 
     NotificationManager* m_notifications;//gestisce le notifiche mostrate quando un utente si (dis)connette
     UDP_Manager* m_udpDiscover;         //gestisce l'individuazione di nuovi utenti connessi sulla rete

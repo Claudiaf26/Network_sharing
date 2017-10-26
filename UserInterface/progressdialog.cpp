@@ -7,6 +7,9 @@ ProgressDialog::ProgressDialog(QString t_path, QString t_username, bool t_sendin
     m_closed(false)
 {
     ui->setupUi(this);
+
+    this->setWindowFlags(Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint);
+
     ui->progressBar->setValue(0);
     ui->speedText->setText("N/A");
     ui->timeText->setText("N/A");

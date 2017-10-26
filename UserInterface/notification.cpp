@@ -13,13 +13,14 @@ Notification::Notification(QWidget *parent) :
     ui->setupUi(this);
 
     this->setModal(false);
-    setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint);
+    this->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
 
     m_timerThread = new QThread(this);
     m_timer = new QTimer(0);
     m_timer->setInterval(5000);
     m_timer->moveToThread(m_timerThread);
     QObject::connect(m_timer, SIGNAL(timeout()), this, SLOT(hideNotification()));
+    QObject::connect(m_timerThread, SIGNAL(finished()), this, SLOT(deleteLater()));
     QObject::connect(m_timerThread, SIGNAL(started()), m_timer, SLOT(start()));
 }
 

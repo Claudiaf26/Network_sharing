@@ -53,7 +53,8 @@ SOURCES += main.cpp\
     UserInterface/userselection.cpp \
     UserInterface/startui.cpp \
     UserInterface/showusers.cpp \
-    UserInterface/notification.cpp
+    UserInterface/notification.cpp \
+    UserInterface/tutorial.cpp
 
 HEADERS  += \
     mainprogram.h \
@@ -93,14 +94,16 @@ HEADERS  += \
     UserInterface/userselection.h \
     UserInterface/startui.h \
     UserInterface/showusers.h \
-    UserInterface/notification.h
+    UserInterface/notification.h \
+    UserInterface/tutorial.h
 
 FORMS    += \
     UserInterface/progressdialog.ui \
     UserInterface/userselection.ui \
     UserInterface/startui.ui \
     UserInterface/showusers.ui \
-    UserInterface/notification.ui
+    UserInterface/notification.ui \
+    UserInterface/tutorial.ui
 
 RESOURCES += \
     resources.qrc

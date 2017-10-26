@@ -5,6 +5,8 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QString>
+#include <QFile>
+#include <QTextStream>
 #include <iostream>
 #include <string>
 #include <algorithm>

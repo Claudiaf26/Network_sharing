@@ -2,9 +2,6 @@
     <qresource prefix="/images/tray">
         <file>Style/TrayIcon.png</file>
     </qresource>
-    <qresource prefix="/style/darkorange">
-        <file>Style/darkorange.stylesheet</file>
-    </qresource>
     <qresource prefix="/images/icons">
         <file>Icons/1.png</file>
         <file>Icons/2.png</file>
@@ -23,5 +20,18 @@
         <file>Icons/13.png</file>
         <file>Icons/14.png</file>
         <file>Icons/15.png</file>
+        <file>Checkbox/AutomaticOff.png</file>
+        <file>Checkbox/AutomaticOn.png</file>
+        <file>Checkbox/NotificationOff.png</file>
+        <file>Checkbox/NotificationOn.png</file>
+        <file>Checkbox/PrivateOff.png</file>
+        <file>Checkbox/PrivateOn.png</file>
+    </qresource>
+    <qresource prefix="/style/better">
+        <file>Style/better.stylesheet</file>
+    </qresource>
+    <qresource prefix="/images/tutorial">
+        <file>Tutorial/Tutorial01.png</file>
+        <file>Tutorial/Tutorial02.png</file>
     </qresource>
 </RCC>

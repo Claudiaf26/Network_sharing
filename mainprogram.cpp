@@ -29,15 +29,17 @@ MainProgram::MainProgram(): m_running(false){
         showError("ATTENZIONE: Un altra sessione del programma è già in corso!");
         exit(EXIT_FAILURE);
     }
-    /*QFile f(":/style/darkorange/Style/darkorange.stylesheet");
+
+    QFile f(":/style/better/Style/better.stylesheet");
     if (!f.exists()) {
-        printf("Unable to set stylesheet, file not found\n");
+        showError("Impossibile settare lo stile, il file non esiste");
     }
     else {
         f.open(QFile::ReadOnly | QFile::Text);
         QTextStream ts(&f);
         qApp->setStyleSheet(ts.readAll());
-    }*/      
+    }
+
     clearCurrentUser();
     initializeMembers();
     connectSlots();
@@ -57,6 +59,7 @@ MainProgram::~MainProgram(){
     safeDelete(m_startUI);
     safeDelete(m_userUI);
     safeDelete(m_showUI);
+    safeDelete(m_tutorialUI);
 }
 
 void MainProgram::start(){
@@ -83,6 +86,7 @@ void MainProgram::start(){
         m_currentUser.directory = SystemsWrapper::getSystemDownloadFolder();
         emit changeSettings(flags, m_currentUser.username,
                             m_currentUser.picture, m_currentUser.directory);
+        m_tutorialUI->exec();
         m_userUI->show();
     }
 }
@@ -144,14 +148,13 @@ void MainProgram::clearMembers(){
     m_startUI = nullptr;
     m_userUI = nullptr;
     m_showUI = nullptr;
+    m_tutorialUI = nullptr;
     m_notifications = nullptr;
     m_udpDiscover = nullptr;
     m_fileReceiving = nullptr;
 }
 void MainProgram::clearCurrentUser(){
-    m_currentUser.username.clear();
-    m_currentUser.directory.clear();
-    m_currentUser.picture.clear();
+    m_currentUser.picture = "1.png";
     m_currentUser.privateMode = false;
     m_currentUser.automaticMode = false;
     m_currentUser.notificationNoShowMode = false;
@@ -162,6 +165,7 @@ void MainProgram::initializeMembers(){
     m_startUI = new StartUI();
     m_userUI = new UserSelection();
     m_showUI = new ShowUsers(true, "");
+    m_tutorialUI = new Tutorial();
     m_notifications = new NotificationManager(this);
     m_udpDiscover = new UDP_Manager(this);
     m_fileReceiving = new ReceiverManager(this);
@@ -172,6 +176,7 @@ void MainProgram::connectSlots(){
     QObject::connect(m_userUI, SIGNAL(changeUser(QString, QString)), m_startUI, SLOT(setUser(QString, QString)));
     QObject::connect(m_startUI, SIGNAL(showUserList()), m_showUI, SLOT(show()));
     QObject::connect(m_startUI, SIGNAL(userChoice()), m_userUI, SLOT(showOnTop()) );
+    QObject::connect(m_startUI, SIGNAL(helpRequested()), m_tutorialUI, SLOT(exec()) );
     QObject::connect(m_udpDiscover, SIGNAL(showSignal(QString, QString)), m_notifications, SLOT(showNotification(QString, QString)) );
     QObject::connect(m_udpDiscover, SIGNAL(addUser(User)), this, SLOT(addUser(User)) );
     QObject::connect(m_udpDiscover, SIGNAL(deleteUser(User)), this, SLOT(deleteUser(User)) );

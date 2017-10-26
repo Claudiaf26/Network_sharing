@@ -15,30 +15,30 @@
 #include <queue>
 #include <atomic>
 #include <iostream>
+#include <exception>
 
 /*struttura ausiliaria utilizzata per tenere collegate l'UI con la barra di progresso,
  *la classe che riceve il file e il thread ad essa collegato*/
 struct ReceivingObject {
     ProgressDialog* progressUI;
-    FileReceiver* receiver;
+    std::unique_ptr<FileReceiver> receiver;
     std::unique_ptr<std::thread> receivingThread;
+    std::exception_ptr receiverException;
     bool failed;
 
-    ReceivingObject(std::wstring filePath, TCPSocket socket):failed(false){
+    ReceivingObject(std::wstring filePath, TCPSocket socket):failed(false), receiverException(nullptr){
         progressUI = nullptr;
-        receiver = new FileReceiver(std::move(socket), filePath);
+        receiver = std::unique_ptr<FileReceiver>(new FileReceiver(std::move(socket), filePath));
     }
 
     ~ReceivingObject(){
-        if (progressUI != nullptr)
-            delete progressUI;
-        if (receiver != nullptr)
-            delete receiver;
+        safeDelete(progressUI);
+
     }
 
     ReceivingObject(ReceivingObject&& original) {
         this->progressUI = original.progressUI;
-        this->receiver = original.receiver;
+        this->receiver = std::move(original.receiver);
         this->receivingThread = std::move(original.receivingThread);
         this->failed = original.failed;
         original.progressUI = nullptr;
@@ -47,10 +47,10 @@ struct ReceivingObject {
     ReceivingObject& operator=(ReceivingObject&& original){
         if (this != &original){
             delete this->progressUI;
-            delete this->receiver;
+            this->receiver.reset();
             this->receivingThread.reset();
             this->progressUI = original.progressUI;
-            this->receiver = original.receiver;
+            this->receiver = std::move(original.receiver);
             this->receivingThread = std::move(original.receivingThread);
             this->failed = original.failed;
             original.progressUI = nullptr;
@@ -63,6 +63,13 @@ struct ReceivingObject {
         progressUI = new ProgressDialog(QString::fromStdString(fileName), QString::fromStdString(username), false);
     }
 
+    void receiveThread(){
+        try{
+            receiver->receive();
+        }catch(...){
+            receiverException = std::current_exception();
+        }
+    }
 };
 
 //classe ausiliaria per gestire l'accettazione di nuovi socket

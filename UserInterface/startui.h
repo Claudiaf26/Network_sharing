@@ -39,6 +39,7 @@ public slots:
     void on_nameButton_pressed(){emit userChoice();}
     void on_startButton_pressed();
     void on_folderButton_pressed();
+    void on_helpButton_pressed(){emit helpRequested();}
     void changeSettings(uint8_t, std::string, std::string, std::string);
     void showList(){emit showUserList();}
 
@@ -46,5 +47,6 @@ signals:
     void userChoice();
     void startProgram(uint8_t, std::string, std::string, std::string);
     void showUserList();
+    void helpRequested();
 };
 #endif // STARTUI_H

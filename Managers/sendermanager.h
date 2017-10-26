@@ -11,28 +11,29 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <exception>
 
 /*struttura ausiliaria utilizzata per tenere collegate l'UI con la barra di progresso,
  *la classe che invia il file e il thread ad essa collegato*/
 struct SendingObject{
     ProgressDialog* progressUI;
-    FileTransfer* transfer;
+    std::unique_ptr<FileTransfer> transfer;
     std::unique_ptr<std::thread> sendingThread;
+    std::exception_ptr transferException;
     bool failed;
 
-    SendingObject(std::wstring filePath, std::string username, std::string destinationIP):failed(false){
+    SendingObject(std::wstring filePath, std::string username, std::string destinationIP):failed(false), transferException(nullptr){
         progressUI = new ProgressDialog(QString::fromStdWString(filePath), QString::fromStdString(username), true);
-        transfer = new FileTransfer(destinationIP, filePath);
+        transfer = std::unique_ptr<FileTransfer>(new FileTransfer(destinationIP, filePath));
     }
 
     ~SendingObject(){
         delete progressUI;
-        delete transfer;
     }
 
     SendingObject(SendingObject&& original) {
         this->progressUI = original.progressUI;
-        this->transfer = original.transfer;
+        this->transfer = std::move(original.transfer);
         this->sendingThread = std::move(original.sendingThread);
         this->failed = original.failed;
         original.progressUI = nullptr;
@@ -41,16 +42,24 @@ struct SendingObject{
     SendingObject& operator=(SendingObject&& original){
         if (this != &original){
             delete this->progressUI;
-            delete this->transfer;
+            this->transfer.reset();
             this->sendingThread.reset();
             this->progressUI = original.progressUI;
-            this->transfer = original.transfer;
+            this->transfer = std::move(original.transfer);
             this->sendingThread = std::move(original.sendingThread);
             this->failed = original.failed;
             original.progressUI = nullptr;
             original.transfer = nullptr;
         }
         return *this;
+    }
+
+    void transferThread(){
+        try{
+            transfer->transfer();
+        }catch(...){
+            transferException = std::current_exception();
+        }
     }
 
 };

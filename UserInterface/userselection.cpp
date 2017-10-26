@@ -15,6 +15,8 @@ UserSelection::UserSelection(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    this->setWindowFlags(Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint);
+
     for (int i = 0; i < 5; ++i){
         for (int j = 0; j < 3; ++j){
             QTableWidgetItem *item=new QTableWidgetItem(0);
@@ -52,6 +54,8 @@ void UserSelection::showOnTop(){
 
 void UserSelection::changeSettings(uint8_t t_flags, string t_username, string t_icon, string t_directory){
     ui->userEdit->setText(QString::fromStdString(t_username));
+    int iconNumber = stoi(t_icon.substr(0, t_icon.find(".png"))) - 1;
+    ui->iconTable->setCurrentCell(iconNumber / 3, iconNumber % 3);
 }
 
 void UserSelection::closeEvent (QCloseEvent *event){

@@ -43,6 +43,8 @@ StartUI::StartUI(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    this->setWindowFlags(Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint);
+
     m_scene = new QGraphicsScene();
     ui->iconView->setScene(m_scene);
     m_item = nullptr;

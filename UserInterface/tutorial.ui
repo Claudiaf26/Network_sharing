@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Tutorial</class>
+ <widget class="QDialog" name="Tutorial">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1065</width>
+    <height>483</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Benvenuto in FileSender!</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_4">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Benvenuto in FileSender!
+Grazie a questo programma potrai inviare a qualunque PC connesso nella tua rete locale
+file o cartelle. Per iniziare basta selezionare la cartella dove vuoi che ti vengano inviati i
+file e premere Start!
+Da questa interfaccia potrai inoltre selezionare una varietà di opzioni diverse, descritte
+sulla destra</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QGraphicsView" name="graphicsView">
+         <property name="minimumSize">
+          <size>
+           <width>172</width>
+           <height>99</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>172</width>
+           <height>99</height>
+          </size>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="interactive">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Una volta cliccato su start l'applicazione sarà avviata e sarai
+visibile agli altri PC della rete. Cliccando sul destro sull'icona
+nella barra delle applicazioni potrai uscire dall'applicazione,
+cambiare le impostazioni durante l'esecuzione oppure
+visualizzare una lista di utenti connessi</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Nel menù a tendina normalmente disponibile quando
+clicchi conil tastodestro su un file o una cartella ti
+sarà apparsa l'opzione &quot;FileSender&quot;:
+selezionala per inviare il file/cartella agli utenti desiderati</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGraphicsView" name="graphicsView_2">
+         <property name="minimumSize">
+          <size>
+           <width>284</width>
+           <height>179</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>284</width>
+           <height>179</height>
+          </size>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="interactive">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Se non desideri che gli altri connessi alla tua rete sappiano
+che stai usando l'applicazione puoi utilizzare la modalità
+privata. In questa modalità potrai comunque inviare file
+e cartelle come utente anonimo.</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QCheckBox::indicator:checked
+  {
+     image: url(:/images/icons/Checkbox/PrivateOff.png);
+  }
+
+
+QCheckBox::indicator:unchecked
+  {
+   image: url(:/images/icons/Checkbox/PrivateOff.png);
+
+  }</string>
+       </property>
+       <property name="text">
+        <string>Così sei in modalità normale</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox_2">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QCheckBox::indicator:checked
+  {
+     image: url(:/images/icons/Checkbox/PrivateOn.png);
+  }
+
+
+QCheckBox::indicator:unchecked
+  {
+   image: url(:/images/icons/Checkbox/PrivateOn.png);
+
+  }</string>
+       </property>
+       <property name="text">
+        <string>Così sei in modalità privata</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Normalmente potrai capire che un nuovo utente si è
+connesso o disconnesso grazie ad una notifica che ti
+apparirà in basso a destra. Se la cosa ti da fastidio
+puoi scegliere di non visualizzare le notifiche</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox_4">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QCheckBox::indicator:checked
+  {
+    image: url(:/images/icons/Checkbox/NotificationOn.png);
+  }
+
+
+QCheckBox::indicator:unchecked
+  {
+    image: url(:/images/icons/Checkbox/NotificationOn.png);
+  }</string>
+       </property>
+       <property name="text">
+        <string>Così le notifiche verranno visualizzate</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox_3">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QCheckBox::indicator:checked
+  {
+    image: url(:/images/icons/Checkbox/NotificationOff.png);
+  }
+
+
+QCheckBox::indicator:unchecked
+  {
+    image: url(:/images/icons/Checkbox/NotificationOff.png);
+  }</string>
+       </property>
+       <property name="text">
+        <string>Così le notifiche verranno disabilitate</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_6">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Quando ricevi un file/cartella prima di avviare il
+trasferimento ti verrà chiesto se vuoi accettarlo.
+Per accettare automaticamente tutti i trasferimenti
+puoi utilizzare la modalità automatica</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox_6">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QCheckBox::indicator:checked
+  {
+    image: url(:/images/icons/Checkbox/AutomaticOff.png);
+  }
+
+
+QCheckBox::indicator:unchecked
+  {
+    image: url(:/images/icons/Checkbox/AutomaticOff.png);
+  }
+</string>
+       </property>
+       <property name="text">
+        <string>Così potrai scegliere se ricevere qualcosa o meno</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox_5">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QCheckBox::indicator:checked
+  {
+    image: url(:/images/icons/Checkbox/AutomaticOn.png);
+  }
+
+
+QCheckBox::indicator:unchecked
+  {
+    image: url(:/images/icons/Checkbox/AutomaticOn.png);
+  }
+</string>
+       </property>
+       <property name="text">
+        <string>Così accetterai automaticamente i file/cartelle ricevuti</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>Ho capito!</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Tutorial</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1023</x>
+     <y>463</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>371</x>
+     <y>394</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
