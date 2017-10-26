@@ -20,34 +20,40 @@
 #include <fstream>
 
 
-
+//indica le caratteristiche dell'utente corrente
 struct curSettings{
     std::string username;
     std::string directory;
     std::string picture;
 
-    bool automaticMode;
-    bool notificationNoShowMode;
-    bool privateMode;
+    //modalità di utilizzo del programma
+    bool automaticMode;                 //accetta automaticamente i file inviati
+    bool notificationNoShowMode;        //non mostra le notifiche quando un utente si connette
+    bool privateMode;                   //rende invisibili agli altri utenti, permettendo comunque di inviare i file in modalità anonima
 };
 
+//questa classe gestisce le operazioni principali che il programma deve compiere all'avvio
 class MainProgram:public QObject{
     Q_OBJECT
 private:
-    bool m_running;
+    bool m_running;                     //flag che indica se il programma è in ascolto sulla rete
 
-    std::fstream m_settingsFile;
-    std::vector<User> m_userVector;
-    curSettings m_currentUser;
+    std::fstream m_settingsFile;        //usato per salvare e scrivere le impostazioni dell'utente su file
+    std::vector<User> m_userVector;     //vettore degli utenti connessi
+    curSettings m_currentUser;          //contiene le informazioni sulla sessione in corso
 
-    ContextMenu* m_contextMenuHandler;
+    ContextMenu* m_contextMenuHandler;  //gestisce l'aggiunta del programma al menù a tendina del SO
+
+    //interfacce grafiche
     StartUI* m_startUI;
     UserSelection* m_userUI;
     ShowUsers* m_showUI;
-    NotificationManager* m_notifications;
-    UDP_Manager* m_udpDiscover;
-    ReceiverManager* m_fileReceiving;
 
+    NotificationManager* m_notifications;//gestisce le notifiche mostrate quando un utente si (dis)connette
+    UDP_Manager* m_udpDiscover;         //gestisce l'individuazione di nuovi utenti connessi sulla rete
+    ReceiverManager* m_fileReceiving;   //gestisce la ricezione di file
+
+    //funzioni ausiliarie
     void clearMembers();
     void clearCurrentUser();
     void initializeMembers();
@@ -55,7 +61,7 @@ private:
 
     void loadCurrentUserFromFile();
     void saveCurrentUserToFile();
-    void checkModeFlag(uint8_t);
+    void checkModeFlag(uint8_t&);
 
     void startMainRoutine();
 public:

@@ -11,9 +11,12 @@ inline void safeDelete(T object){
 }
 
 //flag per il passaggio dati da mainprogram a settings
-#define AUTOMATIC_FLAG      1
-#define NOTIFICATION_FLAG   2
-#define PRIVATE_FLAG        4
+enum CurrentUserFlags {
+    AUTOMATIC_FLAG  =       1,
+    NOTIFICATION_FLAG   =   2,
+    PRIVATE_FLAG        =   4,
+};
+typedef enum CurrentUserFlags CurrentUserFlags;
 
 //struttura comune per gli utenti
 #include <string>

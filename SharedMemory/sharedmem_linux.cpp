@@ -15,12 +15,15 @@
 
 using namespace std;
 
-inline int MIN(int a, int b){
+inline int MIN(const int& a, const int& b){
     return (a < b) ? a : b;
 }
 
 SharedMem_Linux::SharedMem_Linux(){
-    //prende l'exe path
+    m_waitTime->tv_sec = 2;
+    m_waitTime.tv_nsec = 1000;
+
+    //prende il percorso del programma in esecuzione per creare una chiave unica
     char szTmp[32];
     char pBuf[1024];
     sprintf(szTmp, "/proc/%d/exe", getpid());
@@ -36,7 +39,8 @@ bool SharedMem_Linux::createMem(){
     if (m_semaphore == SEM_FAILED)
         return false;
 
-    sem_wait(m_semaphore);
+    if (-1 == sem_timedwait(m_semaphore, &m_waitTime))
+        return false;
 
     m_sharedMemoryID = shmget(m_uniqueKey, MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
     if (m_sharedMemoryID < 0){
@@ -54,7 +58,8 @@ bool SharedMem_Linux::openMem(){
     if (m_semaphore == SEM_FAILED)
         return false;
 
-    sem_wait(m_semaphore);
+    if (-1 == sem_timedwait(m_semaphore, &m_waitTime))
+        return false;
 
     m_sharedMemoryID = shmget(m_uniqueKey, MEM_SIZE, IPC_CREAT | 0666);
     if (m_sharedMemoryID < 0){
@@ -75,11 +80,13 @@ void SharedMem_Linux::releaseMem(){
 }
 
 wstring SharedMem_Linux::getContent(){
-    sem_wait(m_semaphore);
+    if (-1 == sem_timedwait(m_semaphore, &m_waitTime))
+        throw runtime_error("Semaphore opening was impossible");
+
     m_sharedMemoryWString = (wchar_t*)shmat(m_sharedMemoryID, NULL, 0);
-    if (m_sharedMemoryWString == (wchar_t*)(-1) ){
+    if (m_sharedMemoryWString == reinterpret_cast<wchar_t*>(-1) ){
         sem_post(m_semaphore);
-        return L"";
+        throw runtime_error("File mapping was impossible");
     }
 
     wstring content = m_sharedMemoryWString;
@@ -90,17 +97,17 @@ wstring SharedMem_Linux::getContent(){
     return content;
 }
 
-void SharedMem_Linux::setContent(wstring newContent){
-    sem_wait(m_semaphore);
+void SharedMem_Linux::setContent(wstring t_newContent){
+    if (-1 == sem_timedwait(m_semaphore, &m_waitTime))
+        throw runtime_error("Semaphore opening was impossible");
+
     m_sharedMemoryWString = (wchar_t*)shmat(m_sharedMemoryID, NULL, 0);
-    if (m_sharedMemoryWString == (wchar_t*)(-1) ){
-        char* error = strerror(errno);
-        cout << error << endl;
+    if (m_sharedMemoryWString == reinterpret_cast<wchar_t*>(-1) ){
         sem_post(m_semaphore);
-        return;
+        throw runtime_error("File mapping was impossible");
     }
 
-    wcscpy(m_sharedMemoryWString, newContent.c_str() );
+    wcscpy(m_sharedMemoryWString, t_newContent.c_str() );
 
     shmdt(m_sharedMemoryWString);
     sem_post(m_semaphore);

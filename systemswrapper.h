@@ -12,13 +12,17 @@
 #ifdef __linux__
 #include <unistd.h>
 #include <pwd.h>
+#include <sys/types.h>
+#include <dirent.h>
 #endif
 
 #include <string>
 #include <iostream>
 
+//classe con funzioni statiche che gestisce un paio di funzionalità di sistema diverse in base all'SO
 class SystemsWrapper{
 public:
+    //ottiene l'username dell'utente
     static string getSystemUsername(){
         std::string curUser;
 
@@ -39,12 +43,15 @@ public:
 #ifdef __linux__
         char username[ULEN+1];
         size_t username_len = ULEN+1;
-        getlogin_r(username, username_len);
-        curUser = username;
+        if (0 == getlogin_r(username, username_len))
+                curUser = username;
+        else
+            curUser = "Default";
 #endif
         return curUser;
     }
 
+    //ottiene la cartella di download di default dell'utente
     static std::string getSystemDownloadFolder(){
         std::string directory;
 
@@ -67,13 +74,19 @@ public:
         if ((linuxDirect = getenv("HOME")) == NULL) {
             linuxDirect = getpwuid(getuid())->pw_dir;
         }
-
         directory = linuxDirect;
-        //prova a raggiungere la cartella di download
+
+        //controlla se esiste la cartella download, se no imposta come cartella di default la home
+        std::string directoryDownload = directory;
+        directoryDownload.append("/Download");
+        DIR* dir = opendir(directoryDownload.c_str());
+        if (dir){
+            closedir(dir);
+            directory = directoryDownload;
+        }
 #endif
         return directory;
     }
-
 };
 
 #endif // SYSTEMSWRAPPER_H

@@ -12,9 +12,11 @@
 #include <memory>
 #include <string>
 
+//gestisce l'aggiunta al menù a tendina su windows e linux mediante polimorfismo
 class ContextMenu{
 private:
-    unique_ptr<ContextMenu_Interface> base;
+    unique_ptr<ContextMenu_Interface> m_base;
+    bool m_added;
 
     //Can't be copied, can't be assigned
     ContextMenu(const ContextMenu& s);
@@ -22,8 +24,9 @@ private:
 
 public:
     ContextMenu(wstring);
-    bool addToContextMenu();
-    bool removeFromContextMenu();
+    bool addToContextMenu();        //aggiunge al menù a tendina disponibile con il click destro di qualunque file/cartella l'applicazione
+    bool removeFromContextMenu();   //toglie dal menù a tendina
+    bool isAddedToContextMenu(){return m_added;}
 };
 
 #endif // CONTEXTMENU_H

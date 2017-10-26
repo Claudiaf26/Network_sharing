@@ -2,16 +2,19 @@
 #define USERSELECTION_H
 
 #include <QWidget>
-#include <Qstring>
+#include <QString>
 #include <string>
 
 namespace Ui {
 class UserSelection;
 }
 
+//UI con cui si selezionano nome utente e icona
 class UserSelection : public QWidget
 {
     Q_OBJECT
+private:
+    Ui::UserSelection* ui;
 
 public:
     explicit UserSelection(QWidget *parent = 0);
@@ -24,11 +27,8 @@ public slots:
     void changeSettings(uint8_t, std::string, std::string, std::string);
 
 signals:
-    void changeUser(QString, uint8_t);
+    void changeUser(QString, QString);
     void error(QString);
-
-private:
-    Ui::UserSelection* ui;
 };
 
 #endif // USERSELECTION_H

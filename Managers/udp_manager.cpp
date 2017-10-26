@@ -19,21 +19,19 @@ UDP_Manager::UDP_Manager(QObject *parent) :
 
 //gestisci bene thread!
 UDP_Manager::~UDP_Manager(){
-    if (m_udpDiscovery != nullptr)
-        delete m_udpDiscovery;
-    if (m_newThread != nullptr)
-        delete m_newThread;
-    if (m_deletedThread != nullptr)
-        delete m_deletedThread;
+    safeDelete(m_udpDiscovery);
+    safeDelete(m_newThread);
+    safeDelete(m_deletedThread);
     m_timerThread->quit();
     m_timerThread->wait();
     delete m_timerThread;
+    delete m_timer;
 }
 
-void UDP_Manager::start(string user, bool mod, string pic){
-    UDP_Discover_Status status = (mod != true) ? UDS_ACTIVE : UDS_HIDDEN; //mod == true significa che la modalità privata è attiva
+void UDP_Manager::start(string t_username, bool t_privateMode, string t_picture){
+    UDP_Discover_Status status = (t_privateMode != true) ? UDS_ACTIVE : UDS_HIDDEN; //mod == true significa che la modalità privata è attiva
     if (!m_running){
-        m_udpDiscovery = new UDPDiscover(user, pic);
+        m_udpDiscovery = new UDPDiscover(t_username, t_picture);
 
         m_udpDiscovery->run(status);
         m_running = !m_running;
@@ -44,26 +42,26 @@ void UDP_Manager::start(string user, bool mod, string pic){
         m_deletedThread->detach();
     }
     else{
-        if (user != m_username){
-            m_udpDiscovery->changeUserName(user);
+        if (t_username != m_username){
+            m_udpDiscovery->changeUserName(t_username);
         }
 
-        if (mod != m_privateMode){
+        if (t_privateMode != m_privateMode){
             m_udpDiscovery->changeMode(status);
         }
 
-        if (pic != m_picture)
-            m_udpDiscovery->changePicture(pic);
+        if (t_picture != m_picture)
+            m_udpDiscovery->changePicture(t_picture);
     }
 
-    m_username = user;
-    m_privateMode = mod;
-    m_picture = pic;
+    m_username = t_username;
+    m_privateMode = t_privateMode;
+    m_picture = t_picture;
 }
 
-void UDP_Manager::run(bool newOrDeleted){
+void UDP_Manager::run(bool t_newOrDeleted){
     while(true){
-        if(newOrDeleted){
+        if(t_newOrDeleted){
             struct User newUser;
             if(UserListSingleton::get_instance().popNew(newUser)){
                 m_newUsersQueue.push(newUser);

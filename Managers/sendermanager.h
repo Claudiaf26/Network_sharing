@@ -12,6 +12,8 @@
 #include <memory>
 #include <vector>
 
+/*struttura ausiliaria utilizzata per tenere collegate l'UI con la barra di progresso,
+ *la classe che invia il file e il thread ad essa collegato*/
 struct SendingObject{
     ProgressDialog* progressUI;
     FileTransfer* transfer;
@@ -53,6 +55,7 @@ struct SendingObject{
 
 };
 
+//classe che gestisce l'invio di file
 class SenderManager : public QObject {
     Q_OBJECT
 private:

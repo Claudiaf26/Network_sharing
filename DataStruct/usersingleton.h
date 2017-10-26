@@ -7,6 +7,7 @@
 #include <thread>
 #include <string>
 #include <vector>
+#include <exception>
 
 class UserSingleton {
 private:
@@ -19,7 +20,10 @@ private:
     //il mutex per l'istanziazione
     static std::mutex m_istantiationMutex;
 
-    std::thread* sendingThread;
+    std::thread* m_sendingThread;
+
+    //serve per catturare l'eccezione catturata nel thread secondaria ed inviarla al main thread
+    std::exception_ptr m_threadException;
 
     //costruttore dichiarato privato in modo che non si possano costruire esternamente oggetti di questa classe
     UserSingleton();
@@ -45,11 +49,11 @@ public:
         return istance;
       }
 
-    bool initialize();
-    void close();
-    bool open();
-    std::vector<User> getList();
-    void setList(const std::vector<User>&);
+    bool initialize();                      //inizializza un'area di memoria condivisa
+    void close();                           //chiude l'area di memoria condivisa
+    bool open();                            //apre l'area di memoria condivisa
+    std::vector<User> getList();            //ottiene una lista di utenti dall'area di memoria condivisa
+    void setList(const std::vector<User>&); //serializza gli utenti connessi e li inserisce nell'area di memoria condivisa
 
 };
 

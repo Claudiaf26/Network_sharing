@@ -5,9 +5,6 @@
 
 using namespace std;
 
-const string m_folderString = "Ti sta venendo inviata la cartella\n";
-const string m_fileString = "Ti sta venendo inviato il file\n";
-
 ReceiverManager::ReceiverManager(QObject *parent):m_automaticMode(false), QObject(parent){
     m_socketThread = new QThread(this);
     m_timerThread = new QThread(this);
@@ -31,7 +28,7 @@ ReceiverManager::~ReceiverManager(){
     m_timerThread->wait();
     delete m_timerThread;
     delete m_socketThread;
-
+    delete m_timer;
 }
 void ReceiverManager::start(){
     m_socketThread->start();
@@ -60,6 +57,7 @@ void ReceiverManager::createUI(){
         message.append(fileName);
 
         QMessageBox msgBox;
+        msgBox.setFixedSize(400, 300);
         msgBox.setText(message.c_str());
         msgBox.setInformativeText("Vuoi accettarlo?");
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::No);
@@ -77,7 +75,7 @@ void ReceiverManager::createUI(){
 void ReceiverManager::checkProgress(){
     for (auto it = m_receivingList.begin(); it != m_receivingList.end();){
         if (it->failed){
-            it++;
+            ++it;
             continue;
         }
         uint8_t status = it->receiver->getStatus();
@@ -88,8 +86,8 @@ void ReceiverManager::checkProgress(){
         }
 
         if (!it->progressUI->isClosed()){
-            /*double speed, time;
-            it->transfer->getStatistics(speed, time);
+            double speed, time;
+            it->receiver->getStatistics(speed, time);
             int totSeconds = static_cast<int>(time);
             int seconds = totSeconds % 60;
             int minutes = totSeconds / 60;
@@ -97,10 +95,10 @@ void ReceiverManager::checkProgress(){
             QString timeStr =  QString::number(minutes);
             speedStr.append(" MBps");
             timeStr.append("' "); timeStr.append(QString::number(seconds));
-            timeStr.append('s');*/
+            timeStr.append('s');
 
-            it->progressUI->setProgress(status, "", "");
-            it++;
+            it->progressUI->setProgress(status, speedStr, timeStr);
+            ++it;
         }
          else {
             if ( (status != FT_COMPLETE) && (status != FT_ERROR) )

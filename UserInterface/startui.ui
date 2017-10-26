@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>FileSender</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
@@ -24,6 +24,7 @@
      </property>
      <property name="font">
       <font>
+       <pointsize>14</pointsize>
        <underline>true</underline>
       </font>
      </property>
@@ -77,6 +78,11 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QLabel" name="folderLabel">
+       <property name="font">
+        <font>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Cartella di destinazione:</string>
        </property>
@@ -125,6 +131,11 @@
    </item>
    <item>
     <widget class="QCheckBox" name="privateBox">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>Modalità privata</string>
      </property>
@@ -132,6 +143,11 @@
    </item>
    <item>
     <widget class="QCheckBox" name="notificationBox">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>Non mostrare notifiche</string>
      </property>
@@ -139,6 +155,11 @@
    </item>
    <item>
     <widget class="QCheckBox" name="automaticBox">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>Ricezione automatica</string>
      </property>

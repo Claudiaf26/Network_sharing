@@ -16,5 +16,12 @@
         <file>Icons/8.png</file>
         <file>Style/FileIcon.png</file>
         <file>Style/SystemIcon.png</file>
+        <file>Icons/9.png</file>
+        <file>Icons/10.png</file>
+        <file>Icons/11.png</file>
+        <file>Icons/12.png</file>
+        <file>Icons/13.png</file>
+        <file>Icons/14.png</file>
+        <file>Icons/15.png</file>
     </qresource>
 </RCC>

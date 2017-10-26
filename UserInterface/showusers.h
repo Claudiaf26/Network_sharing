@@ -11,9 +11,17 @@ namespace Ui {
 class ShowUsers;
 }
 
+//UI che mostra la lista di utenti connessi, sia a scopo informativo che per selezionare a chi inviare un file in seguito
 class ShowUsers : public QWidget
 {
     Q_OBJECT
+private:
+    Ui::ShowUsers* ui;
+    uint16_t m_userCount;
+    bool m_isList;
+
+    const std::string m_sendingString = "Seleziona gli utenti a cui inviare il file\n";
+    const std::string m_listingString = "Gli utenti attualmente connessi sono";
 
 public:
     explicit ShowUsers(bool, std::string, QWidget *parent = 0);
@@ -29,14 +37,6 @@ public slots:
     void closeEvent(QCloseEvent*);
 signals:
     void sendToUsers(const std::vector<User>&);
-
-private:
-    Ui::ShowUsers* ui;
-    uint16_t m_userCount;
-    bool m_isList;
-
-    const std::string m_sendingString = "Seleziona gli utenti a cui inviare il file\n";
-    const std::string m_listingString = "Gli utenti attualmente connessi sono";
 };
 
 #endif // SHOWUSERS_H

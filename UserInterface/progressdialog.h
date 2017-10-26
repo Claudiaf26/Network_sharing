@@ -8,9 +8,14 @@ namespace Ui {
 class ProgressDialog;
 }
 
+//UI che mostra la barra progresso con informazioni sul trasferimento in corso
 class ProgressDialog : public QDialog
 {
     Q_OBJECT
+private:
+    Ui::ProgressDialog* ui;
+    bool m_closed;
+
 public:
     explicit ProgressDialog(QString path, QString user, bool sending, QWidget *parent = 0);
     ~ProgressDialog();
@@ -19,10 +24,6 @@ public:
     void setProgress(int, QString, QString);
 
     void closeEvent(QCloseEvent*);
-
-private:
-    Ui::ProgressDialog* ui;
-    bool m_closed;
 };
 
 #endif // PROGRESSDIALOG_H

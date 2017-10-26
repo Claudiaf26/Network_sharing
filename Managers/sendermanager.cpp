@@ -22,7 +22,7 @@ SenderManager::~SenderManager(){
 }
 
 void SenderManager::sendToUsers(const vector<User>& selectedUsers){
-    for (auto it = selectedUsers.begin(); it != selectedUsers.end(); it++){
+    for (auto it = selectedUsers.begin(); it != selectedUsers.end(); ++it){
         SendingObject newTransfer(m_filePath, it->name, it->ip);
         newTransfer.sendingThread = unique_ptr<std::thread>(new std::thread(&FileTransfer::transfer, newTransfer.transfer));
         newTransfer.progressUI->show();
@@ -38,7 +38,7 @@ void SenderManager::checkProgress(){
     for (auto it = m_transferList.begin(); it != m_transferList.end();){
         uint8_t status = it->transfer->getStatus();
         if (it->failed){
-            it++;
+            ++it;
             continue;
         }
         if (status == FT_ERROR){
@@ -61,7 +61,7 @@ void SenderManager::checkProgress(){
             timeStr.append('s');
 
             it->progressUI->setProgress(status, speedStr, timeStr);
-            it++;
+            ++it;
         }
          else {
             if ( (status != FT_COMPLETE) && (status != FT_ERROR) )

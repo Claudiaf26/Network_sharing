@@ -16,6 +16,8 @@
 #include <atomic>
 #include <iostream>
 
+/*struttura ausiliaria utilizzata per tenere collegate l'UI con la barra di progresso,
+ *la classe che riceve il file e il thread ad essa collegato*/
 struct ReceivingObject {
     ProgressDialog* progressUI;
     FileReceiver* receiver;
@@ -63,6 +65,7 @@ struct ReceivingObject {
 
 };
 
+//classe ausiliaria per gestire l'accettazione di nuovi socket
 class SocketLoop : public QObject {
     Q_OBJECT
 private:
@@ -99,6 +102,7 @@ signals:
     void createUI();
 };
 
+//classe che gestisce la ricezione di file
 class ReceiverManager : public QObject {
     Q_OBJECT
 private:

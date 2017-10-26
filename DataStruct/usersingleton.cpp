@@ -21,14 +21,13 @@ inline wstring StringToWString(const string& s){
  return temp;
  }
 
-UserSingleton::UserSingleton() : shared(false) {
-    sendingThread = nullptr;
+UserSingleton::UserSingleton() : shared(false), m_sendingThread(nullptr), m_threadException(nullptr) {
     m_sharedMemory = unique_ptr<SharedMem>(new SharedMem());
 }
 
 UserSingleton::~UserSingleton(){
-    if (sendingThread != nullptr)
-        delete sendingThread;
+    if (m_sendingThread != nullptr)
+        delete m_sendingThread;
 }
 
 bool UserSingleton::initialize(){
@@ -94,17 +93,27 @@ void UserSingleton::threadSetter(const vector<User>& newList){
     }
 
     serializedUser.append(L"\n");
-
+    try{
     m_sharedMemory->setContent(serializedUser);
+    }catch(runtime_error error){
+        m_threadException = current_exception();
+    }
 }
 
 vector<User> UserSingleton::getList(){
     auto result = async(std::launch::async, &UserSingleton::threadGetter, this);
     result.wait();
-    return result.get();
+    try{
+        return result.get();
+    }catch(runtime_error err){
+        throw err;
+    }
 }
 
 void UserSingleton::setList(const vector<User>& newList){
-    sendingThread = new thread(&UserSingleton::threadSetter, this, newList);
-    sendingThread->detach();
+    m_sendingThread = new thread(&UserSingleton::threadSetter, this, newList);
+    m_sendingThread->join();
+
+    if(m_threadException)
+        rethrow_exception(m_threadException);
 }

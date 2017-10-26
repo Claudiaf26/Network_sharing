@@ -12,30 +12,10 @@ namespace Ui {
 class StartUI;
 }
 
+//la principale UI con cui si interfaccia l'utente per settare le impostazioni
 class StartUI : public QWidget
 {
     Q_OBJECT
-
-public:
-    explicit StartUI(QWidget *parent = 0);
-    ~StartUI();
-    void closeEvent(QCloseEvent*);
-    uint8_t getIconNumber(){return iconNumber;}
-
-public slots:
-    void setUser(QString, uint8_t);
-    void on_nameButton_pressed(){emit userChoice();}
-    void on_startButton_pressed();
-    void on_folderButton_pressed();
-    void changeSettings(uint8_t, std::string, std::string, std::string);
-    void iconActivated(QSystemTrayIcon::ActivationReason reason);
-    void showList(){emit showUserList();}
-
-signals:
-    void userChoice();
-    void startProgram(uint8_t, std::string, std::string, std::string);
-    void showUserList();
-
 private:
     Ui::StartUI* ui;
 
@@ -43,8 +23,28 @@ private:
 
     QGraphicsScene* m_scene;
     QGraphicsPixmapItem* m_item;
-    uint8_t iconNumber;
+    std::string m_iconName;
 
-    void setIcon(QString);
+    //funzioni ausiliarie
+    void createSystemTray();
+    void setIcon(const QString&);
+
+public:
+    explicit StartUI(QWidget *parent = 0);
+    ~StartUI();
+    void closeEvent(QCloseEvent*);
+
+public slots:
+    void setUser(QString, QString);
+    void on_nameButton_pressed(){emit userChoice();}
+    void on_startButton_pressed();
+    void on_folderButton_pressed();
+    void changeSettings(uint8_t, std::string, std::string, std::string);
+    void showList(){emit showUserList();}
+
+signals:
+    void userChoice();
+    void startProgram(uint8_t, std::string, std::string, std::string);
+    void showUserList();
 };
 #endif // STARTUI_H

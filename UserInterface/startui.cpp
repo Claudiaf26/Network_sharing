@@ -8,14 +8,33 @@
 
 using namespace std;
 
-void StartUI::setIcon(QString str){
+void StartUI::setIcon(const QString& t_string){
     if (m_item != nullptr){
         m_scene->removeItem(m_item);
         delete m_item;
     }
-    QImage* image = new QImage(str);
+    QImage* image = new QImage(t_string);
     m_item = new QGraphicsPixmapItem(QPixmap::fromImage(*image));
     m_scene->addItem(m_item);
+}
+
+void StartUI::createSystemTray(){
+    QIcon* mainIcon = new QIcon(":/images/tray/Style/TrayIcon.png");
+    QAction* settingAction = new QAction("Impostazioni", this);
+    QAction* usersAction = new QAction("Utenti connessi", this);
+    QAction* quitAction = new QAction("Esci", this);
+    QMenu* trayIconMenu = new QMenu(this);
+    m_trayIcon = new QSystemTrayIcon(*mainIcon, this);
+
+    trayIconMenu->addAction(settingAction);
+    trayIconMenu->addAction(usersAction);
+    trayIconMenu->addAction(quitAction);
+
+    m_trayIcon->setContextMenu(trayIconMenu);
+
+    QObject::connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+    QObject::connect(settingAction, SIGNAL(triggered()), this, SLOT(show()));
+    QObject::connect(usersAction, SIGNAL(triggered()), this, SLOT(showList()));
 }
 
 StartUI::StartUI(QWidget *parent) :
@@ -31,56 +50,37 @@ StartUI::StartUI(QWidget *parent) :
     ui->folderButton->setIcon(QIcon(":/images/icons/Style/FileIcon.png"));
     ui->folderButton->setIconSize(QSize(20, 20));
 
-
-    QIcon* mainIcon = new QIcon(":/images/tray/Style/TrayIcon.png");
-    QAction* settingAction = new QAction("Impostazioni", this);
-    QAction* usersAction = new QAction("Utenti connessi", this);
-    QAction* quitAction = new QAction("Esci", this);
-    QMenu* trayIconMenu = new QMenu(this);
-    m_trayIcon = new QSystemTrayIcon(*mainIcon, this);
-
-    trayIconMenu->addAction(settingAction);
-    trayIconMenu->addAction(usersAction);
-    trayIconMenu->addAction(quitAction);
-
-    m_trayIcon->setContextMenu(trayIconMenu);
-
-    QObject::connect(m_trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-                     this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
-    QObject::connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-    QObject::connect(settingAction, SIGNAL(triggered()), this, SLOT(show()));
-    QObject::connect(usersAction, SIGNAL(triggered()), this, SLOT(showList()));
+    createSystemTray();
 }
 
 StartUI::~StartUI()
 {
     delete ui;
     delete m_trayIcon;
-    if (m_item != nullptr)
-        delete m_item;
+    safeDelete(m_item);
     delete m_scene;
 }
 
-void StartUI::setUser(QString username, uint8_t imgNmb){
-    iconNumber = imgNmb;
-    ui->nameButton->setText(username);
+void StartUI::setUser(QString t_username, QString t_pictureString){
+    m_iconName = t_pictureString.toStdString();
+    ui->nameButton->setText(t_username);
     QString imgStr(QString::fromStdString(iconString));
-    imgStr.append(49+imgNmb); imgStr.append(".png");
+    imgStr.append(t_pictureString);
     setIcon(imgStr);
 
     this->show();
 }
 
-void StartUI::changeSettings(uint8_t flg, string user, string icon, string direct){
-    ui->nameButton->setText(QString::fromStdString(user));
-    ui->folderEdit->setText(QString::fromStdString(direct)); //fai un check se la cartella esiste
+void StartUI::changeSettings(uint8_t t_flags, string t_username, string t_icon, string t_directory){
+    ui->nameButton->setText(QString::fromStdString(t_username));
+    ui->folderEdit->setText(QString::fromStdString(t_directory)); //fai un check se la cartella esiste
     QString imgStr(QString::fromStdString(iconString));
-    imgStr.append(QString::fromStdString(icon));
+    imgStr.append(QString::fromStdString(t_icon));
     setIcon(imgStr);
-    iconNumber = (uint8_t)(icon[0] - 49);
-    bool automaticMode = ((flg & AUTOMATIC_FLAG) != 0) ? true : false;
-    bool notificationNoShowMode = ((flg & NOTIFICATION_FLAG) != 0) ? true : false;
-    bool privateMode = ((flg & PRIVATE_FLAG) != 0) ? true : false;
+    m_iconName = t_icon;
+    bool automaticMode = ((t_flags & AUTOMATIC_FLAG) != 0) ? true : false;
+    bool notificationNoShowMode = ((t_flags & NOTIFICATION_FLAG) != 0) ? true : false;
+    bool privateMode = ((t_flags & PRIVATE_FLAG) != 0) ? true : false;
     ui->automaticBox->setChecked(automaticMode);
     ui->notificationBox->setChecked(notificationNoShowMode);
     ui->privateBox->setChecked(privateMode);
@@ -94,8 +94,7 @@ void StartUI::on_startButton_pressed(){
         flags |= NOTIFICATION_FLAG;
     if (ui->privateBox->isChecked())
         flags |= PRIVATE_FLAG;
-    QString iconName((char)(iconNumber+49)); iconName.append(".png");
-    emit startProgram(flags, ui->nameButton->text().toStdString(), iconName.toStdString(), ui->folderEdit->text().toStdString());
+    emit startProgram(flags, ui->nameButton->text().toStdString(), m_iconName, ui->folderEdit->text().toStdString());
     m_trayIcon->show();
     this->hide();
 }
@@ -107,9 +106,9 @@ void StartUI::on_folderButton_pressed(){
         ui->folderEdit->setText(newDir);
 }
 
-void StartUI::closeEvent (QCloseEvent *event){
+void StartUI::closeEvent (QCloseEvent* event){
     QMessageBox::StandardButton resBtn = QMessageBox::question( this, "FileSender",
-                                                                tr("Sei sicuro di voler uscire?\n"),
+                                                                "Sei sicuro di voler uscire?\n",
                                                                 QMessageBox::No | QMessageBox::Yes,
                                                                 QMessageBox::Yes);
     if (resBtn != QMessageBox::Yes) {
@@ -117,16 +116,5 @@ void StartUI::closeEvent (QCloseEvent *event){
     } else {
         event->accept();
         QApplication::exit(0);
-    }
-}
-
-void StartUI::iconActivated(QSystemTrayIcon::ActivationReason reason){
-    switch (reason) {
-    case QSystemTrayIcon::Trigger:
-    case QSystemTrayIcon::DoubleClick:
-        this->show();
-        break;
-    default:
-        ;
     }
 }

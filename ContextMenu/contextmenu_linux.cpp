@@ -2,13 +2,16 @@
 #include "contextmenu_linux.h"
 #include <iostream>
 #include <cstdio>
+#include <exception>
 #include <unistd.h>
 #include <fstream>
 #include <locale>
 #include <codecvt>
 #include <pwd.h>
+#include <sys/types.h>
+#include <dirent.h>
 
-inline int MIN(int a, int b){
+inline int MIN(const int& a, const int& b){
     return (a < b) ? a : b;
 }
 
@@ -17,7 +20,7 @@ ContextMenu_Linux::ContextMenu_Linux(wstring arg){
 }
 
 bool ContextMenu_Linux::addToContextMenu(){
-    //prende l'exe path
+    //prende il percorso dell'applicazione
     char szTmp[32];
     char pBuf[1024];
     sprintf(szTmp, "/proc/%d/exe", getpid());
@@ -37,7 +40,15 @@ bool ContextMenu_Linux::addToContextMenu(){
             }
 
     string homeDirect = cHomeDirect;
-    m_completeRegistrationPath = homeDirect + m_registrationPath + "custom.desktop"; // controlla che esista
+    m_completeRegistrationPath = homeDirect + m_registrationPath;
+
+    //controlla se esiste il path di Nautilus
+    DIR* dir = opendir(m_completeRegistrationPath.c_str());
+        if (!dir)
+            return false;
+        else
+            closedir(dir);
+        m_completeRegistrationPath.append("custom.desktop");
 
     ifstream  src("custom.desktop");
     if(!src.good())
@@ -47,33 +58,15 @@ bool ContextMenu_Linux::addToContextMenu(){
         return false;
 
     string buffer;
-    getline(src, buffer);
-    dst << buffer << endl;
-    getline(src, buffer);
-    dst << buffer << endl;
-    getline(src, buffer);
-    buffer.append(contextStringA);
-    dst << buffer << endl;
-    getline(src, buffer);
-    buffer.append(contextStringA);
-    dst << buffer << endl;
-    getline(src, buffer);
-    dst << buffer << endl;
-    getline(src, buffer);
-    dst << buffer << endl;
-    getline(src, buffer);
-    dst << buffer << endl;
-    getline(src, buffer);
-    buffer.append(contextStringA);
-    dst << buffer << endl;
-    getline(src, buffer);
-    buffer.append(contextPath);
-    dst << buffer << endl;
-
-    //da eliminare, stampa l'output
-    //getline(src, buffer);
-    //dst << buffer << endl;
-
+    getline(src, buffer); dst << buffer << endl;
+    getline(src, buffer); dst << buffer << endl;
+    getline(src, buffer); buffer.append(contextStringA); dst << buffer << endl;
+    getline(src, buffer); buffer.append(contextStringA); dst << buffer << endl;
+    getline(src, buffer); dst << buffer << endl;
+    getline(src, buffer); dst << buffer << endl;
+    getline(src, buffer); dst << buffer << endl;
+    getline(src, buffer); buffer.append(contextStringA); dst << buffer << endl;
+    getline(src, buffer); buffer.append(contextPath); dst << buffer << endl;
     dst.flush();
 
     return true;

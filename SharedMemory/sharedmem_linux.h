@@ -4,6 +4,7 @@
 
 #include "SharedMemory/sharedmem_interface.h"
 #include <semaphore.h>
+#include <time.h>
 
 class SharedMem_Linux : public SharedMem_Interface {
 private:
@@ -11,6 +12,7 @@ private:
     key_t m_uniqueKey;
     wchar_t* m_sharedMemoryWString;
     sem_t* m_semaphore;
+    struct timespec m_waitTime;
 public:
     SharedMem_Linux();
     virtual bool createMem();

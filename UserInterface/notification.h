@@ -9,10 +9,19 @@ namespace Ui {
 class Notification;
 }
 
+//UI della notifica che appare quando un nuovo utente è connesso/disconnesso
 class Notification : public QDialog
 {
     Q_OBJECT
+private:
+    Ui::Notification* ui;
 
+    QThread* m_timerThread;
+    QTimer* m_timer;
+
+    //funzioni ausiliarie
+    void setSizeAndPosition();
+    void createIcon(const QString&);
 public:
     explicit Notification(QWidget *parent = 0);
     ~Notification();
@@ -22,12 +31,6 @@ public slots:
     void hideNotification();
 signals:
     void terminated();
-
-private:
-    Ui::Notification* ui;
-
-    QThread* m_timerThread;
-    QTimer* m_timer;
 };
 
 #endif // NOTIFICATION_H

@@ -10,6 +10,7 @@
 #include <thread>
 #include <string>
 
+//classe che gestisce la ricezione di nuovi utenti connessi
 class UDP_Manager : public QObject
 {
     Q_OBJECT

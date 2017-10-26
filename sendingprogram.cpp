@@ -1,33 +1,56 @@
 #include "sendingprogram.h"
 #include "DataStruct/usersingleton.h"
+#include "define.h"
 #include <string>
 #include <cstdlib>
 #include <QMessageBox>
 
 using namespace std;
 
-SendingProgram::SendingProgram(const char* path, QObject *parent) : QObject(parent){
-    //converte la stringa di caratteri in wstring
-    const size_t pathSize = strlen(path);
-    wstring filePath;
-    if (pathSize > 0){
-        filePath.resize(pathSize);
-        mbstowcs(&filePath[0], path, pathSize);
+SendingProgram::SendingProgram(const char* t_path, QObject *parent) : QObject(parent){
+    m_chooseDestinationUI = nullptr;
+    m_fileTransfering = nullptr;
+
+    if (!UserSingleton::get_instance().open()){
+        showError("ERRORE GRAVE: Impossibile aprire la memoria condivisa!");
+        exit(EXIT_FAILURE);
     }
 
-    if (!UserSingleton::get_instance().open())
+    try{
+        m_userVector = UserSingleton::get_instance().getList();
+    }catch(runtime_error error){
+        showError("Errore nell'apertura della lista utenti condivisa,\nil programma verrà chiuso");
         exit(EXIT_FAILURE);
-    m_userVector = UserSingleton::get_instance().getList();
-    m_chooseDestinationUI = new ShowUsers(false, path);
+    }
+
+    m_chooseDestinationUI = new ShowUsers(false, t_path);
+    wstring filePath = convertCharToWString(t_path);
     m_fileTransfering = new SenderManager(filePath);
+
     QObject::connect(m_chooseDestinationUI, SIGNAL(sendToUsers(std::vector<User>)), m_fileTransfering, SLOT(sendToUsers(std::vector<User>)));
     QObject::connect(m_fileTransfering, SIGNAL(error(QString)), this, SLOT(showError(QString)), Qt::DirectConnection);
+
     m_chooseDestinationUI->createList(m_userVector);
     m_chooseDestinationUI->show();
+}
+
+SendingProgram::~SendingProgram(){
+    safeDelete(m_chooseDestinationUI);
+    safeDelete(m_fileTransfering);
 }
 
 void SendingProgram::showError(QString errorText){
     QMessageBox errorBox;
     errorBox.setText(errorText);
     errorBox.exec();
+}
+//converte la stringa di caratteri in wstring
+wstring SendingProgram::convertCharToWString(const char* t_charString){
+    const size_t stringSize = strlen(t_charString);
+    wstring returnWString;
+    if (stringSize > 0){
+        returnWString.resize(stringSize);
+        mbstowcs(&returnWString[0], t_charString, stringSize);
+    }
+    return returnWString;
 }

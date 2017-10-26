@@ -5,7 +5,7 @@
 
 using namespace std;
 
-ShowUsers::ShowUsers(bool t_isList, string fileName, QWidget *parent) :
+ShowUsers::ShowUsers(bool t_isList, string t_fileName, QWidget *parent) :
     m_isList(t_isList),
     m_userCount(0),
     QWidget(parent),
@@ -19,7 +19,8 @@ ShowUsers::ShowUsers(bool t_isList, string fileName, QWidget *parent) :
         ui->tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
     }
     else{
-        ui->label->setText(QString::fromStdString(m_sendingString+fileName));
+        this->setWindowTitle("Stai inviando un file...");
+        ui->label->setText(QString::fromStdString(m_sendingString+t_fileName));
     }
 }
 
@@ -29,20 +30,20 @@ ShowUsers::~ShowUsers()
 }
 
 
-void ShowUsers::addUser(User newUser){
+void ShowUsers::addUser(User t_newUser){
     ui->tableWidget->setRowCount(++m_userCount);
     QTableWidgetItem *item = new QTableWidgetItem(0);
-    QImage* img = new QImage(":/images/icons/Icons/"+QString::fromStdString(newUser.picture));
+    QImage* img = new QImage(":/images/icons/Icons/"+QString::fromStdString(t_newUser.picture));
     item->setData(Qt::DecorationRole, QPixmap::fromImage(*img));
-    item->setData(Qt::DisplayRole, QString::fromStdString(newUser.name));
-    item->setData(Qt::UserRole, QString::fromStdString(newUser.ip));
+    item->setData(Qt::DisplayRole, QString::fromStdString(t_newUser.name));
+    item->setData(Qt::UserRole, QString::fromStdString(t_newUser.ip));
     ui->tableWidget->setItem(m_userCount-1, 0, item);
 }
-void ShowUsers::deleteUser(User deletedUser){
-    for(int row = 0; row < m_userCount; row++){
+void ShowUsers::deleteUser(User t_deletedUser){
+    for(int row = 0; row < m_userCount; ++row){
         QTableWidgetItem *rowItem = ui->tableWidget->item(row, 0);
-        if ( (rowItem->text() == QString::fromStdString(deletedUser.name) )
-           &&(rowItem->data(Qt::UserRole) == QString::fromStdString(deletedUser.ip)) ){
+        if ( (rowItem->text() == QString::fromStdString(t_deletedUser.name) )
+           &&(rowItem->data(Qt::UserRole) == QString::fromStdString(t_deletedUser.ip)) ){
                 ui->tableWidget->removeRow(row);
                 break;
         }
@@ -50,8 +51,8 @@ void ShowUsers::deleteUser(User deletedUser){
     m_userCount--;
 }
 
-void ShowUsers::createList(vector<User> userList){
-    for (auto it = userList.begin(); it != userList.end(); it++)
+void ShowUsers::createList(vector<User> t_userList){
+    for (auto it = t_userList.begin(); it != t_userList.end(); ++it)
         addUser(*it);
 }
 

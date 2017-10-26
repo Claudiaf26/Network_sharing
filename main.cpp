@@ -14,7 +14,6 @@ int main(int argc, char *argv[]){
     a.setQuitOnLastWindowClosed(false);
     QIcon mainIcon(":/images/icons/Style/SystemIcon.png");
     a.setWindowIcon(mainIcon);
-    try{
         if (argc < 2){
             MainProgram m;
             m.start();
@@ -23,12 +22,5 @@ int main(int argc, char *argv[]){
         else{
             SendingProgram s(argv[1]);
             return a.exec();
-        }
-    }catch(...){
-        //da gestire in modo più elegante
-        QMessageBox errorBox;
-        errorBox.setText("ERRORE GRAVISSIMO");
-        errorBox.exec();
-        return 1;
-    }
+     }
 }

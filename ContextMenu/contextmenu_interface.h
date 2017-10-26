@@ -5,7 +5,7 @@
 
 class ContextMenu_Interface{
 protected:
-    std::wstring m_contextString;
+    std::wstring m_contextString;               //Nome dell'applicazione nel menù a tendina
 public:
     virtual bool addToContextMenu() = 0;
     virtual bool removeFromContextMenu() = 0;

@@ -3,13 +3,13 @@
 #include <Windows.h>
 #pragma comment(lib,"Advapi32.lib")
 
-inline void insertIntoString(wstring& str, wstring insert, wstring flag){
+inline void insertIntoString(wstring& str, const wstring& insert, const wstring& flag){
     size_t pos = str.find(flag);
     str.erase(pos, flag.size());
     str.insert(pos, insert);
 }
 
-inline void removeFromString(wstring& str, wstring remove){
+inline void removeFromString(wstring& str, const wstring& remove){
     size_t pos = str.find(remove);
     str.erase(pos, remove.size());
 }
@@ -21,12 +21,14 @@ ContextMenu_Windows::ContextMenu_Windows(wstring arg){
 }
 
 bool ContextMenu_Windows::addToContextMenu(){
+    //prende il percorso dell'applicazione da inserire nel registro
     DWORD len = 1024;
     WCHAR path[1024];
     GetModuleFileNameW(NULL, path, len);
     wstring contextPath = path;
     contextPath += L" \"%1\"";
 
+    //inserisce nel registro il percorso dell'applicazione
     HKEY fileHandle;
     HKEY directoryHandle;
     DWORD fileDisposition;
@@ -46,6 +48,7 @@ bool ContextMenu_Windows::addToContextMenu(){
     return true;
 }
 
+//rimuove dal registro il percorso dell'applicazione
 bool ContextMenu_Windows::removeFromContextMenu(){
     int value = RegDeleteKeyW(HKEY_CLASSES_ROOT, m_fileRegister.c_str());
     if (value != ERROR_SUCCESS) return false;
@@ -60,7 +63,7 @@ bool ContextMenu_Windows::removeFromContextMenu(){
     if (value != ERROR_SUCCESS) return false;
 
     value = RegDeleteKeyW(HKEY_CLASSES_ROOT, m_directoryRegister.c_str());
-    if (value == ERROR_SUCCESS) return false;
+    if (value != ERROR_SUCCESS) return false;
 
     return true;
 }

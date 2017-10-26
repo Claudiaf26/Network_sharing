@@ -12,7 +12,7 @@
 
 using namespace std;
 //----------- funzioni inline --------------------------------------------
-inline string toEnd(bool value){
+inline string toEnd(const bool& value){
     return value ? "1\n" : "0\n";
 }
 
@@ -25,8 +25,10 @@ inline wstring StringToWString(const string& s){
 
 MainProgram::MainProgram(): m_running(false){
     clearMembers();
-    if(!UserSingleton::get_instance().initialize())
+    if(!UserSingleton::get_instance().initialize()){
+        showError("ATTENZIONE: Un altra sessione del programma è già in corso!");
         exit(EXIT_FAILURE);
+    }
     /*QFile f(":/style/darkorange/Style/darkorange.stylesheet");
     if (!f.exists()) {
         printf("Unable to set stylesheet, file not found\n");
@@ -43,7 +45,11 @@ MainProgram::MainProgram(): m_running(false){
 
 MainProgram::~MainProgram(){
     UserSingleton::get_instance().close();
-    m_contextMenuHandler->removeFromContextMenu();
+    if (m_contextMenuHandler->isAddedToContextMenu())
+        if (!m_contextMenuHandler->removeFromContextMenu())
+            showError("Non è stato possibile chiudere il menù contestuale,\n\
+                       il programma rimarrà nel menù accessibile tramite click destro su qualunque file\n\
+                       o cartella! Riavviare per risolvere il problema");
     safeDelete(m_contextMenuHandler);
     safeDelete(m_notifications);
     safeDelete(m_udpDiscover);
@@ -52,9 +58,6 @@ MainProgram::~MainProgram(){
     safeDelete(m_userUI);
     safeDelete(m_showUI);
 }
-
-//cose da cambiare (potenzialmente): rendere const & oggetti passati a funzione, aggiungere sottofunzioni per aumentare leggibilità
-//(lo scrivo qui per non scriverlo altrove, usa static cast ovunque)
 
 void MainProgram::start(){
     uint8_t flags = 0;
@@ -101,26 +104,36 @@ void MainProgram::startProgram(uint8_t t_flag, string t_username, string t_pictu
 //--------------------------------------------------------------------------
 
 //------------------------- slot -------------------------------------------
-void MainProgram::addUser(User newUser){
-    m_userVector.push_back(newUser);
-    UserSingleton::get_instance().setList(m_userVector);
+void MainProgram::addUser(User t_newUser){
+    m_userVector.push_back(t_newUser);
+    try{
+        UserSingleton::get_instance().setList(m_userVector);
+    }catch(runtime_error error){
+        showError("Errore nel salvataggio dell'utente connesso\nsulla memoria condivisa, il programma verrà chiuso");
+        QApplication::exit(-1);
+    }
 }
 
-void MainProgram::deleteUser(User deletedUser){
-    m_userVector.erase(find(m_userVector.begin(), m_userVector.end(), deletedUser) );
-    UserSingleton::get_instance().setList(m_userVector);
+void MainProgram::deleteUser(User t_deletedUser){
+    m_userVector.erase(find(m_userVector.begin(), m_userVector.end(), t_deletedUser) );
+    try{
+        UserSingleton::get_instance().setList(m_userVector);
+    }catch(runtime_error error){
+        showError("Errore nel salvataggio dell'utente disconnesso\nsulla memoria condivisa, il programma verrà chiuso");
+        QApplication::exit(-1);
+    }
 }
 
-void MainProgram::showError(QString errorText){
+void MainProgram::showError(QString t_errorText){
     QMessageBox errorBox;
-    errorBox.setText(errorText);
+    errorBox.setText(t_errorText);
     errorBox.exec();
 }
 
-void MainProgram::searchUser(std::string& name, std::string searchedIP){
-    for (auto it = m_userVector.begin(); it != m_userVector.end(); it++){
-        if (it->ip == searchedIP)
-            name = it->name;
+void MainProgram::searchUser(std::string& t_name, std::string t_searchedIP){
+    for (auto it = m_userVector.begin(); it != m_userVector.end(); ++it){
+        if (it->ip == t_searchedIP)
+            t_name = it->name;
     }
 }
 //-------------------------------------------------------------------------
@@ -156,7 +169,7 @@ void MainProgram::initializeMembers(){
 
 void MainProgram::connectSlots(){
     QObject::connect(m_startUI, SIGNAL(startProgram(uint8_t, std::string, std::string, std::string)), this, SLOT(startProgram(uint8_t, std::string, std::string, std::string)) );
-    QObject::connect(m_userUI, SIGNAL(changeUser(QString, uint8_t)), m_startUI, SLOT(setUser(QString, uint8_t)));
+    QObject::connect(m_userUI, SIGNAL(changeUser(QString, QString)), m_startUI, SLOT(setUser(QString, QString)));
     QObject::connect(m_startUI, SIGNAL(showUserList()), m_showUI, SLOT(show()));
     QObject::connect(m_startUI, SIGNAL(userChoice()), m_userUI, SLOT(showOnTop()) );
     QObject::connect(m_udpDiscover, SIGNAL(showSignal(QString, QString)), m_notifications, SLOT(showNotification(QString, QString)) );
@@ -172,7 +185,6 @@ void MainProgram::connectSlots(){
 }
 
 void MainProgram::loadCurrentUserFromFile(){
-    //va fatto meglio il controllo (se c'è un errore di formattazione?)
     string userLine, directLine, iconLine, automaticLine, notificationLine, privateLine;
     getline(m_settingsFile, userLine);
     getline(m_settingsFile, directLine);
@@ -181,6 +193,13 @@ void MainProgram::loadCurrentUserFromFile(){
     getline(m_settingsFile, notificationLine);
     getline(m_settingsFile, privateLine);
     m_settingsFile.close();
+    if (userLine.empty() || directLine.empty() || iconLine.empty() || automaticLine.empty() || notificationLine.empty() || privateLine.empty())
+        throw runtime_error("Wrong formatting of user settings, empty lines!");
+
+    if((userLine.find("username=") == string::npos) || (directLine.find("directory=") == string::npos) ||
+       (iconLine.find("icon=") == string::npos) || (automaticLine.find("automaticreception=") == string::npos) ||
+       (notificationLine.find("notshownotification=") == string::npos) || (privateLine.find("privatemode=") == string::npos) )
+        throw runtime_error("Wrong formatting of user settings, wrong line start!");
 
     m_currentUser.username = userLine.substr(userLine.find("=")+1);
     m_currentUser.directory = directLine.substr(directLine.find("=")+1);
@@ -194,13 +213,13 @@ void MainProgram::loadCurrentUserFromFile(){
 
 }
 
-void MainProgram::checkModeFlag(uint8_t flags){
+void MainProgram::checkModeFlag(uint8_t& t_flags){
     if (m_currentUser.automaticMode)
-        flags |= AUTOMATIC_FLAG;
+        t_flags |= AUTOMATIC_FLAG;
     if (m_currentUser.notificationNoShowMode)
-        flags |= NOTIFICATION_FLAG;
+        t_flags |= NOTIFICATION_FLAG;
     if (m_currentUser.privateMode)
-        flags |= PRIVATE_FLAG;
+        t_flags |= PRIVATE_FLAG;
 }
 
 void MainProgram::saveCurrentUserToFile(){
@@ -215,9 +234,25 @@ void MainProgram::saveCurrentUserToFile(){
 }
 
 void MainProgram::startMainRoutine(){
-    m_contextMenuHandler->addToContextMenu();
-    m_notifications->setMode(m_currentUser.notificationNoShowMode);
-    m_udpDiscover->start(m_currentUser.username, m_currentUser.privateMode, m_currentUser.picture);
+    m_running = true;
+    if(!m_contextMenuHandler->addToContextMenu()){
+        showError("Non è stato possibile aggiungere l'applicazione nel menù a tendina!\n\
+                   L'applicazione verrà chiusa");
+        m_running = false;
+        QApplication::exit(-1);
+    }
+    if (m_running)
+        m_notifications->setMode(m_currentUser.notificationNoShowMode);
+
+    try{
+        if (m_running)
+            m_udpDiscover->start(m_currentUser.username, m_currentUser.privateMode, m_currentUser.picture);
+    }catch(...){
+        showError("Non è stato possibile stabilire una connessione UDP, l'applicazione verrà chiusa");
+        m_running = false;
+        QApplication::exit(-1);
+    }
+
     m_fileReceiving->setPath(StringToWString(m_currentUser.directory));
     m_fileReceiving->setMode(m_currentUser.automaticMode);
     if(m_fileReceiving->isActive())

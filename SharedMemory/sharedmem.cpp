@@ -6,9 +6,9 @@ SharedMem::SharedMem(){
 #ifdef _WIN32
     m_base = make_unique<SharedMem_Windows>();
 #endif
-/*#ifdef __linux__
-    base = unique_ptr<SharedMem_Linux>(new SharedMem_Linux());
-#endif*/
+#ifdef __linux__
+    m_base = unique_ptr<SharedMem_Linux>(new SharedMem_Linux());
+#endif
 }
 
 bool SharedMem::createMem(){
