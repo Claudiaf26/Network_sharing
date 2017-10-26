@@ -252,9 +252,10 @@ void MainProgram::startMainRoutine(){
         m_running = false;
         QApplication::exit(-1);
     }
-
-    m_fileReceiving->setPath(StringToWString(m_currentUser.directory));
-    m_fileReceiving->setMode(m_currentUser.automaticMode);
-    if(m_fileReceiving->isActive())
-        m_fileReceiving->start();
+    if (m_running){
+        m_fileReceiving->setPath(StringToWString(m_currentUser.directory));
+        m_fileReceiving->setMode(m_currentUser.automaticMode);
+        if(m_fileReceiving->isActive())
+            m_fileReceiving->start();
+    }
 }
