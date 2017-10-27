@@ -11,14 +11,15 @@
 #include <thread>
 #include <future>
 #include <mutex>
+/*
 #include "TCPSocket/TCPSocket.h"
 #include "TCPServerSocket/TCPServerSocket.h"
-#include "define.h"
-/*
+#include "define.h"*/
+
 #include "TCPSocket.h"
 #include "TCPServerSocket.h"
 #include "../../define.h"
-*/
+
 
 using namespace std;
 
@@ -58,11 +59,6 @@ private:
 	*or the actual file. */
 	void threadReceive(uint16_t i);
 
-	/*Returns an int with the percentage of the total size sent.*/
-	uint8_t getProgress();
-
-	
-
 public:
 	/*TCPSocket is a connected Socket, obtained from a TCPServerSocket.accept().
 	 *The TCPServerSocket.accept() will be always listening for incoming control 
@@ -80,15 +76,11 @@ public:
 	bool receive();
 
 	/*Returns the progress (0-99), the FT_COMPLETE or the FT_ERROR defined in define.h*/
-	uint8_t getStatus();
-
 	/*Returns the transfer speed in MBps and the time left in seconds*/
-	void getStatistics( double& speed, double& timeLeft );
+	void getStatus(transferStatus& t);
 
 	/*Sets the name of the file/directory transferred and the type, either FT_FILE or FT_DIRECTORY defined in define.h*/
 	void getFileDetails(string& name, uint8_t& type);
-
-	
 
 };
 

@@ -51,6 +51,12 @@ enum FileTransfer_Type {
 };
 typedef enum FileTransfer_Type FileTransfer_Type;
 
+struct transferStatus {
+	uint8_t progress;
+	uint32_t secondsLeft;
+	double speed;
+};
+
 const std::string iconString = ":/images/icons/Icons/";
 
 #endif // DEFINE_H

@@ -354,30 +354,45 @@ vector<char> FileTransfer::createDirectoryPacket( vector<string> tree ) {
 	return message;
 }
 
-uint8_t FileTransfer::getProgress() {
-	uint8_t progress;
-	if ( overallSize.load() == 0 )
-		return 0;
-	progress = (overallSent.load() * 100) / overallSize.load();
-	return progress;
-}
 
-void FileTransfer::getStatistics(double& speed, double& timeLeft) {
+
+void FileTransfer::getStatus( transferStatus& t) {
+	if ( !success.load() ) {
+		t.progress = FT_ERROR;
+		t.speed = 0;
+		t.secondsLeft = 0;
+		return;
+	}
+
 	int overallSizeTemp = overallSize.load();
 	int overallSentTemp = overallSent.load();
 	std::chrono::seconds timeElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>( std::chrono::system_clock::now() - transferStart.load() ));
-	speed = static_cast<double>(overallSentTemp) / (1048576 * timeElapsed.count());
-	timeLeft = static_cast<double>(overallSizeTemp - overallSentTemp) / (1048576 * speed);
-}
 
-uint8_t FileTransfer::getStatus() {
-	if ( !success.load() )
-		return FT_ERROR;
-	uint8_t progress = getProgress();
-	if ( progress < 100 )
-		return progress;
+	/* Getting the progress */
+	if ( overallSizeTemp == 0 ) {
+		t.progress = 0;
+	} else {
+		t.progress = (overallSentTemp * 100) / overallSizeTemp;
+		if ( t.progress >= 100 ) {
+			t.progress = FT_COMPLETE;
+			t.secondsLeft = 0;
+			t.speed = 0;
+		}
+	}
 
-	return FT_COMPLETE;
+	/* Getting the speed */
+	if ( timeElapsed.count() == 0 ) {
+		t.speed = 0;
+	} else {
+		t.speed = static_cast<double>(overallSentTemp) / (1048576 * timeElapsed.count());
+		if ( t.speed < 0 )
+			t.speed = 0;
+	}
+
+	if ( t.speed == 0 )
+		t.secondsLeft = 0;
+	else
+		t.secondsLeft = static_cast<uint32_t>(overallSizeTemp - overallSentTemp) / (1048576 * t.speed);
 }
 
 void FileTransfer::stop() {

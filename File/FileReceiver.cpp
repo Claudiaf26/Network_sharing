@@ -303,32 +303,46 @@ void FileReceiver::threadReceive(uint16_t i){
 	
 }
 
-uint8_t FileReceiver::getProgress(){
-	uint8_t progress;
-	if ( overallSize.load()  == 0)
-		return 0;
-	progress = (overallSent.load() * 100) / overallSize.load();
-	return progress;
-}
+void FileReceiver::getStatus(transferStatus& t) {
+	if ( !success.load() ) {
+		t.progress = FT_ERROR;
+		t.speed = 0;
+		t.secondsLeft = 0;
+		return;
+	}
 
-
-uint8_t FileReceiver::getStatus() {
-	if ( !success.load() )
-		return FT_ERROR;
-	uint8_t progress = getProgress();
-	if ( progress < 100 )
-		return progress;
-
-	return FT_COMPLETE;
-}
-
-void FileReceiver::getStatistics( double& speed, double& timeLeft ) {
 	int overallSizeTemp = overallSize.load();
 	int overallSentTemp = overallSent.load();
 	std::chrono::seconds timeElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>( std::chrono::system_clock::now() - transferStart.load() ));
-	speed = static_cast<double>(overallSentTemp) / (1048576 * timeElapsed.count());
-	timeLeft = static_cast<double>(overallSizeTemp - overallSentTemp) / (1048576 * speed);
+
+	/* Getting the progress */
+	if ( overallSizeTemp == 0 ) {
+		t.progress = 0;
+	} else {
+		t.progress = (overallSentTemp * 100) / overallSizeTemp;
+		if ( t.progress >= 100 ) {
+			t.progress = FT_COMPLETE;
+			t.secondsLeft = 0;
+			t.speed = 0;
+		}
+	}
+
+	/* Getting the speed */
+	if ( timeElapsed.count() == 0 ) {
+		t.speed = 0;
+	} else {
+		t.speed = static_cast<double>(overallSentTemp) / (1048576 * timeElapsed.count());
+		if ( t.speed < 0 )
+			t.speed = 0;
+	}
+
+	if ( t.speed == 0 )
+		t.secondsLeft = 0;
+	else
+		t.secondsLeft = static_cast<uint32_t>(overallSizeTemp - overallSentTemp) / (1048576 * t.speed);
+
 }
+
 
 void FileReceiver::getFileDetails( string & name, uint8_t & type ) {
 	lock_guard<mutex> l(transferDetailsMutex);

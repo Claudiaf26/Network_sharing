@@ -10,10 +10,10 @@
 #include <future>
 #include <mutex>
 #include <string.h>
-#include "TCPSocket/TCPSocket.h"
-#include "define.h"
 //#include "TCPSocket/TCPSocket.h"
 //#include "define.h"
+#include "TCPSocket.h"
+#include "../../define.h"
 
 using namespace std;
 
@@ -64,9 +64,6 @@ private:
 	/*Both sockets will open a data connection for each traded port.*/
 	void prepareSockets();
 
-	/*Returns the percentage sent.*/
-	uint8_t getProgress();
-
 public: 
 	/*ipAddress of an active host. If not active, an exception is thrown.
 	 *source path of the file or of the directory. If it does not exist,
@@ -74,11 +71,9 @@ public:
 	FileTransfer( string ipAddress, boost::filesystem::path source );
 	~FileTransfer();
 
-	/*Returns the estimated time in s and the current speed in MBps*/
-	void getStatistics( double& speed, double& timeLeft );
-
-	/*Returns the progress (0-99), the FT_COMPLETE or the FT_ERROR defined in define.h*/
-	uint8_t getStatus();
+	/*Returns the progress (0-99), the FT_COMPLETE or the FT_ERROR defined in define.h
+	  Returns the estimated time in s and the current speed in MBps.*/
+	void getStatus(transferStatus& t);
 	
 	/*Start the transfer. Returns 0 if any error happens or the stop() method is invoked.*/
 	bool transfer();
