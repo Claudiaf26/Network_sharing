@@ -28,6 +28,7 @@ bool FileTransfer::transfer() {
 		3. Data connection established
 		4. Control connection closed
 		*/
+
 		TCPSocket s( ip, 50000 );
 		sendTransferRequest( s ); //throws
 		
@@ -158,42 +159,43 @@ bool FileTransfer::sendDir() {
 	vector<char> message;
 	auto future_tree = async( &FileTransfer::exploreDir, this );
 	auto future_dirSize = async( &FileTransfer::dirSize, this );
+	try {
+		//Sending SIZE command and waiting for the ACK
+		message.push_back( 'S' ); message.push_back( 'I' ); message.push_back( 'Z' ); message.push_back( 'E' );
+		message.resize( message.size() + 8 );
+		overallSize.store( future_dirSize.get() );
+		uint64_t tempSize = boost::endian::native_to_big( overallSize.load() );
+		memcpy( message.data() + message.size() - 8, &tempSize, sizeof( tempSize ) );
+		if ( !fileSockets[0].Send( message ) )
+			throw std::domain_error( "Connection closed. " );
 
-	//Sending SIZE command and waiting for the ACK
-	message.push_back( 'S' ); message.push_back( 'I' ); message.push_back( 'Z' ); message.push_back( 'E' );
-	message.resize( message.size() + 8 );
-	overallSize.store( future_dirSize.get() );
-	uint64_t tempSize = boost::endian::native_to_big( overallSize.load() );
-	memcpy( message.data() + message.size() - 8, &tempSize, sizeof( tempSize ) );
-	if ( !fileSockets[0].Send( message ) )
-		throw std::domain_error( "Connection closed. " );
+		vector<char> msgV( 3 );
+		string msgS;
+		struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
+		if ( !fileSockets[0].Receive( msgV, 3, timeout ) ) {
+			throw std::domain_error( "Connection closed before SIZE ACK. " );
+		}
+		msgS.assign( msgV.begin(), msgV.end() );
+		if ( msgS.compare( "ACK" ) != 0 )
+			throw std::domain_error( "Expected ACK for SIZE. " );
 
-	vector<char> msgV( 3 );
-	string msgS;
-	struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
-	if ( !fileSockets[0].Receive( msgV, 3, timeout ) ) {
-		throw std::domain_error( "Connection closed before SIZE ACK. " );
+		/*Sending the directory tree to the other host and waiting for the ack.*/
+		message.clear();
+		tree = future_tree.get();
+		message = createDirectoryPacket( tree );
+
+		if ( !fileSockets[0].Send( message ) )
+			throw std::domain_error( "Connection closed. " );
+
+		if ( !fileSockets[0].Receive( msgV, 3, timeout ) ) {
+			throw std::domain_error( "Connection closed before DIRT ACK. " );
+		}
+		msgS.assign( msgV.begin(), msgV.end() );
+		if ( msgS.compare( "ACK" ) != 0 )
+			throw std::domain_error( "Expected ACK for DIRT. " );
+	} catch ( ... ) {
+		return false;
 	}
-	msgS.assign( msgV.begin(), msgV.end() );
-	if ( msgS.compare( "ACK" ) != 0 )
-		throw std::domain_error( "Expected ACK for SIZE. " );
-
-	/*Sending the directory tree to the other host and waiting for the ack.*/
-	message.clear();
-	tree = future_tree.get();
-	message = createDirectoryPacket( tree );
-
-	if ( !fileSockets[0].Send( message ) )
-		throw std::domain_error( "Connection closed. " );
-
-	if ( !fileSockets[0].Receive( msgV, 3, timeout ) ) {
-		throw std::domain_error( "Connection closed before DIRT ACK. " );
-	}
-	msgS.assign( msgV.begin(), msgV.end() );
-	if ( msgS.compare( "ACK" ) != 0 )
-		throw std::domain_error( "Expected ACK for DIRT. " );
-
-
 	return true;
 }
 
