@@ -117,12 +117,13 @@ QProgressBar
 {
     border: 2px #1a75ff;
     border-radius: 5px;
+    font: bold;
     text-align: center;
 }
 
 QProgressBar::chunk
 {
-    background-color: #467bcc;
-    width: 3px;
-    margin: 2px;
+    background-color: #88b7ff;
+    width: 10px;
+    margin: 0.5px;
 }
