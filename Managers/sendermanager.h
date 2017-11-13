@@ -19,10 +19,9 @@ struct SendingObject{
     ProgressDialog* progressUI;
     std::unique_ptr<FileTransfer> transfer;
     std::unique_ptr<std::thread> sendingThread;
-    std::exception_ptr transferException;
     bool failed;
 
-    SendingObject(std::wstring filePath, std::string username, std::string destinationIP):failed(false), transferException(nullptr){
+    SendingObject(std::wstring filePath, std::string username, std::string destinationIP):failed(false){
         progressUI = new ProgressDialog(QString::fromStdWString(filePath), QString::fromStdString(username), true);
         transfer = std::unique_ptr<FileTransfer>(new FileTransfer(destinationIP, filePath));
     }
@@ -53,15 +52,6 @@ struct SendingObject{
         }
         return *this;
     }
-
-    void transferThread(){
-        try{
-            transfer->transfer();
-        }catch(...){
-            transferException = std::current_exception();
-        }
-    }
-
 };
 
 //classe che gestisce l'invio di file

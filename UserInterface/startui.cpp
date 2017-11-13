@@ -2,6 +2,8 @@
 #include <QCloseEvent>
 #include <QMenu>
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QFont>
 #include "startui.h"
 #include "ui_startui.h"
 #include "define.h"
@@ -113,6 +115,7 @@ void StartUI::closeEvent (QCloseEvent* event){
                                                                 "Sei sicuro di voler uscire?\n",
                                                                 QMessageBox::No | QMessageBox::Yes,
                                                                 QMessageBox::Yes);
+
     if (resBtn != QMessageBox::Yes) {
         event->ignore();
     } else {

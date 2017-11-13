@@ -25,7 +25,7 @@ SenderManager::~SenderManager(){
 void SenderManager::sendToUsers(const vector<User>& selectedUsers){
     for (auto it = selectedUsers.begin(); it != selectedUsers.end(); ++it){
         SendingObject newTransfer(m_filePath, it->name, it->ip);
-        newTransfer.sendingThread = unique_ptr<std::thread>(new std::thread(&SendingObject::transferThread, &newTransfer));
+        newTransfer.sendingThread = unique_ptr<std::thread>(new std::thread(&FileTransfer::transfer, newTransfer.transfer.get()));
         newTransfer.progressUI->show();
         m_transferList.push_back(move(newTransfer));
     }
@@ -37,40 +37,57 @@ void SenderManager::checkProgress(){
     if (m_transferList.empty())
         QApplication::quit();
     for (auto it = m_transferList.begin(); it != m_transferList.end();){        
+        cout << "INIZIO\n";
         if (it->failed){
+            cout << "failed == true\n";
             ++it;
             continue;
         }
 
-        uint8_t status = (it->transferException) ? FT_ERROR : it->transfer->getStatus();
-        if (status == FT_ERROR){
-            it->progressUI->close();
+        transferStatus status;
+        it->transfer->getStatus(status);
+        cout << "status: " << status.progress << "\n";
+        if (status.progress == FT_ERROR){
+            cout << "progress == FT_ERROR\n";
+            if (!it->progressUI->isHidden()){
+                it->progressUI->close();
+                cout << "dovrebbe chiudere la finestra!\n";
+            }
             it->failed = true;
             emit error("Il trasferimento è fallito");
         }
 
         if (!it->progressUI->isClosed()){
-            double speed, time;
-            it->transfer->getStatistics(speed, time);
-            int totSeconds = static_cast<int>(time);
-            int seconds = totSeconds % 60;
-            int minutes = totSeconds / 60;
-            QString speedStr = QString::number(speed, 'g', 2);
-            QString timeStr =  QString::number(minutes);
+            cout << "la finestra è ancora aperta\n";
+            QString speedStr = (status.speed == 0) ? "N/A": QString::number(status.speed, 'g', 2);
             speedStr.append(" MBps");
-            timeStr.append("' "); timeStr.append(QString::number(seconds));
-            timeStr.append('s');
+            QString timeStr;
+            if (status.secondsLeft > 0){
+                int seconds = status.secondsLeft % 60;
+                int minutes = status.secondsLeft / 60;
+                QString::number(minutes);
+                timeStr.append("' "); timeStr.append(QString::number(seconds));
+                timeStr.append('s');
+            }
+            else
+                timeStr = "N/A";
 
-            it->progressUI->setProgress(status, speedStr, timeStr);
+            it->progressUI->setProgress(status.progress, speedStr, timeStr);
             ++it;
+            cout << "l'aggiornamento dell'UI è terminato\n";
         }
          else {
-            if ( ((status != FT_COMPLETE) && (status != FT_ERROR)) || it->transferException )
+            cout << "la finestra è chiusa \n";
+            if ( ((status.progress != FT_COMPLETE) && (status.progress != FT_ERROR)) ){
+                cout << "provo a stoppare il transferimento\n";
                 it->transfer->stop();
+            }
             if (it->sendingThread->joinable())
                 it->sendingThread->join();
             it = m_transferList.erase(it);
+            cout << "elemento cancellato\n";
         }
+        cout << "FINE\n\n\n\n";
     }
 }
 

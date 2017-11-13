@@ -67,7 +67,7 @@ void ReceiverManager::createUI(){
 
     if (ret == QMessageBox::Ok){
         newReceiver.setUI(fileName, username);
-        newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&ReceivingObject::receiveThread, &newReceiver));
+        newReceiver.receivingThread = unique_ptr<std::thread>(new std::thread(&FileReceiver::receive, newReceiver.receiver.get()));
         newReceiver.progressUI->show();
         m_receivingList.push_back(move(newReceiver));
     }
@@ -79,30 +79,35 @@ void ReceiverManager::checkProgress(){
             ++it;
             continue;
         }
-        uint8_t status = (it->receiverException) ? FT_ERROR : it->receiver->getStatus();
-        if (status == FT_ERROR){
-            it->progressUI->close();
+
+        transferStatus status;
+        it->receiver->getStatus(status);
+        if (status.progress == FT_ERROR){
+            if (!it->progressUI->isHidden())
+                it->progressUI->close();
             it->failed = true;
             emit error("Il trasferimento è fallito");
         }
 
         if (!it->progressUI->isClosed()){
-            double speed, time;
-            it->receiver->getStatistics(speed, time);
-            int totSeconds = static_cast<int>(time);
-            int seconds = totSeconds % 60;
-            int minutes = totSeconds / 60;
-            QString speedStr = QString::number(speed, 'g', 2);
-            QString timeStr =  QString::number(minutes);
+            QString speedStr = (status.speed == 0) ? "N/A": QString::number(status.speed, 'g', 2);
             speedStr.append(" MBps");
-            timeStr.append("' "); timeStr.append(QString::number(seconds));
-            timeStr.append('s');
+            QString timeStr;
+            if (status.secondsLeft > 0){
+                int seconds = status.secondsLeft % 60;
+                int minutes = status.secondsLeft / 60;
+                QString::number(minutes);
+                timeStr.append("' "); timeStr.append(QString::number(seconds));
+                timeStr.append('s');
+            }
+            else
+                timeStr = "N/A";
 
-            it->progressUI->setProgress(status, speedStr, timeStr);
+            it->progressUI->setProgress(status.progress, speedStr, timeStr);
             ++it;
         }
          else {
-            if ( ((status != FT_COMPLETE) && (status != FT_ERROR)) || it->receiverException )
+            if ( ((status.progress != FT_COMPLETE) && (status.progress != FT_ERROR)))
                 it->receiver->stop();
             if (it->receivingThread->joinable())
                 it->receivingThread->join();

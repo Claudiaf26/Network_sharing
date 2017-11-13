@@ -38,7 +38,7 @@ void Notification::showNotification(QString t_text, QString t_picture) {
         ui->userLabel->setText(t_text);
         createIcon(t_picture);
 
-        setSizeAndPosition();
+        setPosition();
 
         this->show();
 
@@ -54,15 +54,11 @@ void Notification::hideNotification(){
     }
 }
 
-void Notification::setSizeAndPosition(){
-    int notificationWidth = ui->userLabel->width() + 100;
-    int notificationHeigh = ui->userLabel->height();
-    notificationHeigh = (notificationHeigh < 120) ? 120 : notificationHeigh;
-    this->setFixedSize(notificationWidth,notificationHeigh);
-
+void Notification::setPosition(){
+    this->adjustSize();
     QRect screenSize = QApplication::desktop()->availableGeometry();
     int desktopWidth = screenSize.width(); int desktopHeigh = screenSize.height();
-    this->move( (desktopWidth - notificationWidth), (desktopHeigh - notificationHeigh - 32));
+    this->move( (desktopWidth - this->width()), (desktopHeigh - this->height()));
 
 }
 

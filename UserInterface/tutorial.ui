@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1065</width>
+    <width>1069</width>
     <height>483</height>
    </rect>
   </property>
@@ -25,11 +25,9 @@
        </property>
        <property name="text">
         <string>Benvenuto in FileSender!
-Grazie a questo programma potrai inviare a qualunque PC connesso nella tua rete locale
-file o cartelle. Per iniziare basta selezionare la cartella dove vuoi che ti vengano inviati i
-file e premere Start!
-Da questa interfaccia potrai inoltre selezionare una varietà di opzioni diverse, descritte
-sulla destra</string>
+Grazie a questo programma potrai inviare a qualunque PC connesso nella tua rete localefile o
+cartelle. Per iniziare basta selezionare la cartella dove vuoi che ti vengano inviati i file e premere Start!
+Da questa interfaccia potrai inoltre selezionare una varietà di opzioni diverse, descritte sulla destra</string>
        </property>
       </widget>
      </item>
@@ -68,11 +66,10 @@ sulla destra</string>
           </font>
          </property>
          <property name="text">
-          <string>Una volta cliccato su start l'applicazione sarà avviata e sarai
-visibile agli altri PC della rete. Cliccando sul destro sull'icona
-nella barra delle applicazioni potrai uscire dall'applicazione,
-cambiare le impostazioni durante l'esecuzione oppure
-visualizzare una lista di utenti connessi</string>
+          <string>Una volta cliccato su start l'applicazione sarà avviata e sarai visibile agli
+altri PC della rete. Cliccando sul destro sull'icona nella barra delle
+applicazioni potrai uscire dall'applicazione, cambiare le impostazioni
+durante l'esecuzione oppure visualizzare una lista di utenti connessi</string>
          </property>
         </widget>
        </item>
@@ -364,6 +361,11 @@ QCheckBox::indicator:unchecked
        </item>
        <item>
         <widget class="QPushButton" name="pushButton">
+         <property name="font">
+          <font>
+           <pointsize>20</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Ho capito!</string>
          </property>

@@ -20,7 +20,7 @@ private:
     QTimer* m_timer;
 
     //funzioni ausiliarie
-    void setSizeAndPosition();
+    void setPosition();
     void createIcon(const QString&);
 public:
     explicit Notification(QWidget *parent = 0);

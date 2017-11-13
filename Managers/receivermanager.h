@@ -23,10 +23,9 @@ struct ReceivingObject {
     ProgressDialog* progressUI;
     std::unique_ptr<FileReceiver> receiver;
     std::unique_ptr<std::thread> receivingThread;
-    std::exception_ptr receiverException;
     bool failed;
 
-    ReceivingObject(std::wstring filePath, TCPSocket socket):failed(false), receiverException(nullptr){
+    ReceivingObject(std::wstring filePath, TCPSocket socket):failed(false){
         progressUI = nullptr;
         receiver = std::unique_ptr<FileReceiver>(new FileReceiver(std::move(socket), filePath));
     }
@@ -61,14 +60,6 @@ struct ReceivingObject {
 
     void setUI(std::string fileName, std::string username){
         progressUI = new ProgressDialog(QString::fromStdString(fileName), QString::fromStdString(username), false);
-    }
-
-    void receiveThread(){
-        try{
-            receiver->receive();
-        }catch(...){
-            receiverException = std::current_exception();
-        }
     }
 };
 
