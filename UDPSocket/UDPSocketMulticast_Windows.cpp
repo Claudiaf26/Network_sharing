@@ -130,7 +130,7 @@ void UDPSocketMulticast_Windows::closeSocket() {
 }
 
 void UDPSocketMulticast_Windows::sendPacket( string message ) {
-	sendto( sendSocket, message.c_str(), message.length(), 0, (struct sockaddr *) &multicastSockaddr, sizeof( multicastSockaddr ) );
+    sendto( sendSocket, message.c_str(), message.length(), 0, (struct sockaddr *) &multicastSockaddr, sizeof( multicastSockaddr ) );
 }
 
 int8_t UDPSocketMulticast_Windows::receivePacket( string& message, string& senderIp ) {

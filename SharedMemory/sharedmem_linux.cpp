@@ -20,7 +20,7 @@ inline int MIN(const int& a, const int& b){
 }
 
 SharedMem_Linux::SharedMem_Linux(){
-    m_waitTime->tv_sec = 2;
+    m_waitTime.tv_sec = 2;
     m_waitTime.tv_nsec = 1000;
 
     //prende il percorso del programma in esecuzione per creare una chiave unica

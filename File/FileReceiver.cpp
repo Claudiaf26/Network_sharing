@@ -63,7 +63,7 @@ bool FileReceiver::receive() {
 void FileReceiver::receiveTransferRequest() {
 	lock_guard<mutex> l( transferDetailsMutex );
 	vector<char> reqV( 9 );
-	struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
+    struct timeval timeout; timeout.tv_sec = 2; timeout.tv_usec = 0;
 	if ( !controlS.Receive( reqV, 9, timeout ) )
 		throw std::domain_error( "Can't receive initialization request. " );
 
@@ -80,7 +80,7 @@ void FileReceiver::receiveTransferRequest() {
 	transferNameSize = ntohs( transferNameSize );
 
 	reqV.resize( transferNameSize );
-	timeout.tv_sec = 120; timeout.tv_usec = 0;
+    timeout.tv_sec = 2; timeout.tv_usec = 0;
 	if ( !controlS.Receive( reqV, transferNameSize, timeout ) )
 		throw std::domain_error( "Can't receive the name. " );
 
@@ -89,7 +89,7 @@ void FileReceiver::receiveTransferRequest() {
 
 void FileReceiver::tradeport() {
 	vector<char> msg(6);
-    struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
+    struct timeval timeout; timeout.tv_sec = 2; timeout.tv_usec = 0;
 	if(!controlS.Receive(msg, 6, timeout))
 		throw std::domain_error("Can't trade ports. ");
 	
@@ -141,8 +141,8 @@ void FileReceiver::prepareSockets() {
 void FileReceiver::threadReceive(uint16_t i){
     vector<char> msgV(4);
     string msgS;
-    struct timeval timeout1; timeout1.tv_sec = 120; timeout1.tv_usec = 0;
-    struct timeval timeout2; timeout2.tv_sec = 120; timeout2.tv_usec = 0;
+    struct timeval timeout1; timeout1.tv_sec = 2; timeout1.tv_usec = 0;
+    struct timeval timeout2; timeout2.tv_sec = 2; timeout2.tv_usec = 0;
 	boost::filesystem::fstream file;
 	while ( success.load() ) {
 		if ( !fileSockets[i].Receive( msgV, 4, timeout1 ) ) {
@@ -303,44 +303,44 @@ void FileReceiver::threadReceive(uint16_t i){
 	
 }
 
-void FileReceiver::getStatus(transferStatus& t) {
-	if ( !success.load() ) {
-		t.progress = FT_ERROR;
-		t.speed = 0;
-		t.secondsLeft = 0;
-		return;
-	}
+void FileReceiver::getStatus( transferStatus& t) {
+    if ( !success.load() ) {
+        t.progress = FT_ERROR;
+        t.speed = 0;
+        t.secondsLeft = 0;
+        return;
+    }
 
-	int overallSizeTemp = overallSize.load();
-	int overallSentTemp = overallSent.load();
-	std::chrono::seconds timeElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>( std::chrono::system_clock::now() - transferStart.load() ));
+    uint64_t overallSizeTemp = overallSize.load();
+    uint64_t overallSentTemp = overallSent.load();
+    std::chrono::seconds timeElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>( std::chrono::system_clock::now() - transferStart.load() ));
 
-	/* Getting the progress */
-	if ( overallSizeTemp == 0 ) {
-		t.progress = 0;
-	} else {
-		t.progress = (overallSentTemp * 100) / overallSizeTemp;
-		if ( t.progress >= 100 ) {
-			t.progress = FT_COMPLETE;
-			t.secondsLeft = 0;
-			t.speed = 0;
-		}
-	}
+    /* Getting the progress */
+    if ( overallSentTemp == 0 ) {
+        t.progress = 0;
+    } else {
+        t.progress = (overallSentTemp * 100) / overallSizeTemp;
+        if ( t.progress >= 100 ) {
+            t.progress = FT_COMPLETE;
+            t.secondsLeft = 0;
+            t.speed = 0;
+            return;
+        }
+    }
 
-	/* Getting the speed */
-	if ( timeElapsed.count() == 0 ) {
-		t.speed = 0;
-	} else {
-		t.speed = static_cast<double>(overallSentTemp) / (1048576 * timeElapsed.count());
-		if ( t.speed < 0 )
-			t.speed = 0;
-	}
+    /* Getting the speed */
+    if ( timeElapsed.count() <= 0 ) {
+        t.speed = 0;
+    } else {
+        t.speed = static_cast<double>(overallSentTemp) / (1048576 * timeElapsed.count());
+        if ( t.speed < 0 )
+            t.speed = 0;
+    }
 
-	if ( t.speed == 0 )
-		t.secondsLeft = 0;
-	else
-		t.secondsLeft = static_cast<uint32_t>(overallSizeTemp - overallSentTemp) / (1048576 * t.speed);
-
+    if ( t.speed == 0 )
+        t.secondsLeft = 0;
+    else
+        t.secondsLeft = static_cast<uint32_t>((overallSizeTemp - overallSentTemp) / (1048576 * t.speed));
 }
 
 

@@ -33,7 +33,7 @@ void UDPDiscover::advertise() {
 
 	while ( true ) {
 		temp_mode = mode.load();
-		if ( temp_mode == UDS_STOP || temp_mode == UDS_HIDDEN ) {
+        if ( temp_mode == UDS_STOP || temp_mode == UDS_HIDDEN ) {
 			return;
 		}
 		socket.sendPacket( defaultMessage );

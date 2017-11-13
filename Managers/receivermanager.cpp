@@ -90,13 +90,13 @@ void ReceiverManager::checkProgress(){
         }
 
         if (!it->progressUI->isClosed()){
-            QString speedStr = (status.speed == 0) ? "N/A": QString::number(status.speed, 'g', 2);
+            QString speedStr = (status.speed <= 0) ? "N/A": QString::number(status.speed, 'g', 2);
             speedStr.append(" MBps");
             QString timeStr;
             if (status.secondsLeft > 0){
                 int seconds = status.secondsLeft % 60;
                 int minutes = status.secondsLeft / 60;
-                QString::number(minutes);
+                timeStr.append(QString::number(minutes));
                 timeStr.append("' "); timeStr.append(QString::number(seconds));
                 timeStr.append('s');
             }

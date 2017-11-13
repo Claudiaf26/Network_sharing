@@ -109,7 +109,7 @@ void FileTransfer::tradePort(TCPSocket& s) {
 	if ( s.Send( message ) == false )
 		throw std::domain_error( "Err send 1 " );
 
-	struct timeval t; t.tv_sec = 120; t.tv_usec = 0;
+    struct timeval t; t.tv_sec = 60; t.tv_usec = 0;
 	if ( s.Receive( message, 6, t ) == false )
 		throw std::domain_error( "Err rcv 1 " );
 
@@ -171,7 +171,7 @@ bool FileTransfer::sendDir() {
 
 		vector<char> msgV( 3 );
 		string msgS;
-		struct timeval timeout; timeout.tv_sec = 120; timeout.tv_usec = 0;
+        struct timeval timeout; timeout.tv_sec = 2; timeout.tv_usec = 0;
 		if ( !fileSockets[0].Receive( msgV, 3, timeout ) ) {
 			throw std::domain_error( "Connection closed before SIZE ACK. " );
 		}
@@ -359,19 +359,19 @@ vector<char> FileTransfer::createDirectoryPacket( vector<string> tree ) {
 
 
 void FileTransfer::getStatus( transferStatus& t) {
-	if ( !success.load() ) {
+    if ( !success.load() ) {
 		t.progress = FT_ERROR;
 		t.speed = 0;
 		t.secondsLeft = 0;
 		return;
 	}
 
-	int overallSizeTemp = overallSize.load();
-	int overallSentTemp = overallSent.load();
+    uint64_t overallSizeTemp = overallSize.load();
+    uint64_t overallSentTemp = overallSent.load();
 	std::chrono::seconds timeElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>( std::chrono::system_clock::now() - transferStart.load() ));
 
 	/* Getting the progress */
-	if ( overallSizeTemp == 0 ) {
+    if ( overallSentTemp == 0 ) {
 		t.progress = 0;
 	} else {
 		t.progress = (overallSentTemp * 100) / overallSizeTemp;
@@ -379,11 +379,12 @@ void FileTransfer::getStatus( transferStatus& t) {
 			t.progress = FT_COMPLETE;
 			t.secondsLeft = 0;
 			t.speed = 0;
+            return;
 		}
 	}
 
 	/* Getting the speed */
-	if ( timeElapsed.count() == 0 ) {
+    if ( timeElapsed.count() <= 0 ) {
 		t.speed = 0;
 	} else {
 		t.speed = static_cast<double>(overallSentTemp) / (1048576 * timeElapsed.count());
@@ -394,7 +395,7 @@ void FileTransfer::getStatus( transferStatus& t) {
 	if ( t.speed == 0 )
 		t.secondsLeft = 0;
 	else
-		t.secondsLeft = static_cast<uint32_t>(overallSizeTemp - overallSentTemp) / (1048576 * t.speed);
+        t.secondsLeft = static_cast<uint32_t>((overallSizeTemp - overallSentTemp) / (1048576 * t.speed));
 }
 
 void FileTransfer::stop() {
