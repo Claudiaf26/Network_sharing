@@ -26,6 +26,7 @@ private:
 	TCPSocket controlS;
 
 	boost::filesystem::path dest;
+
 	vector<uint16_t> ports;
 
 	atomic<bool> success;
@@ -51,17 +52,18 @@ private:
 	*and accepts it or if it can't hold them, it will send
 	*a counter-proposal that will be accepted.*/
 	void tradeport();
+
+	/*For each port, it opens a socket.*/
 	void prepareSockets();
 
-	/*The method that will actually evaluate each packet, if it is a directory, the overall size
-	*or the actual file. */
+	/*The method that will actually reiceive the files*/
 	void threadReceive(uint16_t i);
 
 public:
 	/*TCPSocket is a connected Socket, obtained from a TCPServerSocket.accept().
 	 *The TCPServerSocket.accept() will be always listening for incoming control 
 	 *connection. Destination is a local folder in which files will be received. 
-	 *It accepts a string. Pass it a wstring. If the path does not
+	 *It accepts a string. If the path does not
 	 *exists, it will be created.*/
 	FileReceiver(TCPSocket s, boost::filesystem::path destination);
 	~FileReceiver();
@@ -69,8 +71,7 @@ public:
 	/*Stop the transfer from both the client and the server in a thread-safe fashion.*/
 	void stop();
 
-	/*To be called to effectively start the transfer. It is important that after this call
-	 *the object does not go out of scope.*/
+	/*To be called to effectively start the transfer.*/
 	bool receive();
 
 	/*Returns the progress (0-99), the FT_COMPLETE or the FT_ERROR defined in define.h*/

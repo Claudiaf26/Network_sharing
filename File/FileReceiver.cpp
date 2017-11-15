@@ -6,12 +6,14 @@ FileReceiver::FileReceiver(TCPSocket s, boost::filesystem::path p) : controlS(st
 	overallSent = 0;
 	overallSize = 0;
 	success = true;
-
+	
+	/*It is necessary to call this method here so that the file or directory name is available as soon as possible.*/
 	receiveTransferRequest();
 
 }
 
 FileReceiver::~FileReceiver() {
+	/*Do not stop until threads gracefully close. If you want to interrupt the transfer, call stop() and only after you can destroy the object.*/
 	for ( uint16_t i = 0; i < transferThreads.size(); ++i )
 		if ( transferThreads[i].joinable() )
 			transferThreads[i].join();
@@ -31,23 +33,26 @@ bool FileReceiver::receive() {
 		/*Here the connection has been accepted, so it is possible to establish data connections and close the control one.
 		Moreover, it makes sense to evaluate the the starting time. */
 		transferStart.store( std::chrono::system_clock::now() );
-		tradeport();
+		tradeport(); //Throws de
 		controlS.Close();
-
+		
 		prepareSockets();
 
 		for ( uint16_t  i = 0; i < fileSockets.size(); ++i ) {
+			/*Creates as many threads as the number of available sockets.*/
 			transferThreads.push_back( thread( &FileReceiver::threadReceive, this, i ) );
 		}
+		/*Now wait for the threads to do their job.*/
 		for ( uint16_t  i = 0; i < transferThreads.size(); ++i )
 			if ( transferThreads[i].joinable() )
 				transferThreads[i].join();
 		transferThreads.clear();
 
 	}catch(std::exception de ){
-		cout <<"Eccezione: " << de.what() << endl;
 		success.store( false );
 	}
+
+	/*Independently from the status of the transfer, release the network resources. */
 
 	for ( auto it = fileSockets.begin(); it != fileSockets.end(); ++it )
 		it->Close();
@@ -61,7 +66,9 @@ bool FileReceiver::receive() {
 }
 
 void FileReceiver::receiveTransferRequest() {
-	lock_guard<mutex> l( transferDetailsMutex );
+	lock_guard<mutex> l( transferDetailsMutex ); /*This structure may be invoked from outside by another thread, so it has to be protected.*/
+	
+	/*The sender sends a DIRTREQ or FILEREQ, the size of the name, the name. */
 	vector<char> reqV( 9 );
     struct timeval timeout; timeout.tv_sec = 2; timeout.tv_usec = 0;
 	if ( !controlS.Receive( reqV, 9, timeout ) )
@@ -89,6 +96,10 @@ void FileReceiver::receiveTransferRequest() {
 
 void FileReceiver::tradeport() {
 	vector<char> msg(6);
+
+    /*Protocol: 
+     *Request: PORT, number of ports
+     *Response: PORT, random choosen ports*/
     struct timeval timeout; timeout.tv_sec = 2; timeout.tv_usec = 0;
 	if(!controlS.Receive(msg, 6, timeout))
 		throw std::domain_error("Can't trade ports. ");
@@ -122,17 +133,20 @@ void FileReceiver::tradeport() {
 		testPort = (rand() % 16383) + 49152;
 		try {
 			fileServerSockets.push_back(TCPServerSocket(testPort));
-			cout << "Port: " << testPort << endl;
 			testPort = htons(testPort);
 			memcpy(msg.data() + i*2, &testPort, sizeof(testPort));
 			++i;
-		}catch (...) {}
+		}catch (...) {
+		/*This catch HAS to be empty. If TCPServerSocket(...) throws an exception, nothing is done and
+		 *another port is tried. */
+		}
 	}
 	controlS.Send(msg);
 
 }
 
 void FileReceiver::prepareSockets() {
+/*Creates data connections*/
 	for (uint16_t i = 0; i < fileServerSockets.size(); i++)
 		fileSockets.push_back(TCPSocket(fileServerSockets[i].Accept()));
 
@@ -152,6 +166,7 @@ void FileReceiver::threadReceive(uint16_t i){
 		msgS.assign( msgV.begin(), msgV.end() );
 
 		if ( msgS.compare( "FILE" ) == 0 ) {
+		/*A file is being received here. Receive the name, receive the dimension, receive the file. */
 			try {
 				if ( !fileSockets[i].Receive( msgV, 4, timeout2 ) ) {
 					success.store( false );
@@ -167,7 +182,8 @@ void FileReceiver::threadReceive(uint16_t i){
 				}
 
 				boost::filesystem::path filePath( msgV.begin(), msgV.end() );
-
+				
+				/*If the file exists, try to put an increasing number until the name is free.*/
 				uint8_t duplicate=1;
 				if ( boost::filesystem::exists( dest.generic() / filePath ) ) {
 					while ( boost::filesystem::exists( dest.generic() / (filePath.stem().string() + "(" + to_string( duplicate ) + ")" + filePath.extension().string()) ) ) {
@@ -190,10 +206,13 @@ void FileReceiver::threadReceive(uint16_t i){
 				memcpy( &fileSize, msgV.data(),  sizeof( fileSize ) );
 				fileSize = boost::endian::big_to_native( fileSize );
 				if ( overallSize == 0 ) {
-					//This means that it is a file being sent, not a directory, so the overallSize is given by the file size
+					/*This means that it is a single file being sent, not a directory, 
+                                          so the overallSize is given by the file size. This is needed to
+					  expose to the outside the progress.*/
 					overallSize.store( fileSize );
 				}
-
+				
+				/*Receive chunks until the file is complete.*/
 				uint32_t chunkSize;
 				uint32_t padding;
 				if ( fileSize >= 32768 ) {
@@ -222,19 +241,23 @@ void FileReceiver::threadReceive(uint16_t i){
 				}
 				overallSent.fetch_add( padding );
 			} catch ( std::domain_error de ) {
+				/*An error happened during the transmission. Stop the other threads and release resources. */
 				success.store( false );
 				if ( file.is_open() )
 					file.close();
-				cout << this_thread::get_id <<de.what() << endl;
 				return;
 			}
 			file.close();
 	
 		} else if ( msgS.compare( "QUIT" ) == 0 ) {
+			/*The thread on the other side has nothing else to transfer, so it tells to stop.
+		         *The overall dimension is not enough, because maybe the bytes received are less than
+		         *the overall dimension, but just because other threads are still receiving. */
 			fileSockets[i].Close();
 			return;
 
 		} else if ( msgS.compare( "SIZE" ) == 0 ) {
+			/*Used only for directories. It is needed to know the overall size of files and directories and compute the progress. */
 			if ( !fileSockets[i].Receive( msgV, 8, timeout2 ) ) {
 				success.store( false );
 				return;
@@ -250,6 +273,8 @@ void FileReceiver::threadReceive(uint16_t i){
 				throw std::domain_error( "Connection closed before the SIZE ACK. " );
 
 		} else if ( msgS.compare( "DIRT" ) == 0 ) {
+			/*A directory is going to be transferred. The tree of directories is computes, so that they are created by the 
+			 *receiver before actually receving the files inside.*/
 			uint32_t paySize;
 			if ( !fileSockets[i].Receive( msgV, 4, timeout2 ) ) {
 				success.store( false );
@@ -351,6 +376,7 @@ void FileReceiver::getFileDetails( string & name, uint8_t & type ) {
 }
 
 void FileReceiver::stop() {
+	/*By storing this flag it is possible to stop all threads.*/
 	success.store( false );
 
 }
