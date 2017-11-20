@@ -65,7 +65,7 @@ bool FileReceiver::receive() {
 	if ( !success.load() && !transferName.empty()) {
 		/*Transfer failed, delete whatever has been received.*/
 		try {
-			boost::filesystem::remove_all( transferName );
+            boost::filesystem::remove_all( dest );
 		} catch ( ... ) {
 			/*There is nothing to recover here, the transfer has failed, if the remove fails than some junk will remain on the user filesystem.*/
 		}

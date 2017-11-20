@@ -7,7 +7,6 @@ const uint16_t UDPDiscover::DISCOVERY_PORT;
 UDPDiscover::UDPDiscover( string userN, string pic ) : mode( UDS_STOP ), userName( userN ), picture( pic ), socket( "239.0.0.100", DISCOVERY_PORT ) {
 	//Initialize synch attributes
 	defaultMessage.append( "UDPDISCOVERY" + userName + "\r\n" + picture + "\r\n" );
-	cout << "Default message: " << defaultMessage;
 
 }
 
@@ -98,7 +97,6 @@ void UDPDiscover::discover() {
 			UserListSingleton::get_instance().pushNew( newUsr );
 			if ( temp_mode == UDS_ACTIVE )
 				socket.sendPacket( defaultMessage );
-			cout << "Found: " << newUsr.name << " " << newUsr.ip << " " << newUsr.age << endl;
 		}
 		vectorActiveUsersSynch.unlock();
 
@@ -119,7 +117,6 @@ void UDPDiscover::aging() {
 		for ( auto it = activeUsers.begin(); it != activeUsers.end();) {
 			if ( (*it).age >= 0 ) {
 				(*it).age--;
-				cout << "Aging: " << it->name << " " << it->ip << " " << it->age << endl;
 				++it;
 			} else {
 				UserListSingleton::get_instance().pushDeleted( *it );
