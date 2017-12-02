@@ -26,6 +26,7 @@ private:
 	TCPSocket controlS;
 
 	boost::filesystem::path dest;
+    boost::filesystem::path localFile;
 
 	vector<uint16_t> ports;
 

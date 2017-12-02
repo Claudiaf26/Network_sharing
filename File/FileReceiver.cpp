@@ -61,11 +61,10 @@ bool FileReceiver::receive() {
 	for ( auto it = fileServerSockets.begin(); it != fileServerSockets.end(); it++ )
 		it->Close();
 	fileServerSockets.clear();
-
 	if ( !success.load() && !transferName.empty()) {
 		/*Transfer failed, delete whatever has been received.*/
 		try {
-            boost::filesystem::remove_all( dest );
+            boost::filesystem::remove_all( localFile );
 		} catch ( ... ) {
 			/*There is nothing to recover here, the transfer has failed, if the remove fails than some junk will remain on the user filesystem.*/
 		}
@@ -201,6 +200,8 @@ void FileReceiver::threadReceive(uint16_t i){
 					}
 					filePath = filePath.stem().string() + "(" + to_string( duplicate ) + ")" + filePath.extension().string();
 				}
+                if(transferType!=FT_DIRECTORY)
+                    localFile=dest / filePath;
 				file.open(dest.generic() / filePath, ios::out | ios::binary );
 				if ( !file.is_open() ) {
 					success.store( false );
@@ -315,6 +316,7 @@ void FileReceiver::threadReceive(uint16_t i){
 				tempPath = tempPath.string() + "(" + to_string( duplicate ) + ")";
 			}
 			dest = dest / tempPath;
+            localFile=dest;
 			pos1 = pos2 + 1;
 			boost::filesystem::create_directory( dest );
 
